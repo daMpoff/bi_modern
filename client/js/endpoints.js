@@ -1,5 +1,8 @@
+// Ключ biModern используется для центрального реестра (EndpointManager),
+// чтобы избежать коллизии с core/bi, который использует ключ bi.
+// Компоненты импортируют из client/src/js/endpoints.js (с ключом bi).
 export const biEndpoints = {
-    bi: {
+    biModern: {
         ConnectionsList: 'bi_analysis_modern/bi_connections/',
         CheckConnection: 'bi_analysis_modern/bi_connections/check-connection/',
         ChartsList: 'bi_analysis_modern/bi_charts/',
