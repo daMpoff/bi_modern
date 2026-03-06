@@ -1,4 +1,5 @@
-import { endpoints } from '@/js/api/endpoints.js'
+import { biEndpoints } from './endpoints.js'
+const endpoints = biEndpoints
 
 export class ConnectionDTO {
   constructor({ id, name, connector_type_display, created_at, config, owner }) {
