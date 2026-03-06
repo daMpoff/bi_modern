@@ -12,7 +12,7 @@ class FileUpload(models.Model):
     connection = models.ForeignKey(Connection, null=True, blank=True, on_delete=models.CASCADE, related_name='files')
     file = models.FileField(upload_to='uploads/')
     uploaded_at = models.DateTimeField(auto_now_add=True)
-    owner = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name='uploaded_files')
+    owner = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name='bi_modern_uploaded_files')
     columns_info = models.JSONField(null=True, blank=True, default=dict)
 
     original_filename = models.CharField(max_length=255, blank=True, null=True)

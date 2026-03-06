@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('bi_analysis_bi_datasets', '0006_datasettable_file_upload_datasettable_sheet_name'),
+        ('bi_analysis_modern_bi_datasets', '0006_datasettable_file_upload_datasettable_sheet_name'),
     ]
 
     operations = [

@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('bi_analysis_bi_datasets', '0011_dataset_params'),
+        ('bi_analysis_modern_bi_datasets', '0011_dataset_params'),
     ]
 
     operations = [
@@ -22,10 +22,10 @@ class Migration(migrations.Migration):
                 ('order', models.PositiveIntegerField(default=0)),
                 ('description', models.TextField(blank=True, default='')),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('dataset', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='params_items', to='bi_analysis_bi_datasets.dataset')),
+                ('dataset', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='params_items', to='bi_analysis_modern_bi_datasets.dataset')),
             ],
             options={
-                'indexes': [models.Index(fields=['dataset', 'name'], name='bi_analysis_dataset_1d5e99_idx')],
+                'indexes': [models.Index(fields=['dataset', 'name'], name='bi_analysis_modern_dataset_1d5e99_idx')],
             },
         ),
     ]

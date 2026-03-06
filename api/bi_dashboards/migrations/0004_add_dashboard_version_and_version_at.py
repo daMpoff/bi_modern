@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('bi_analysis_bi_dashboards', '0003_alter_dashboard_placement_mode'),
+        ('bi_analysis_modern_bi_dashboards', '0003_alter_dashboard_placement_mode'),
     ]
 
     operations = [

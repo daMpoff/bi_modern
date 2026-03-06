@@ -7,14 +7,14 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('bi_analysis_bi_connections', '0002_alter_connection_connector_type'),
-        ('bi_analysis_bi_datasets', '0001_initial'),
+        ('bi_analysis_modern_bi_connections', '0002_alter_connection_connector_type'),
+        ('bi_analysis_modern_bi_datasets', '0001_initial'),
     ]
 
     operations = [
         migrations.AddField(
             model_name='fileupload',
             name='connection',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='files', to='bi_analysis_bi_connections.connection'),
+            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='files', to='bi_analysis_modern_bi_connections.connection'),
         ),
     ]

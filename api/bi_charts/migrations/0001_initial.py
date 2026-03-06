@@ -10,7 +10,7 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('bi_analysis_bi_datasets', '0001_initial'),
+        ('bi_analysis_modern_bi_datasets', '0001_initial'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
@@ -23,7 +23,7 @@ class Migration(migrations.Migration):
                 ('chart_type', models.CharField(choices=[('line', 'Линейная диаграмма'), ('area', 'Диаграмма с областями'), ('area_stacked', 'Нормированная диаграмма с областями'), ('bar', 'Столбчатая диаграмма'), ('bar_stacked', 'Нормированная столбчатая диаграмма'), ('line_bar', 'Линейчатая диаграмма'), ('line_bar_stacked', 'Нормированная линейчатая диаграмма'), ('scatter', 'Точечная диаграмма'), ('pie', 'Круговая диаграмма'), ('donut', 'Кольцевая диаграмма'), ('indicator', 'Индикатор'), ('tree', 'Древовидная диаграмма'), ('table', 'Таблица'), ('pivot', 'Сводная таблица'), ('map', 'Карта'), ('combo', 'Комбинированная диаграмма')], max_length=32)),
                 ('config', models.JSONField(default=dict)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('dataset', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='charts', to='bi_analysis_bi_datasets.dataset')),
+                ('dataset', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='charts', to='bi_analysis_modern_bi_datasets.dataset')),
                 ('owner', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='charts', to=settings.AUTH_USER_MODEL)),
             ],
         ),

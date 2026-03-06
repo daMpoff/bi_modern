@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('bi_analysis_bi_datasets', '0004_dataset_is_temporary'),
+        ('bi_analysis_modern_bi_datasets', '0004_dataset_is_temporary'),
     ]
 
     operations = [

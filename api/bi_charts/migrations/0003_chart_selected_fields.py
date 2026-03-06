@@ -6,14 +6,14 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('bi_analysis_bi_charts', '0002_remove_chart_config_chart_description_chart_engine_and_more'),
-        ('bi_analysis_bi_datasets', '0010_remove_dataset_is_temporary'),
+        ('bi_analysis_modern_bi_charts', '0002_remove_chart_config_chart_description_chart_engine_and_more'),
+        ('bi_analysis_modern_bi_datasets', '0010_remove_dataset_is_temporary'),
     ]
 
     operations = [
         migrations.AddField(
             model_name='chart',
             name='selected_fields',
-            field=models.ManyToManyField(blank=True, related_name='charts', to='bi_analysis_bi_datasets.datasetfield'),
+            field=models.ManyToManyField(blank=True, related_name='charts', to='bi_analysis_modern_bi_datasets.datasetfield'),
         ),
     ]

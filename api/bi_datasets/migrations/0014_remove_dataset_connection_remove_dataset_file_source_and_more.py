@@ -6,8 +6,8 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('bi_analysis_bi_charts', '0004_delete_chart'),
-        ('bi_analysis_bi_datasets', '0013_fileupload_file_uuid'),
+        ('bi_analysis_modern_bi_charts', '0004_delete_chart'),
+        ('bi_analysis_modern_bi_datasets', '0013_fileupload_file_uuid'),
     ]
 
     operations = [

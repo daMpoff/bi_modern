@@ -80,7 +80,7 @@ class Migration(migrations.Migration):
                     models.ForeignKey(
                         on_delete=django.db.models.deletion.CASCADE,
                         related_name="pages",
-                        to="bi_analysis_bi_dashboards.dashboard",
+                        to="bi_analysis_modern_bi_dashboards.dashboard",
                         verbose_name="Дашборд",
                     ),
                 ),
@@ -136,7 +136,7 @@ class Migration(migrations.Migration):
                     models.ForeignKey(
                         on_delete=django.db.models.deletion.CASCADE,
                         related_name="items",
-                        to="bi_analysis_bi_dashboards.dashboardpage",
+                        to="bi_analysis_modern_bi_dashboards.dashboardpage",
                         verbose_name="Страница",
                     ),
                 ),

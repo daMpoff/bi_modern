@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("bi_analysis_bi_dashboards", "0001_initial"),
+        ("bi_analysis_modern_bi_dashboards", "0001_initial"),
     ]
 
     operations = [

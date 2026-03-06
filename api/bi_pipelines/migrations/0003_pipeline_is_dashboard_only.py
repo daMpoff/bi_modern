@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("bi_analysis_bi_pipelines", "0002_pipeline_params_schema"),
+        ("bi_analysis_modern_bi_pipelines", "0002_pipeline_params_schema"),
     ]
 
     operations = [

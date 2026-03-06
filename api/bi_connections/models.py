@@ -13,7 +13,7 @@ class Connection(models.Model):
     connector_type = models.CharField(max_length=50, choices=CONNECTOR_TYPE_CHOICES)
     config = models.JSONField()
     created_at = models.DateTimeField(auto_now_add=True)
-    owner = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name='connections')
+    owner = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name='bi_modern_connections')
 
     def __str__(self):
         return f"{self.name} ({self.get_connector_type_display()})"

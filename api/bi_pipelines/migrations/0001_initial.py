@@ -112,7 +112,7 @@ class Migration(migrations.Migration):
                     models.ForeignKey(
                         on_delete=django.db.models.deletion.CASCADE,
                         related_name="charts",
-                        to="bi_analysis_bi_pipelines.pipeline",
+                        to="bi_analysis_modern_bi_pipelines.pipeline",
                         verbose_name="Пайплайн",
                     ),
                 ),

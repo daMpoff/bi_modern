@@ -7,14 +7,14 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('bi_analysis_bi_datasets', '0005_datasetfield_description'),
+        ('bi_analysis_modern_bi_datasets', '0005_datasetfield_description'),
     ]
 
     operations = [
         migrations.AddField(
             model_name='datasettable',
             name='file_upload',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='dataset_tables', to='bi_analysis_bi_datasets.fileupload'),
+            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='dataset_tables', to='bi_analysis_modern_bi_datasets.fileupload'),
         ),
         migrations.AddField(
             model_name='datasettable',

@@ -10,7 +10,7 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('bi_analysis_bi_connections', '0001_initial'),
+        ('bi_analysis_modern_bi_connections', '0001_initial'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
@@ -35,9 +35,9 @@ class Migration(migrations.Migration):
                 ('description', models.TextField(blank=True, null=True)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('table_ref', models.CharField(blank=True, max_length=255, null=True)),
-                ('connection', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='bi_analysis_bi_connections.connection')),
+                ('connection', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='bi_analysis_modern_bi_connections.connection')),
                 ('owner', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='datasets', to=settings.AUTH_USER_MODEL)),
-                ('file_source', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='bi_analysis_bi_datasets.fileupload')),
+                ('file_source', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='bi_analysis_modern_bi_datasets.fileupload')),
             ],
         ),
     ]

@@ -15,7 +15,7 @@ class Dashboard(models.Model):
     owner = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        related_name='dashboards',
+        related_name='bi_modern_dashboards',
         verbose_name='Владелец'
     )
     placement_mode = models.CharField(

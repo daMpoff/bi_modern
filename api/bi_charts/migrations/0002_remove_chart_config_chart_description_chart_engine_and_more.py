@@ -8,8 +8,8 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('bi_analysis_bi_charts', '0001_initial'),
-        ('bi_analysis_bi_datasets', '0009_datasettable_columns_info_datasettable_display_name'),
+        ('bi_analysis_modern_bi_charts', '0001_initial'),
+        ('bi_analysis_modern_bi_datasets', '0009_datasettable_columns_info_datasettable_display_name'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
@@ -51,7 +51,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='chart',
             name='dataset',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='bi_analysis_bi_datasets.dataset'),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='bi_analysis_modern_bi_datasets.dataset'),
         ),
         migrations.AlterField(
             model_name='chart',

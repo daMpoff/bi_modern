@@ -6,7 +6,7 @@ from django.db import migrations, models
 
 def generate_uuid_for_existing_files(apps, schema_editor):
     """Генерирует UUID для существующих записей FileUpload"""
-    FileUpload = apps.get_model('bi_analysis_bi_datasets', 'FileUpload')
+    FileUpload = apps.get_model('bi_analysis_modern_bi_datasets', 'FileUpload')
     for upload in FileUpload.objects.all():
         if not upload.file_uuid:
             upload.file_uuid = uuid.uuid4()
@@ -16,7 +16,7 @@ def generate_uuid_for_existing_files(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('bi_analysis_bi_datasets', '0012_datasetparam'),
+        ('bi_analysis_modern_bi_datasets', '0012_datasetparam'),
     ]
 
     operations = [

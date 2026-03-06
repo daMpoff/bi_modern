@@ -7,15 +7,15 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('bi_analysis_bi_connections', '0002_alter_connection_connector_type'),
-        ('bi_analysis_bi_datasets', '0002_fileupload_connection'),
+        ('bi_analysis_modern_bi_connections', '0002_alter_connection_connector_type'),
+        ('bi_analysis_modern_bi_datasets', '0002_fileupload_connection'),
     ]
 
     operations = [
         migrations.AlterField(
             model_name='dataset',
             name='connection',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='datasets', to='bi_analysis_bi_connections.connection'),
+            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='datasets', to='bi_analysis_modern_bi_connections.connection'),
         ),
         migrations.CreateModel(
             name='DataSetTable',
@@ -25,8 +25,8 @@ class Migration(migrations.Migration):
                 ('alias', models.CharField(blank=True, max_length=100)),
                 ('joined_on', models.JSONField(default=dict)),
                 ('order', models.PositiveSmallIntegerField(default=0)),
-                ('connection', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='dataset_tables', to='bi_analysis_bi_connections.connection')),
-                ('dataset', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='tables', to='bi_analysis_bi_datasets.dataset')),
+                ('connection', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='dataset_tables', to='bi_analysis_modern_bi_connections.connection')),
+                ('dataset', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='tables', to='bi_analysis_modern_bi_datasets.dataset')),
             ],
         ),
         migrations.CreateModel(
@@ -39,8 +39,8 @@ class Migration(migrations.Migration):
                 ('type', models.CharField(choices=[('geopolygon', 'Геополигон'), ('geopoint', 'Геоточка'), ('date', 'Дата'), ('date&time', 'Дата и время'), ('float', 'Дробное число'), ('bool', 'Логический'), ('string', 'Строка'), ('integer', 'Целое число')], default='string', max_length=20)),
                 ('aggregation', models.CharField(choices=[('none', 'Нет'), ('count', 'Количество'), ('ucount', 'Количество уникальных'), ('max', 'Максимум'), ('min', 'Минимум'), ('avg', 'Среднее'), ('sum', 'Сумма')], default='none', max_length=20)),
                 ('order', models.PositiveSmallIntegerField(default=0)),
-                ('dataset', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='fields', to='bi_analysis_bi_datasets.dataset')),
-                ('source_table', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='fields', to='bi_analysis_bi_datasets.datasettable')),
+                ('dataset', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='fields', to='bi_analysis_modern_bi_datasets.dataset')),
+                ('source_table', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='fields', to='bi_analysis_modern_bi_datasets.datasettable')),
             ],
         ),
     ]
