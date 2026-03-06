@@ -1,0 +1,30 @@
+{
+  "menuSections": [
+    {
+      "icon": "BarChart2",
+      "routeName": "BI",
+      "name": "Бизнес-аналитика",
+      "parentRoute": null,
+      "children": [
+        {
+          "icon": "LayoutDashboard",
+          "routeName": "Dashboards",
+          "name": "Дашборды",
+          "parentRoute": "BI"
+        },
+        {
+          "icon": "GitBranch",
+          "routeName": "Pipelines",
+          "name": "Пайплайны",
+          "parentRoute": "BI"
+        },
+        {
+          "icon": "Database",
+          "routeName": "Connections",
+          "name": "Подключения",
+          "parentRoute": "BI"
+        }
+      ]
+    }
+  ]
+}
