@@ -2,7 +2,7 @@
   "menuSections": [
     {
       "icon": "BarChart2",
-      "routeName": "BI",
+      "routeName": "BIModern",
       "name": "Бизнес-аналитика",
       "parentRoute": null,
       "children": [
@@ -10,19 +10,19 @@
           "icon": "LayoutDashboard",
           "routeName": "Dashboards",
           "name": "Дашборды",
-          "parentRoute": "BI"
+          "parentRoute": "BIModern"
         },
         {
           "icon": "GitBranch",
           "routeName": "Pipelines",
           "name": "Пайплайны",
-          "parentRoute": "BI"
+          "parentRoute": "BIModern"
         },
         {
           "icon": "Database",
-          "routeName": "Connections",
+          "routeName": "ConnectionsModern",
           "name": "Подключения",
-          "parentRoute": "BI"
+          "parentRoute": "BIModern"
         }
       ]
     }

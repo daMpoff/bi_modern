@@ -23,7 +23,7 @@ export function useRedirectIfFileConnection() {
                                type.includes('файл')
 
       if (isFileConnection) {
-        router.replace(`/bi/connections/${connectionId}/files/`)
+        router.replace(`/bi-modern/connections/${connectionId}/files/`)
       }
     } else {
       console.error('Ошибка загрузки подключения:', res.errors || res)
