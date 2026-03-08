@@ -1,0 +1,12 @@
+{
+  "name": "@ergo-ms/bi-analysis-modern-client",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "BI Analysis Modern - клиентская часть",
+  "dependencies": {
+    "@vue-flow/minimap": "^1.5.4",
+    "jspdf": "^4.2.0",
+    "uplot": "^1.6.32"
+  }
+}
