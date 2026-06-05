@@ -16,7 +16,7 @@ const tabs = [
     id: 'connections',
     name: 'Подключения',
     icon: Plug,
-    route: '/bi/connections',
+    route: '/bi-modern/connections',
     description: 'Работа с источниками данных, просмотр и выбор данных для дашбордов',
     colorClass: 'info'
   },
@@ -24,7 +24,7 @@ const tabs = [
     id: 'data',
     name: 'Данные',
     icon: Database,
-    route: '/bi/pipelines/',
+    route: '/bi-modern/pipelines/',
     description: 'Создание пайплайнов обработки данных и графиков для дашбордов',
     colorClass: 'warning'
   },
@@ -32,7 +32,7 @@ const tabs = [
     id: 'graphs',
     name: 'Дашборды',
     icon: BarChart3,
-    route: '/bi/dashboard/',
+    route: '/bi-modern/dashboard/',
     description: 'Создание дашбордов с визуальными блоками и графиками',
     colorClass: 'success'
   }

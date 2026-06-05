@@ -77,7 +77,7 @@ async function handleCreate() {
     if (data?.id) {
       toast.success('Пайплайн создан')
       closeCreateModal()
-      router.push(`/bi/pipelines/${data.id}`)
+      router.push(`/bi-modern/pipelines/${data.id}`)
     }
   } catch (err) {
     toast.error('Ошибка создания: ' + (err.message || err))
@@ -87,7 +87,7 @@ async function handleCreate() {
 }
 
 function goToEditor(pipeline) {
-  if (pipeline?.id) router.push(`/bi/pipelines/${pipeline.id}`)
+  if (pipeline?.id) router.push(`/bi-modern/pipelines/${pipeline.id}`)
 }
 
 function onMoreClick(event, id) {

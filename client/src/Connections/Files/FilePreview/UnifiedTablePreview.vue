@@ -1503,7 +1503,7 @@ onUnmounted(() => {
   
   &:focus {
     border-color: var(--color-accent);
-    box-shadow: 0 0 0 3px rgba(229, 57, 53, 0.1);
+    box-shadow: 0 0 0 3px rgba(109, 0, 26, 0.1);
     outline: none;
   }
 }
@@ -1555,7 +1555,7 @@ onUnmounted(() => {
     
     &:focus {
       border-color: var(--color-accent);
-      box-shadow: 0 0 0 3px rgba(229, 57, 53, 0.1);
+      box-shadow: 0 0 0 3px rgba(109, 0, 26, 0.1);
       outline: none;
     }
   }
@@ -1875,7 +1875,7 @@ onUnmounted(() => {
     border-color: var(--color-accent);
     color: white;
     transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(229, 57, 53, 0.2);
+    box-shadow: 0 4px 8px rgba(109, 0, 26, 0.2);
   }
   
   &:disabled {
@@ -1922,7 +1922,7 @@ onUnmounted(() => {
     border-color: var(--color-accent);
     font-weight: 700;
     cursor: default;
-    box-shadow: 0 2px 8px rgba(229, 57, 53, 0.3);
+    box-shadow: 0 2px 8px rgba(109, 0, 26, 0.3);
     transform: scale(1.05);
   }
 }
@@ -1953,7 +1953,7 @@ onUnmounted(() => {
   
   &:focus {
     border-color: var(--color-accent);
-    box-shadow: 0 0 0 3px rgba(229, 57, 53, 0.15), 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 0 0 3px rgba(109, 0, 26, 0.15), 0 2px 4px rgba(0, 0, 0, 0.1);
   }
   
   &::placeholder {
@@ -1998,7 +1998,7 @@ onUnmounted(() => {
     border-color: var(--color-accent);
     color: white;
     transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(229, 57, 53, 0.2);
+    box-shadow: 0 4px 8px rgba(109, 0, 26, 0.2);
   }
   
   &:disabled {

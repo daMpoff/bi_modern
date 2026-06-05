@@ -145,7 +145,7 @@ const isConnectionValid = computed(() => {
 })
 
 function goToNewConnection() {
-  router.push('/bi/connections/new')
+  router.push('/bi-modern/connections/new')
 }
 
 async function fetchConnection() {
@@ -341,7 +341,7 @@ function onConnectionSaved(data) {
   isChecked.value = true
 
   setTimeout(() => {
-    router.push({ name: 'connection-detail', params: { pk: data.id } })
+    router.push({ name: 'ConnectionDetailModern', params: { pk: data.id } })
   }, 2000)
 }
 

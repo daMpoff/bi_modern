@@ -23,31 +23,29 @@ const router = useRouter()
 function handleClick() {
   if (props.type) {
     emit('click', props.type)
-    router.push(`/bi/connections/new/${props.type}`)
+    router.push(`/bi-modern/connections/new/${props.type}`)
   }
 }
 </script>
   
 <style scoped lang="scss">
 @import '@/scss/_variables.scss';
+@import '../../scss/_bi-theme.scss';
 
 .card {
   width: 163px;
   height: 114px;
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(12px);
-  border-radius: 16px;
+  background: var(--color-primary-background);
+  border-radius: 12px;
   cursor: pointer;
   padding: 1rem;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  box-shadow: 
-    0 2px 8px rgba(0, 0, 0, 0.04),
-    0 1px 3px rgba(0, 0, 0, 0.02);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid var(--color-border);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
   position: relative;
   overflow: hidden;
 
@@ -58,22 +56,20 @@ function handleClick() {
     left: 0;
     right: 0;
     height: 2px;
-    background: linear-gradient(90deg, 
-      transparent 0%, 
-      rgba(var(--bs-info-rgb), 0.3) 50%, 
+    background: linear-gradient(90deg,
+      transparent 0%,
+      rgba($bi-accent, 0.5) 50%,
       transparent 100%);
     opacity: 0;
-    transition: opacity 0.3s ease;
+    transition: opacity 0.2s ease;
   }
-  
+
   &:hover {
-    background: rgba(255, 255, 255, 0.85);
-    border-color: rgba(var(--bs-info-rgb), 0.2);
-    transform: translateY(-4px);
-    box-shadow: 
-      0 8px 24px rgba(0, 0, 0, 0.12),
-      0 4px 12px rgba(0, 0, 0, 0.08),
-      0 2px 6px rgba(var(--bs-info-rgb), 0.15);
+    border-color: rgba($bi-accent, 0.4);
+    transform: translateY(-3px);
+    box-shadow:
+      0 6px 18px rgba(0, 0, 0, 0.10),
+      0 2px 6px rgba($bi-accent, 0.15);
 
     &::before {
       opacity: 1;
@@ -81,15 +77,12 @@ function handleClick() {
 
     .card-icon {
       transform: scale(1.1);
-      filter: brightness(1.1);
+      filter: brightness(1.05);
     }
   }
 
   &:active {
-    transform: translateY(-2px);
-    box-shadow: 
-      0 4px 16px rgba(0, 0, 0, 0.1),
-      0 2px 8px rgba(0, 0, 0, 0.06);
+    transform: translateY(-1px);
   }
 }
 
@@ -112,7 +105,7 @@ function handleClick() {
 }
 
 .card:hover .card_title {
-  color: var(--color-accent);
+  color: $bi-accent;
 }
 
 .a_link {

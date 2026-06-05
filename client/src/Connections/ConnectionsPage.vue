@@ -35,7 +35,7 @@ const isLoadingPreview = ref(false)
 const connectionsTreeRef = ref(null)
 
 function goToCreateConnection() {
-    router.push('/bi/connections/new')
+    router.push('/bi-modern/connections/new')
 }
 
 function handleNodeClick(node) {
@@ -69,15 +69,17 @@ function handleConnectionDeleted(connectionId) {
 
 <style scoped lang="scss">
 @import '@/scss/_variables.scss';
+@import '../scss/_bi-theme.scss';
 
 .connections-page {
+    @include bi-burgundy-tokens;
     display: flex;
     flex-direction: column;
     height: 90vh;
     min-height: 90vh;
     max-height: 90vh;
     overflow: hidden;
-    background: #ffffff;
+    background: var(--color-background);
 }
 
 .connections-layout {
@@ -91,70 +93,18 @@ function handleConnectionDeleted(connectionId) {
 .connections-sidebar {
     display: flex;
     flex-direction: column;
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.92) 100%);
+    background: var(--color-primary-background);
+    border-right: 1px solid var(--color-border);
     overflow: hidden;
-    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.04);
     position: relative;
-
-    // Декоративные элементы для сайдбара
-    &::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        right: 0;
-        width: 200px;
-        height: 200px;
-        background: radial-gradient(circle, rgba(var(--bs-info-rgb), 0.08) 0%, transparent 70%);
-        filter: blur(40px);
-        pointer-events: none;
-        z-index: 0;
-    }
 }
 
 .connections-preview {
     display: flex;
     flex-direction: column;
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.92) 100%);
+    background: var(--color-background);
     overflow: hidden;
     position: relative;
-
-    // Декоративные прозрачные графические элементы
-    &::before,
-    &::after {
-        content: '';
-        position: absolute;
-        pointer-events: none;
-        opacity: 0.15;
-        z-index: 0;
-    }
-
-    &::before {
-        top: -10%;
-        right: -5%;
-        width: 400px;
-        height: 400px;
-        background: radial-gradient(circle, rgba(var(--bs-info-rgb), 0.3) 0%, transparent 70%);
-        border-radius: 50%;
-        filter: blur(60px);
-        animation: float 20s ease-in-out infinite;
-    }
-
-    &::after {
-        bottom: -15%;
-        left: -8%;
-        width: 350px;
-        height: 350px;
-        background: radial-gradient(circle, rgba(var(--bs-primary-rgb), 0.25) 0%, transparent 70%);
-        border-radius: 50%;
-        filter: blur(50px);
-        animation: float 25s ease-in-out infinite reverse;
-    }
-
-    // Дополнительные декоративные элементы через псевдоэлемент wrapper
-    background-image:
-        radial-gradient(circle at 20% 30%, rgba(var(--bs-info-rgb), 0.08) 0%, transparent 50%),
-        radial-gradient(circle at 80% 70%, rgba(var(--bs-primary-rgb), 0.06) 0%, transparent 50%),
-        radial-gradient(circle at 50% 50%, rgba(var(--bs-success-rgb), 0.04) 0%, transparent 50%);
 }
 
 @keyframes float {

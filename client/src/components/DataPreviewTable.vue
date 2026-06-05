@@ -400,7 +400,7 @@ onBeforeUnmount(() => {
   font-size: 12px;
   font-weight: 600;
   margin: 0;
-  color: var(--color-text-primary, #1a1a1a);
+  color: var(--color-primary-text);
   display: flex;
   align-items: center;
   gap: 0.45rem;
@@ -414,7 +414,7 @@ onBeforeUnmount(() => {
 }
 
 .dp-badge--rows {
-  color: var(--color-text-secondary, #777);
+  color: var(--color-secondary-text);
 }
 
 .dp-badge--time {
@@ -426,7 +426,7 @@ onBeforeUnmount(() => {
   background: none;
   border: none;
   cursor: pointer;
-  color: var(--color-text-secondary, #999);
+  color: var(--color-secondary-text);
   display: flex;
   align-items: center;
   padding: 0.15rem;
@@ -517,7 +517,7 @@ onBeforeUnmount(() => {
 
   td {
     border-bottom: 1px solid rgba(0, 0, 0, 0.04);
-    color: var(--color-text-primary, #333);
+    color: var(--color-primary-text);
     font-variant-numeric: tabular-nums;
   }
 

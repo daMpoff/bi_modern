@@ -127,7 +127,7 @@ function onConnectionSaved(data) {
   isChecked.value = true
 
   setTimeout(() => {
-    router.push({ name: 'Connections' })
+    router.push({ name: 'ConnectionsModern' })
   }, 3000)
 }
 </script>

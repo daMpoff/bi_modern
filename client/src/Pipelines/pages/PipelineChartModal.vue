@@ -1,4 +1,4 @@
-﻿<script setup>
+<script setup>
 import { ref, computed, watch } from 'vue'
 import { X } from 'lucide-vue-next'
 import ChartSettingsPreview from '@/modules/bi_analysis_modern/client/src/components/ChartSettingsPreview.vue'
@@ -135,7 +135,7 @@ function canSave() {
   background: transparent;
   border: none;
   cursor: pointer;
-  color: var(--color-text-secondary, #666);
+  color: var(--color-secondary-text);
   padding: 0.25rem;
   border-radius: 6px;
   display: flex;
@@ -179,18 +179,18 @@ function canSave() {
 
 .modal-btn-secondary {
   background: rgba(0, 0, 0, 0.05);
-  color: var(--color-text-primary);
+  color: var(--color-primary-text);
   &:hover:not(:disabled) {
     background: rgba(0, 0, 0, 0.1);
   }
 }
 
 .modal-btn-primary {
-  background: var(--color-accent, #e53935);
+  background: var(--color-accent, #6D001A);
   color: white;
-  box-shadow: 0 2px 8px rgba(229, 57, 53, 0.3);
+  box-shadow: 0 2px 8px rgba(109, 0, 26, 0.3);
   &:hover:not(:disabled) {
-    background: #c62828;
+    background: #50000F;
   }
 }
 

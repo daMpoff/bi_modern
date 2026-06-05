@@ -143,7 +143,7 @@ defineExpose({
 .picker-title {
   font-size: 14px;
   font-weight: 600;
-  color: var(--color-text-primary, #1a1a1a);
+  color: var(--color-primary-text);
   margin: 0 0 0.75rem 0;
 }
 
@@ -164,7 +164,7 @@ defineExpose({
   align-items: center;
   justify-content: center;
   padding: 2rem;
-  color: var(--color-text-secondary, #666);
+  color: var(--color-secondary-text);
   gap: 0.75rem;
 }
 
@@ -210,7 +210,7 @@ defineExpose({
   background: rgba(0, 0, 0, 0.05);
   border-radius: 8px;
   flex-shrink: 0;
-  color: var(--color-text-secondary, #666);
+  color: var(--color-secondary-text);
 }
 
 .table-info {
@@ -224,7 +224,7 @@ defineExpose({
 .table-name {
   font-size: 14px;
   font-weight: 500;
-  color: var(--color-text-primary, #1a1a1a);
+  color: var(--color-primary-text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -232,7 +232,7 @@ defineExpose({
 
 .table-schema {
   font-size: 12px;
-  color: var(--color-text-secondary, #666);
+  color: var(--color-secondary-text);
 }
 
 .table-check {

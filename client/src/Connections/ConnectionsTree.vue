@@ -142,19 +142,18 @@ onBeforeUnmount(() => {
   display: flex;
   flex-direction: column;
   height: 100%;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.96) 100%);
+  background: var(--color-primary-background);
   position: relative;
   z-index: 1;
 }
 
 .tree-header {
   padding: 1.25rem 1rem;
-  background: rgba(255, 255, 255, 0.75);
-  backdrop-filter: blur(12px);
+  background: var(--color-primary-background);
+  border-bottom: 1px solid var(--color-border);
   position: sticky;
   top: 0;
   z-index: 10;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
 }
 
 .tree-header-content {
@@ -188,18 +187,17 @@ onBeforeUnmount(() => {
 
 .search-input {
   padding-left: 2.5rem !important;
-  background: rgba(255, 255, 255, 0.9);
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  border-radius: 10px;
+  background: var(--color-primary-background);
+  color: var(--color-primary-text);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
   padding: 0.75rem 0.875rem;
   font-size: 0.9rem;
   transition: all 0.2s ease;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
 
   &:focus {
-    background: rgba(255, 255, 255, 1);
-    border-color: rgba(var(--bs-info-rgb), 0.4);
-    box-shadow: 0 0 0 3px rgba(var(--bs-info-rgb), 0.1), 0 4px 8px rgba(0, 0, 0, 0.08);
+    border-color: rgba(var(--bi-accent-rgb), 0.5);
+    box-shadow: 0 0 0 3px rgba(var(--bi-accent-rgb), 0.12);
     outline: none;
   }
 
@@ -264,9 +262,9 @@ onBeforeUnmount(() => {
 }
 
 .tree-empty {
-  background: rgba(255, 255, 255, 0.4);
+  background: var(--color-secondary-background);
   border-radius: 12px;
-  border: 1px dashed rgba(0, 0, 0, 0.1);
+  border: 1px dashed var(--color-border);
   margin: 1rem;
   padding: 2.5rem 2rem;
 
@@ -309,9 +307,9 @@ onBeforeUnmount(() => {
   gap: 0.625rem;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   border: none;
-  background: linear-gradient(135deg, rgba(var(--bs-danger-rgb), 1) 0%, rgba(var(--bs-danger-rgb), 0.95) 100%);
+  background: linear-gradient(135deg, rgba(var(--bi-accent-rgb), 1) 0%, rgba(var(--bi-accent-rgb), 0.95) 100%);
   color: white;
-  box-shadow: 0 3px 6px rgba(var(--bs-danger-rgb), 0.3), 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 3px 6px rgba(var(--bi-accent-rgb), 0.3), 0 1px 3px rgba(0, 0, 0, 0.1);
   position: relative;
   overflow: hidden;
 
@@ -328,8 +326,8 @@ onBeforeUnmount(() => {
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 12px rgba(var(--bs-danger-rgb), 0.4), 0 2px 6px rgba(0, 0, 0, 0.15);
-    background: linear-gradient(135deg, rgba(var(--bs-danger-rgb), 0.98) 0%, rgba(var(--bs-danger-rgb), 0.92) 100%);
+    box-shadow: 0 6px 12px rgba(var(--bi-accent-rgb), 0.4), 0 2px 6px rgba(0, 0, 0, 0.15);
+    background: linear-gradient(135deg, rgba(var(--bi-accent-rgb), 0.98) 0%, rgba(var(--bi-accent-rgb), 0.92) 100%);
 
     &::before {
       left: 100%;
@@ -338,7 +336,7 @@ onBeforeUnmount(() => {
 
   &:active {
     transform: translateY(0);
-    box-shadow: 0 2px 4px rgba(var(--bs-danger-rgb), 0.3);
+    box-shadow: 0 2px 4px rgba(var(--bi-accent-rgb), 0.3);
   }
 }
 

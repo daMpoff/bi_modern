@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="table-preview">
     <div v-if="isLoadingData && currentPage === 1" class="preview-loading">
       <div class="spinner-border spinner-border-sm" role="status">
@@ -556,7 +556,7 @@ watch(() => props.table, (newTable) => {
     border-color: var(--color-accent);
     color: white;
     transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(229, 57, 53, 0.2);
+    box-shadow: 0 4px 8px rgba(109, 0, 26, 0.2);
   }
   
   &:disabled {
@@ -603,7 +603,7 @@ watch(() => props.table, (newTable) => {
     border-color: var(--color-accent);
     font-weight: 700;
     cursor: default;
-    box-shadow: 0 2px 8px rgba(229, 57, 53, 0.3);
+    box-shadow: 0 2px 8px rgba(109, 0, 26, 0.3);
     transform: scale(1.05);
   }
 }
@@ -634,7 +634,7 @@ watch(() => props.table, (newTable) => {
   
   &:focus {
     border-color: var(--color-accent);
-    box-shadow: 0 0 0 3px rgba(229, 57, 53, 0.15), 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 0 0 3px rgba(109, 0, 26, 0.15), 0 2px 4px rgba(0, 0, 0, 0.1);
   }
   
   &::placeholder {
@@ -685,7 +685,7 @@ watch(() => props.table, (newTable) => {
     border-color: var(--color-accent);
     color: white;
     transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(229, 57, 53, 0.2);
+    box-shadow: 0 4px 8px rgba(109, 0, 26, 0.2);
   }
   
   &:disabled {

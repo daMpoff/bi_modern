@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div v-if="show" class="datasource-modal-overlay" @click.self="handleClose">
     <div class="datasource-modal">
       <div class="modal-header">
@@ -309,7 +309,7 @@ watch(() => props.initialConfig, (config) => {
   border-radius: 50%;
   font-size: 12px;
   font-weight: 600;
-  color: var(--color-text-secondary, #666);
+  color: var(--color-secondary-text);
   flex-shrink: 0;
 
   .completed & {
@@ -329,19 +329,19 @@ watch(() => props.initialConfig, (config) => {
 .step-title {
   font-size: 14px;
   font-weight: 500;
-  color: var(--color-text-primary, #1a1a1a);
+  color: var(--color-primary-text);
 }
 
 .step-value {
   font-size: 12px;
-  color: var(--color-text-secondary, #666);
+  color: var(--color-secondary-text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .step-chevron {
-  color: var(--color-text-tertiary, #999);
+  color: var(--color-secondary-text);
   transition: transform 0.2s ease;
   flex-shrink: 0;
 

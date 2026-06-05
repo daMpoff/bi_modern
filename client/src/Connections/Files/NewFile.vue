@@ -102,7 +102,7 @@ const isCreatingConnection = ref(false)
 
 
 function goToNewConnection() {
-  router.push('/bi/connections/new/')
+  router.push('/bi-modern/connections/new/')
 }
 
 function triggerFileUpload() {
@@ -156,7 +156,7 @@ async function createConnection(data) {
     await finalizeUploads(newConnectionId)
 
     alert('Подключение успешно создано и файлы загружены!')
-    router.push(`/bi/connections/${newConnectionId}/files/`)
+    router.push(`/bi-modern/connections/${newConnectionId}/files/`)
   } catch (err) {
     console.error('[createConnection] Ошибка:', err)
     alert('Произошла ошибка при создании подключения: ' + (err?.message || err))

@@ -253,8 +253,8 @@ const biStore = useBiStore()
 
 const dashboardId = computed(() => route.params.id)
 
-/** Страница «новый дашборд»: /bi/dashboard/new */
-const isNewDashboardPage = computed(() => route.name === 'NewDashboard' || route.path === '/bi/dashboard/new')
+/** Страница «новый дашборд»: /bi-modern/dashboard/new */
+const isNewDashboardPage = computed(() => route.name === 'NewDashboardModern' || route.path === '/bi-modern/dashboard/new')
 const mode = computed(() => route.query.mode || 'edit')
 
 const dashboard = ref(null)
@@ -512,7 +512,7 @@ function handlePlacementModalClose() {
   // Модальное окно не закрывается при клике вне его - нужно выбрать режим
 }
 
-/** Создать дашборд и перейти на страницу редактирования (для маршрута /bi/dashboard/new). */
+/** Создать дашборд и перейти на страницу редактирования (для маршрута /bi-modern/dashboard/new). */
 async function createDashboardAndRedirect() {
   loading.value = true
   error.value = null
@@ -522,7 +522,7 @@ async function createDashboardAndRedirect() {
       description: ''
     })
     if (data?.id) {
-      await router.replace(`/bi/dashboard/${data.id}/`)
+      await router.replace(`/bi-modern/dashboard/${data.id}/`)
       return true
     }
   } catch (err) {
@@ -1094,13 +1094,15 @@ watch(dashboardId, async (id, prevId) => {
 
 <style scoped lang="scss">
 @import '@/scss/_variables.scss';
+@import '../scss/_bi-theme.scss';
 
 .dashboard-page {
+  @include bi-burgundy-tokens;
   display: flex;
   flex-direction: column;
   width: 100%;
   height: calc(100vh - 60px);
-  background: #ffffff;
+  background: var(--color-background);
   overflow: hidden;
 }
 
@@ -1118,9 +1120,8 @@ watch(dashboardId, async (id, prevId) => {
   align-items: center;
   justify-content: space-between;
   padding: 1rem 1.5rem;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.92) 100%);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  background: var(--color-primary-background);
+  border-bottom: 1px solid var(--color-border);
   z-index: 10;
 }
 
@@ -1135,7 +1136,7 @@ watch(dashboardId, async (id, prevId) => {
   font-size: 20px;
   font-weight: 600;
   margin: 0;
-  color: var(--color-text-primary, #1a1a1a);
+  color: var(--color-primary-text);
 }
 
 .dashboard-page-tabs {
@@ -1148,7 +1149,7 @@ watch(dashboardId, async (id, prevId) => {
 .page-tab {
   padding: 0.375rem 0.75rem;
   font-size: 13px;
-  color: var(--color-text-secondary, #666);
+  color: var(--color-secondary-text);
   background: transparent;
   border: 1px solid transparent;
   border-radius: 6px;
@@ -1157,7 +1158,7 @@ watch(dashboardId, async (id, prevId) => {
 
   &:hover {
     background: rgba(0, 0, 0, 0.05);
-    color: var(--color-text-primary, #1a1a1a);
+    color: var(--color-primary-text);
   }
 
   &.active {
@@ -1173,7 +1174,7 @@ watch(dashboardId, async (id, prevId) => {
 
 .hint-text {
   font-size: 13px;
-  color: var(--color-text-secondary, #666);
+  color: var(--color-secondary-text);
   font-style: italic;
 }
 
@@ -1276,13 +1277,13 @@ watch(dashboardId, async (id, prevId) => {
   background: transparent;
   border: none;
   border-radius: 6px;
-  color: var(--color-text-secondary, #666);
+  color: var(--color-secondary-text);
   cursor: pointer;
   transition: all 0.2s ease;
 
   &:hover:not(:disabled) {
     background: rgba(0, 0, 0, 0.06);
-    color: var(--color-text-primary, #1a1a1a);
+    color: var(--color-primary-text);
   }
 
   &:disabled {
@@ -1308,13 +1309,13 @@ watch(dashboardId, async (id, prevId) => {
   background: transparent;
   border: none;
   border-radius: 6px;
-  color: var(--color-text-secondary, #666);
+  color: var(--color-secondary-text);
   cursor: pointer;
   transition: all 0.2s ease;
 
   &:hover {
     background: rgba(0, 0, 0, 0.06);
-    color: var(--color-text-primary, #1a1a1a);
+    color: var(--color-primary-text);
   }
 
   &.active {
@@ -1345,9 +1346,8 @@ watch(dashboardId, async (id, prevId) => {
   min-width: 320px;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.92) 100%);
-  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.04);
-  border-right: 1px solid rgba(0, 0, 0, 0.08);
+  background: var(--color-primary-background);
+  border-right: 1px solid var(--color-border);
 }
 
 .sidebar-header {
@@ -1359,7 +1359,7 @@ watch(dashboardId, async (id, prevId) => {
   font-size: 16px;
   font-weight: 600;
   margin: 0;
-  color: var(--color-text-primary, #1a1a1a);
+  color: var(--color-primary-text);
 }
 
 .sidebar-content {
@@ -1373,7 +1373,7 @@ watch(dashboardId, async (id, prevId) => {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  background: #f8f9fa;
+  background: var(--color-background);
 }
 
 .dashboard-loading,
@@ -1404,19 +1404,19 @@ watch(dashboardId, async (id, prevId) => {
   justify-content: center;
   min-height: 400px;
   padding: 2rem;
-  background: #ffffff;
+  background: var(--color-primary-background);
   border-radius: 12px;
-  border: 2px dashed rgba(0, 0, 0, 0.1);
+  border: 2px dashed var(--color-border);
   text-align: center;
 
   p {
     margin: 0.5rem 0;
     font-size: 16px;
-    color: var(--color-text-primary, #1a1a1a);
+    color: var(--color-primary-text);
 
     &.text-muted {
       font-size: 14px;
-      color: var(--color-text-secondary, #666);
+      color: var(--color-secondary-text);
     }
   }
 }
@@ -1443,25 +1443,15 @@ watch(dashboardId, async (id, prevId) => {
 }
 
 .placement-modal {
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.9) 0%,
-    rgba(248, 250, 252, 0.85) 100%
-  );
-  backdrop-filter: blur(24px) saturate(180%);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
-  border-radius: 24px;
-  box-shadow: 
-    0 32px 80px rgba(0, 0, 0, 0.2),
-    0 16px 40px rgba(0, 0, 0, 0.15),
-    inset 0 1px 0 rgba(255, 255, 255, 0.6),
-    inset 0 -1px 0 rgba(255, 255, 255, 0.3);
+  background: var(--color-primary-background);
+  border-radius: 16px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.25);
   width: 800px;
   max-width: calc(100vw - 4rem);
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  border: 1.5px solid rgba(255, 255, 255, 0.4);
+  border: 1px solid var(--color-border);
   position: relative;
 
   &::before {
@@ -1474,21 +1464,16 @@ watch(dashboardId, async (id, prevId) => {
     background: linear-gradient(
       90deg,
       transparent 0%,
-      rgba(var(--bs-info-rgb), 0.4) 50%,
+      rgba(var(--bi-accent-rgb), 0.5) 50%,
       transparent 100%
     );
-    opacity: 0.6;
+    opacity: 0.7;
   }
 }
 
 .placement-modal-header {
   padding: 2rem 2rem 1.5rem 2rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.4) 0%,
-    transparent 100%
-  );
+  border-bottom: 1px solid var(--color-border);
   text-align: center;
 }
 
@@ -1496,18 +1481,17 @@ watch(dashboardId, async (id, prevId) => {
   font-size: 24px;
   font-weight: 600;
   margin: 0 0 0.5rem 0;
-  color: var(--color-text-primary, #1a1a1a);
+  color: var(--color-primary-text);
 }
 
 .placement-modal-subtitle {
   font-size: 14px;
-  color: var(--color-text-secondary, #666);
+  color: var(--color-secondary-text);
   margin: 0;
 }
 
 .placement-modal-content {
   padding: 2rem;
-  background: rgba(255, 255, 255, 0.2);
 }
 
 .placement-cards {
@@ -1518,11 +1502,11 @@ watch(dashboardId, async (id, prevId) => {
 
 .placement-card {
   padding: 2rem;
-  background: rgba(255, 255, 255, 0.6);
-  border: 2px solid rgba(0, 0, 0, 0.08);
-  border-radius: 16px;
+  background: var(--color-secondary-background);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   text-align: center;
   position: relative;
   overflow: hidden;
@@ -1545,10 +1529,9 @@ watch(dashboardId, async (id, prevId) => {
   }
 
   &:hover {
-    background: rgba(255, 255, 255, 0.9);
-    border-color: rgba(var(--bs-primary-rgb), 0.3);
-    transform: translateY(-4px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    border-color: rgba(var(--bs-primary-rgb), 0.4);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.10);
 
     &::before {
       opacity: 1;
@@ -1558,7 +1541,7 @@ watch(dashboardId, async (id, prevId) => {
   &.active {
     background: rgba(var(--bs-primary-rgb), 0.1);
     border-color: var(--bs-primary);
-    box-shadow: 0 4px 16px rgba(var(--bs-primary-rgb), 0.3);
+    box-shadow: 0 4px 16px rgba(var(--bs-primary-rgb), 0.2);
 
     &::before {
       opacity: 1;
@@ -1576,7 +1559,7 @@ watch(dashboardId, async (id, prevId) => {
 
 .placement-card-icon {
   margin-bottom: 1rem;
-  color: var(--color-text-secondary, #666);
+  color: var(--color-secondary-text);
   transition: color 0.3s ease;
   display: flex;
   align-items: center;
@@ -1587,21 +1570,21 @@ watch(dashboardId, async (id, prevId) => {
   font-size: 18px;
   font-weight: 600;
   margin: 0 0 0.75rem 0;
-  color: var(--color-text-primary, #1a1a1a);
+  color: var(--color-primary-text);
   transition: color 0.3s ease;
 }
 
 .placement-card-description {
   font-size: 14px;
   line-height: 1.5;
-  color: var(--color-text-secondary, #666);
+  color: var(--color-secondary-text);
   margin: 0;
 }
 
 .placement-modal-remember {
   margin-top: 1.5rem;
   padding-top: 1.5rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.3);
+  border-top: 1px solid var(--color-border);
   display: flex;
   justify-content: center;
 }
@@ -1612,25 +1595,23 @@ watch(dashboardId, async (id, prevId) => {
   gap: 0.75rem;
   cursor: pointer;
   font-size: 14px;
-  color: var(--color-text-primary, #1a1a1a);
+  color: var(--color-primary-text);
   padding: 0.75rem 1.25rem;
-  background: rgba(255, 255, 255, 0.4);
-  backdrop-filter: blur(12px);
+  background: var(--color-secondary-background);
   border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  border: 1px solid var(--color-border);
   transition: all 0.2s ease;
   user-select: none;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.6);
-    border-color: rgba(var(--bs-primary-rgb), 0.2);
+    border-color: rgba(var(--bs-primary-rgb), 0.3);
   }
 
   input[type="checkbox"] {
     width: 18px;
     height: 18px;
     cursor: pointer;
-    accent-color: var(--color-accent, #e53935);
+    accent-color: var(--bi-accent);
     flex-shrink: 0;
   }
 
@@ -1641,7 +1622,7 @@ watch(dashboardId, async (id, prevId) => {
 
 .placement-modal-actions {
   padding: 1.5rem 2rem 2rem 2rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.3);
+  border-top: 1px solid var(--color-border);
   display: flex;
   justify-content: center;
 }
@@ -1661,31 +1642,20 @@ watch(dashboardId, async (id, prevId) => {
   }
 
   &.placement-modal-btn-primary {
-    background: linear-gradient(
-      135deg,
-      var(--color-accent, #e53935) 0%,
-      #c62828 100%
-    );
-    color: white;
-    box-shadow: 
-      0 4px 16px rgba(229, 57, 53, 0.4),
-      inset 0 1px 0 rgba(255, 255, 255, 0.2);
-    border: 1px solid rgba(229, 57, 53, 0.3);
+    background: var(--bi-accent);
+    color: #fff;
+    box-shadow: 0 1px 2px rgba(var(--bi-accent-rgb), 0.3);
+    border: 1px solid var(--bi-accent);
 
     &:hover:not(:disabled) {
-      background: linear-gradient(
-        135deg,
-        #c62828 0%,
-        #b71c1c 100%
-      );
-      box-shadow: 
-        0 6px 20px rgba(229, 57, 53, 0.5),
-        inset 0 1px 0 rgba(255, 255, 255, 0.3);
-      transform: translateY(-2px);
+      background: var(--bi-accent-hover);
+      box-shadow: 0 2px 8px rgba(var(--bi-accent-rgb), 0.35);
+      transform: translateY(-1px);
     }
 
     &:active:not(:disabled) {
       transform: translateY(0);
+      background: var(--bi-accent-active);
     }
   }
 }

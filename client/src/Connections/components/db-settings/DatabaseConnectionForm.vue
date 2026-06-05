@@ -94,14 +94,16 @@ const form = ref(null)
 defineExpose({ form })
 
 function goToNewConnection() {
-  router.push('/bi/connections/new/')
+  router.push('/bi-modern/connections/new/')
 }
 </script>
 
 <style scoped lang="scss">
 @import '@/scss/_variables.scss';
+@import '../../scss/_bi-theme.scss';
 
 .main {
+  @include bi-burgundy-tokens;
   position: relative;
   min-height: 100%;
   padding: 2rem 5rem;

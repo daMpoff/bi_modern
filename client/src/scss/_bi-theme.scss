@@ -1,0 +1,59 @@
+// =============================================================================
+// bi_analysis_modern — фирменная палитра «чёрный / бордо / белый»
+// -----------------------------------------------------------------------------
+// Внутренняя тема модуля bi_modern. Не трогает ядро и другие модули —
+// переопределение акцентных CSS-переменных делается ТОЛЬКО на корневых
+// селекторах страниц самого модуля (см. @mixin bi-burgundy-tokens).
+//
+// Дизайн-язык карточек перенесён из tmh_analytics: сплошные поверхности
+// var(--color-primary-background), границы var(--color-border), радиус 12px,
+// мягкая тень — без «стекла» (backdrop-filter) и многослойных теней.
+//
+// Бордо #6D001A — единый бренд-акцент. Семантические статусы
+// (--bs-success / --bs-warning / --bs-danger) НЕ переопределяются:
+// их используют графики и индикаторы состояния.
+// =============================================================================
+
+// --- SCSS-переменные (для использования прямо в scss-правилах модуля) ---
+$bi-accent:        #6D001A; // бордо — бренд/акцент/кнопки
+$bi-accent-rgb:    109, 0, 26;
+$bi-accent-hover:  #8A0A26; // светлее — hover
+$bi-accent-active: #50000F; // темнее — active/pressed
+
+// Переопределяет акцентные CSS-переменные для всего, что лежит ВНУТРИ
+// страницы bi_modern. Подключать на корневом селекторе каждой страницы
+// модуля: `.my-page { @include bi-burgundy-tokens; }`.
+// CSS-переменные наследуются по DOM, поэтому вложенные компоненты, читающие
+// var(--bs-info) / var(--bs-primary) / var(--color-accent), автоматически
+// получают бордо — без правок в каждом файле.
+@mixin bi-burgundy-tokens {
+  --bi-accent: #{$bi-accent};
+  --bi-accent-rgb: #{$bi-accent-rgb};
+  --bi-accent-hover: #{$bi-accent-hover};
+  --bi-accent-active: #{$bi-accent-active};
+
+  // бренд-акцент → бордо (info и primary в bi_modern используются как акцент)
+  --bs-primary: #{$bi-accent};
+  --bs-primary-rgb: #{$bi-accent-rgb};
+  --bs-info: #{$bi-accent};
+  --bs-info-rgb: #{$bi-accent-rgb};
+
+  // ссылки
+  --bs-link-color: #{$bi-accent};
+  --bs-link-color-rgb: #{$bi-accent-rgb};
+  --bs-link-hover-color: #{$bi-accent-active};
+
+  // семантический accent ядра (кнопки/карточки модуля читают var(--color-accent))
+  --color-accent: #{$bi-accent};
+}
+
+// Чистая «tmh-карточка»: сплошная поверхность + граница + радиус 12 + мягкая тень.
+// Явно гасит «стекло», чтобы перебить прежние glassmorphism-правила.
+@mixin bi-card {
+  background: var(--color-primary-background);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}

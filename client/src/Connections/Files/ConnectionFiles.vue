@@ -198,7 +198,7 @@ const { uploadFile, uploadFileRaw, finalizeUploads, handleSheetSelection, handle
 const { deleteFile, handleFileReplace, handleFileReplaceWithSheets, renameFile } = useFileActions(uploadedFiles, selectedFile, fileToReplace, loadUserFiles, connectionId, isSheetPickerVisible, currentUploadFile, availableSheets, isReplacing, { value: fileError }, selectFile)
 
 function goToNewConnection() {
-    router.push('/bi/connections/new/')
+    router.push('/bi-modern/connections/new/')
 }
 
 function triggerFileUpload() {

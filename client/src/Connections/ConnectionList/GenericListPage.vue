@@ -270,7 +270,7 @@ onMounted(fetchItems)
 }
 
 .create-button {
-  background: var(--color-accent, #e53935);
+  background: var(--color-accent, #6D001A);
   color: white;
   border: none;
   border-radius: 10px;
@@ -279,10 +279,10 @@ onMounted(fetchItems)
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(229, 57, 53, 0.3);
+  box-shadow: 0 2px 8px rgba(109, 0, 26, 0.3);
   &:hover {
-    background: #c62828;
-    box-shadow: 0 4px 12px rgba(229, 57, 53, 0.4);
+    background: #50000F;
+    box-shadow: 0 4px 12px rgba(109, 0, 26, 0.4);
     transform: translateY(-2px);
   }
 }

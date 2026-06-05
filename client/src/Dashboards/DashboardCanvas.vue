@@ -930,7 +930,7 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   height: 100%;
-  color: var(--color-text-secondary, #666);
+  color: var(--color-secondary-text);
   font-size: 14px;
 }
 </style>

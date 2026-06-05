@@ -1,4 +1,4 @@
-﻿<script setup>
+<script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { apiClient } from '@/js/api/manager.js'
@@ -168,7 +168,7 @@ async function createDashboard() {
       // Обновляем список
       await fetchItems()
       // Переходим на страницу редактирования
-      router.push(`/bi/dashboard/${data.id}/`)
+      router.push(`/bi-modern/dashboard/${data.id}/`)
     }
   } catch (err) {
     console.error('Ошибка создания дашборда:', err)
@@ -181,7 +181,7 @@ async function createDashboard() {
 // Просмотр дашборда (клик на карточку - без редактирования)
 function goToDashboardView(dashboard) {
   if (dashboard?.id) {
-    router.push(`/bi/dashboard/${dashboard.id}/?mode=view`)
+    router.push(`/bi-modern/dashboard/${dashboard.id}/?mode=view`)
   }
 }
 
@@ -189,7 +189,7 @@ function goToDashboardView(dashboard) {
 function goToDashboardViewFromMenu(dashboard) {
   closeMenu()
   if (dashboard?.id) {
-    router.push(`/bi/dashboard/${dashboard.id}/?mode=view`)
+    router.push(`/bi-modern/dashboard/${dashboard.id}/?mode=view`)
   }
 }
 
@@ -197,7 +197,7 @@ function goToDashboardViewFromMenu(dashboard) {
 function goToDashboardEdit(dashboard) {
   closeMenu()
   if (dashboard?.id) {
-    router.push(`/bi/dashboard/${dashboard.id}/`)
+    router.push(`/bi-modern/dashboard/${dashboard.id}/`)
   }
 }
 
@@ -576,8 +576,10 @@ onUnmounted(() => {
 
 <style scoped lang="scss">
 @import '@/scss/_variables.scss';
+@import '../scss/_bi-theme.scss';
 
 .dashboard-list-page {
+  @include bi-burgundy-tokens;
   position: relative;
   width: 100%;
   height: 90vh;
@@ -585,8 +587,7 @@ onUnmounted(() => {
   max-height: 90vh;
   padding: 0;
   overflow: hidden;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.92) 100%);
-  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.04);
+  background: var(--color-background);
   margin: 0 auto;
 }
 
@@ -674,9 +675,8 @@ onUnmounted(() => {
   flex-wrap: nowrap;
   flex-shrink: 0;
   padding: 1.25rem 1rem;
-  background: rgba(255, 255, 255, 0.75);
-  backdrop-filter: blur(12px);
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+  background: var(--color-primary-background);
+  border-bottom: 1px solid var(--color-border);
 }
 
 .search-wrapper {
@@ -707,18 +707,17 @@ onUnmounted(() => {
 .search-input {
   flex: 1;
   padding-left: 2.5rem !important;
-  background: rgba(255, 255, 255, 0.9);
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  border-radius: 10px;
+  background: var(--color-primary-background);
+  color: var(--color-primary-text);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
   padding: 0.75rem 0.875rem;
   font-size: 0.9rem;
   transition: all 0.2s ease;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
 
   &:focus {
-    background: rgba(255, 255, 255, 1);
-    border-color: rgba(var(--bs-info-rgb), 0.4);
-    box-shadow: 0 0 0 3px rgba(var(--bs-info-rgb), 0.1), 0 4px 8px rgba(0, 0, 0, 0.08);
+    border-color: rgba(var(--bi-accent-rgb), 0.5);
+    box-shadow: 0 0 0 3px rgba(var(--bi-accent-rgb), 0.12);
     outline: none;
   }
 
@@ -730,20 +729,18 @@ onUnmounted(() => {
 
 .sort-select {
   width: 11rem;
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  border-radius: 10px;
+  background: var(--color-primary-background);
+  color: var(--color-primary-text);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
   padding: 0.5rem 1rem;
   font-size: 14px;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: all 0.2s ease;
   cursor: pointer;
 
   &:focus {
-    background: rgba(255, 255, 255, 0.9);
-    border-color: var(--color-accent);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 0 0 3px rgba(var(--bs-info-rgb), 0.1);
+    border-color: rgba(var(--bi-accent-rgb), 0.5);
+    box-shadow: 0 0 0 3px rgba(var(--bi-accent-rgb), 0.12);
     outline: none;
   }
 }
@@ -763,13 +760,13 @@ onUnmounted(() => {
   justify-content: center;
   cursor: pointer;
   transition: all 0.2s ease;
-  color: var(--color-text-secondary, #666);
+  color: var(--color-secondary-text);
   z-index: 1000;
 
   &:hover {
     background: rgba(0, 0, 0, 0.04);
     border-color: rgba(0, 0, 0, 0.15);
-    color: var(--color-text-primary, #1a1a1a);
+    color: var(--color-primary-text);
   }
 
   &:active {
@@ -779,25 +776,26 @@ onUnmounted(() => {
 }
 
 .create-button {
-  background: var(--color-accent, #e53935);
-  color: white;
+  background: var(--bi-accent);
+  color: #fff;
   border: none;
-  border-radius: 10px;
+  border-radius: 8px;
   padding: 0.5rem 1.5rem;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(229, 57, 53, 0.3);
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 2px rgba(var(--bi-accent-rgb), 0.3);
 
   &:hover {
-    background: #c62828;
-    box-shadow: 0 4px 12px rgba(229, 57, 53, 0.4);
-    transform: translateY(-2px);
+    background: var(--bi-accent-hover);
+    box-shadow: 0 2px 8px rgba(var(--bi-accent-rgb), 0.35);
+    transform: translateY(-1px);
   }
 
   &:active {
     transform: translateY(0);
+    background: var(--bi-accent-active);
   }
 }
 
@@ -856,16 +854,13 @@ onUnmounted(() => {
 }
 
 .dashboard-card {
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  border-radius: 16px;
+  background: var(--color-primary-background);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
   padding: 1.5rem;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 
-    0 2px 8px rgba(0, 0, 0, 0.04),
-    0 1px 3px rgba(0, 0, 0, 0.02);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
   position: relative;
   overflow: visible;
   min-height: 180px;
@@ -879,24 +874,21 @@ onUnmounted(() => {
     left: 0;
     right: 0;
     height: 3px;
-    background: linear-gradient(90deg, 
-      transparent 0%, 
-      rgba(var(--bs-info-rgb), 0.6) 50%, 
+    border-radius: 12px 12px 0 0;
+    background: linear-gradient(90deg,
+      transparent 0%,
+      rgba(var(--bi-accent-rgb), 0.6) 50%,
       transparent 100%);
     opacity: 0;
-    transition: opacity 0.3s ease;
+    transition: opacity 0.2s ease;
   }
 
   &:hover {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(16px) saturate(180%);
-    border-color: rgba(var(--bs-info-rgb), 0.4);
-    transform: translateY(-6px);
-    box-shadow: 
-      0 12px 32px rgba(0, 0, 0, 0.15),
-      0 6px 16px rgba(0, 0, 0, 0.1),
-      0 3px 8px rgba(var(--bs-info-rgb), 0.25),
-      inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    border-color: rgba(var(--bi-accent-rgb), 0.4);
+    transform: translateY(-4px);
+    box-shadow:
+      0 8px 24px rgba(0, 0, 0, 0.10),
+      0 2px 8px rgba(var(--bi-accent-rgb), 0.18);
 
     &::before {
       opacity: 1;
@@ -904,17 +896,16 @@ onUnmounted(() => {
     }
 
     .card-icon {
-      transform: scale(1.15);
+      transform: scale(1.12);
     }
 
     .card-icon-wrapper {
-      background: rgba(var(--bs-info-rgb), 0.2);
-      box-shadow: 0 2px 8px rgba(var(--bs-info-rgb), 0.2);
+      background: rgba(var(--bi-accent-rgb), 0.18);
     }
   }
 
   &:active {
-    transform: translateY(-2px);
+    transform: translateY(-1px);
   }
 }
 
@@ -948,7 +939,7 @@ onUnmounted(() => {
 .card-menu-btn {
   background: transparent;
   border: none;
-  color: var(--color-text-secondary, #666);
+  color: var(--color-secondary-text);
   cursor: pointer;
   padding: 0.5rem;
   border-radius: 8px;
@@ -1000,14 +991,14 @@ onUnmounted(() => {
 .card-title {
   font-size: 16px;
   font-weight: 600;
-  color: var(--color-text-primary, #1a1a1a);
+  color: var(--color-primary-text);
   margin: 0 0 0.5rem 0;
   line-height: 1.4;
 }
 
 .card-description {
   font-size: 13px;
-  color: var(--color-text-secondary, #666);
+  color: var(--color-secondary-text);
   margin: 0 0 1rem 0;
   line-height: 1.5;
   display: -webkit-box;
@@ -1028,7 +1019,7 @@ onUnmounted(() => {
 
 .card-date {
   font-size: 12px;
-  color: var(--color-text-secondary, #666);
+  color: var(--color-secondary-text);
 }
 
 .empty-state {
@@ -1041,7 +1032,7 @@ onUnmounted(() => {
 }
 
 .empty-icon {
-  color: var(--color-text-secondary, #999);
+  color: var(--color-secondary-text);
   margin-bottom: 1rem;
   opacity: 0.5;
 }
@@ -1049,13 +1040,13 @@ onUnmounted(() => {
 .empty-text {
   font-size: 18px;
   font-weight: 600;
-  color: var(--color-text-primary, #1a1a1a);
+  color: var(--color-primary-text);
   margin: 0 0 0.5rem 0;
 }
 
 .empty-description {
   font-size: 14px;
-  color: var(--color-text-secondary, #666);
+  color: var(--color-secondary-text);
   margin: 0;
 }
 
@@ -1105,9 +1096,8 @@ onUnmounted(() => {
 
 .menu-dropdown {
   position: fixed;
-  background-color: rgba(255, 255, 255, 0.98);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  background-color: var(--color-primary-background);
+  border: 1px solid var(--color-border);
   border-radius: 10px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
   padding: 8px 0;
@@ -1120,7 +1110,7 @@ onUnmounted(() => {
   align-items: center;
   gap: 8px;
   padding: 10px 16px;
-  color: var(--color-text-primary, #1a1a1a);
+  color: var(--color-primary-text);
   cursor: pointer;
   transition: background 0.2s ease;
   font-size: 14px;
@@ -1165,26 +1155,16 @@ onUnmounted(() => {
 }
 
 .settings-modal {
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.9) 0%,
-    rgba(248, 250, 252, 0.85) 100%
-  );
-  backdrop-filter: blur(24px) saturate(180%);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
-  border-radius: 24px;
-  box-shadow: 
-    0 32px 80px rgba(0, 0, 0, 0.2),
-    0 16px 40px rgba(0, 0, 0, 0.15),
-    inset 0 1px 0 rgba(255, 255, 255, 0.6),
-    inset 0 -1px 0 rgba(255, 255, 255, 0.3);
+  background: var(--color-primary-background);
+  border-radius: 16px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.25);
   width: 720px;
   max-width: calc(100vw - 4rem);
   max-height: calc(100vh - 4rem);
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  border: 1.5px solid rgba(255, 255, 255, 0.4);
+  border: 1px solid var(--color-border);
   position: relative;
 
   &::before {
@@ -1197,10 +1177,10 @@ onUnmounted(() => {
     background: linear-gradient(
       90deg,
       transparent 0%,
-      rgba(var(--bs-info-rgb), 0.4) 50%,
+      rgba(var(--bi-accent-rgb), 0.5) 50%,
       transparent 100%
     );
-    opacity: 0.6;
+    opacity: 0.7;
   }
 }
 
@@ -1209,12 +1189,7 @@ onUnmounted(() => {
   align-items: center;
   justify-content: space-between;
   padding: 2rem 2rem 1.5rem 2rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.4) 0%,
-    transparent 100%
-  );
+  border-bottom: 1px solid var(--color-border);
   position: relative;
   z-index: 1;
 }
@@ -1223,7 +1198,7 @@ onUnmounted(() => {
   font-size: 20px;
   font-weight: 600;
   margin: 0;
-  color: var(--color-text-primary, #1a1a1a);
+  color: var(--color-primary-text);
 }
 
 .settings-modal-close {
@@ -1235,13 +1210,13 @@ onUnmounted(() => {
   background: transparent;
   border: none;
   border-radius: 8px;
-  color: var(--color-text-secondary, #666);
+  color: var(--color-secondary-text);
   cursor: pointer;
   transition: all 0.2s ease;
 
   &:hover {
     background: rgba(0, 0, 0, 0.05);
-    color: var(--color-text-primary, #1a1a1a);
+    color: var(--color-primary-text);
   }
 }
 
@@ -1249,7 +1224,6 @@ onUnmounted(() => {
   padding: 2rem;
   overflow-y: auto;
   flex: 1;
-  background: rgba(255, 255, 255, 0.2);
 }
 
 .settings-section {
@@ -1264,7 +1238,7 @@ onUnmounted(() => {
   display: block;
   font-size: 14px;
   font-weight: 600;
-  color: var(--color-text-primary, #1a1a1a);
+  color: var(--color-primary-text);
   margin-bottom: 0.75rem;
 }
 
@@ -1276,40 +1250,24 @@ onUnmounted(() => {
 .settings-option {
   flex: 1;
   padding: 0.75rem 1.25rem;
-  background: rgba(255, 255, 255, 0.6);
-  backdrop-filter: blur(16px) saturate(180%);
-  -webkit-backdrop-filter: blur(16px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  border-radius: 10px;
+  background: var(--color-secondary-background);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
   font-size: 14px;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  color: var(--color-text-secondary, #666);
-  box-shadow: 
-    0 2px 8px rgba(0, 0, 0, 0.05),
-    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  color: var(--color-secondary-text);
 
   &:hover {
-    background: rgba(255, 255, 255, 0.8);
-    border-color: rgba(var(--bs-info-rgb), 0.3);
-    box-shadow: 
-      0 4px 12px rgba(0, 0, 0, 0.08),
-      inset 0 1px 0 rgba(255, 255, 255, 0.6);
-    transform: translateY(-1px);
+    border-color: rgba(var(--bi-accent-rgb), 0.4);
+    color: var(--color-primary-text);
   }
 
   &.active {
-    background: linear-gradient(
-      135deg,
-      var(--color-accent, #e53935) 0%,
-      #c62828 100%
-    );
-    border-color: var(--color-accent, #e53935);
-    color: white;
+    background: var(--bi-accent);
+    border-color: var(--bi-accent);
+    color: #fff;
     font-weight: 600;
-    box-shadow: 
-      0 4px 16px rgba(229, 57, 53, 0.4),
-      inset 0 1px 0 rgba(255, 255, 255, 0.2);
   }
 }
 
@@ -1326,7 +1284,7 @@ onUnmounted(() => {
     width: 18px;
     height: 18px;
     border-radius: 50%;
-    background: var(--color-accent, #e53935);
+    background: var(--color-accent, #6D001A);
     cursor: pointer;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   }
@@ -1335,7 +1293,7 @@ onUnmounted(() => {
     width: 18px;
     height: 18px;
     border-radius: 50%;
-    background: var(--color-accent, #e53935);
+    background: var(--color-accent, #6D001A);
     cursor: pointer;
     border: none;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
@@ -1346,7 +1304,7 @@ onUnmounted(() => {
   display: flex;
   justify-content: space-between;
   font-size: 12px;
-  color: var(--color-text-secondary, #999);
+  color: var(--color-secondary-text);
   margin-top: 0.25rem;
 }
 
@@ -1362,52 +1320,40 @@ onUnmounted(() => {
   gap: 0.75rem;
   cursor: pointer;
   font-size: 14px;
-  color: var(--color-text-primary, #1a1a1a);
+  color: var(--color-primary-text);
   padding: 0.625rem;
-  background: rgba(255, 255, 255, 0.4);
-  backdrop-filter: blur(12px) saturate(180%);
-  -webkit-backdrop-filter: blur(12px) saturate(180%);
+  background: var(--color-secondary-background);
   border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  border: 1px solid var(--color-border);
   transition: all 0.2s ease;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.6);
-    border-color: rgba(var(--bs-info-rgb), 0.2);
+    border-color: rgba(var(--bi-accent-rgb), 0.3);
   }
 
   input[type="checkbox"] {
     width: 18px;
     height: 18px;
     cursor: pointer;
-    accent-color: var(--color-accent, #e53935);
+    accent-color: var(--bi-accent);
   }
 }
 
 .settings-select {
   width: 100%;
-  background: rgba(255, 255, 255, 0.6);
-  backdrop-filter: blur(16px) saturate(180%);
-  -webkit-backdrop-filter: blur(16px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  border-radius: 10px;
+  background: var(--color-primary-background);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
   padding: 0.75rem 1rem;
   font-size: 14px;
-  color: var(--color-text-primary, #1a1a1a);
+  color: var(--color-primary-text);
   cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 
-    0 2px 8px rgba(0, 0, 0, 0.05),
-    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  transition: all 0.2s ease;
 
   &:focus {
-    background: rgba(255, 255, 255, 0.8);
-    border-color: rgba(var(--bs-info-rgb), 0.4);
+    border-color: rgba(var(--bi-accent-rgb), 0.5);
     outline: none;
-    box-shadow: 
-      0 4px 12px rgba(0, 0, 0, 0.08),
-      0 0 0 3px rgba(var(--bs-info-rgb), 0.15),
-      inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    box-shadow: 0 0 0 3px rgba(var(--bi-accent-rgb), 0.15);
   }
 }
 
@@ -1416,29 +1362,8 @@ onUnmounted(() => {
   justify-content: space-between;
   align-items: center;
   padding-top: 1.5rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.3);
+  border-top: 1px solid var(--color-border);
   margin-top: 1rem;
-  background: linear-gradient(
-    180deg,
-    transparent 0%,
-    rgba(255, 255, 255, 0.2) 100%
-  );
-  position: relative;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background: linear-gradient(
-      90deg,
-      transparent 0%,
-      rgba(255, 255, 255, 0.5) 50%,
-      transparent 100%
-    );
-  }
 }
 
 .settings-actions-right {
@@ -1456,51 +1381,31 @@ onUnmounted(() => {
   border: none;
 
   &.settings-btn-secondary {
-    background: rgba(255, 255, 255, 0.6);
-    backdrop-filter: blur(16px) saturate(180%);
-    -webkit-backdrop-filter: blur(16px) saturate(180%);
-    border: 1px solid rgba(255, 255, 255, 0.4);
-    color: var(--color-text-primary, #1a1a1a);
-    box-shadow: 
-      0 2px 8px rgba(0, 0, 0, 0.05),
-      inset 0 1px 0 rgba(255, 255, 255, 0.5);
+    background: var(--color-secondary-background);
+    border: 1px solid var(--color-border);
+    color: var(--color-primary-text);
 
     &:hover {
-      background: rgba(255, 255, 255, 0.8);
-      border-color: rgba(var(--bs-info-rgb), 0.3);
-      box-shadow: 
-        0 4px 12px rgba(0, 0, 0, 0.08),
-        inset 0 1px 0 rgba(255, 255, 255, 0.6);
+      border-color: rgba(var(--bi-accent-rgb), 0.4);
       transform: translateY(-1px);
     }
   }
 
   &.settings-btn-primary {
-    background: linear-gradient(
-      135deg,
-      var(--color-accent, #e53935) 0%,
-      #c62828 100%
-    );
-    color: white;
-    box-shadow: 
-      0 4px 16px rgba(229, 57, 53, 0.4),
-      inset 0 1px 0 rgba(255, 255, 255, 0.2);
-    border: 1px solid rgba(229, 57, 53, 0.3);
+    background: var(--bi-accent);
+    color: #fff;
+    box-shadow: 0 1px 2px rgba(var(--bi-accent-rgb), 0.3);
+    border: 1px solid var(--bi-accent);
 
     &:hover {
-      background: linear-gradient(
-        135deg,
-        #c62828 0%,
-        #b71c1c 100%
-      );
-      box-shadow: 
-        0 6px 20px rgba(229, 57, 53, 0.5),
-        inset 0 1px 0 rgba(255, 255, 255, 0.3);
-      transform: translateY(-2px);
+      background: var(--bi-accent-hover);
+      box-shadow: 0 2px 8px rgba(var(--bi-accent-rgb), 0.35);
+      transform: translateY(-1px);
     }
 
     &:active {
       transform: translateY(0);
+      background: var(--bi-accent-active);
     }
   }
 }
@@ -1527,25 +1432,15 @@ onUnmounted(() => {
 }
 
 .create-modal {
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.9) 0%,
-    rgba(248, 250, 252, 0.85) 100%
-  );
-  backdrop-filter: blur(24px) saturate(180%);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
-  border-radius: 24px;
-  box-shadow: 
-    0 32px 80px rgba(0, 0, 0, 0.2),
-    0 16px 40px rgba(0, 0, 0, 0.15),
-    inset 0 1px 0 rgba(255, 255, 255, 0.6),
-    inset 0 -1px 0 rgba(255, 255, 255, 0.3);
+  background: var(--color-primary-background);
+  border-radius: 16px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.25);
   width: 500px;
   max-width: calc(100vw - 4rem);
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  border: 1.5px solid rgba(255, 255, 255, 0.4);
+  border: 1px solid var(--color-border);
   position: relative;
 
   &::before {
@@ -1558,10 +1453,10 @@ onUnmounted(() => {
     background: linear-gradient(
       90deg,
       transparent 0%,
-      rgba(var(--bs-info-rgb), 0.4) 50%,
+      rgba(var(--bi-accent-rgb), 0.5) 50%,
       transparent 100%
     );
-    opacity: 0.6;
+    opacity: 0.7;
   }
 }
 
@@ -1570,12 +1465,7 @@ onUnmounted(() => {
   align-items: center;
   justify-content: space-between;
   padding: 2rem 2rem 1.5rem 2rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.4) 0%,
-    transparent 100%
-  );
+  border-bottom: 1px solid var(--color-border);
   position: relative;
   z-index: 1;
 }
@@ -1584,7 +1474,7 @@ onUnmounted(() => {
   font-size: 20px;
   font-weight: 600;
   margin: 0;
-  color: var(--color-text-primary, #1a1a1a);
+  color: var(--color-primary-text);
 }
 
 .create-modal-close {
@@ -1596,19 +1486,18 @@ onUnmounted(() => {
   background: transparent;
   border: none;
   border-radius: 8px;
-  color: var(--color-text-secondary, #666);
+  color: var(--color-secondary-text);
   cursor: pointer;
   transition: all 0.2s ease;
 
   &:hover {
     background: rgba(0, 0, 0, 0.05);
-    color: var(--color-text-primary, #1a1a1a);
+    color: var(--color-primary-text);
   }
 }
 
 .create-modal-content {
   padding: 2rem;
-  background: rgba(255, 255, 255, 0.2);
 }
 
 .create-modal-field {
@@ -1620,24 +1509,22 @@ onUnmounted(() => {
 .create-modal-label {
   font-size: 14px;
   font-weight: 600;
-  color: var(--color-text-primary, #1a1a1a);
+  color: var(--color-primary-text);
 }
 
 .create-modal-input {
   width: 100%;
   padding: 0.75rem 1rem;
-  background: rgba(255, 255, 255, 0.9);
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  border-radius: 10px;
+  background: var(--color-primary-background);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
   font-size: 14px;
-  color: var(--color-text-primary, #1a1a1a);
+  color: var(--color-primary-text);
   transition: all 0.2s ease;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
 
   &:focus {
-    background: rgba(255, 255, 255, 1);
-    border-color: rgba(var(--bs-info-rgb), 0.4);
-    box-shadow: 0 0 0 3px rgba(var(--bs-info-rgb), 0.1), 0 4px 8px rgba(0, 0, 0, 0.08);
+    border-color: rgba(var(--bi-accent-rgb), 0.5);
+    box-shadow: 0 0 0 3px rgba(var(--bi-accent-rgb), 0.12);
     outline: none;
   }
 
@@ -1657,7 +1544,7 @@ onUnmounted(() => {
   justify-content: flex-end;
   gap: 0.75rem;
   padding: 1.5rem 2rem 2rem 2rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.3);
+  border-top: 1px solid var(--color-border);
 }
 
 .create-modal-btn {
@@ -1675,51 +1562,31 @@ onUnmounted(() => {
   }
 
   &.create-modal-btn-secondary {
-    background: rgba(255, 255, 255, 0.6);
-    backdrop-filter: blur(16px) saturate(180%);
-    -webkit-backdrop-filter: blur(16px) saturate(180%);
-    border: 1px solid rgba(255, 255, 255, 0.4);
-    color: var(--color-text-primary, #1a1a1a);
-    box-shadow: 
-      0 2px 8px rgba(0, 0, 0, 0.05),
-      inset 0 1px 0 rgba(255, 255, 255, 0.5);
+    background: var(--color-secondary-background);
+    border: 1px solid var(--color-border);
+    color: var(--color-primary-text);
 
     &:hover:not(:disabled) {
-      background: rgba(255, 255, 255, 0.8);
-      border-color: rgba(var(--bs-info-rgb), 0.3);
-      box-shadow: 
-        0 4px 12px rgba(0, 0, 0, 0.08),
-        inset 0 1px 0 rgba(255, 255, 255, 0.6);
+      border-color: rgba(var(--bi-accent-rgb), 0.4);
       transform: translateY(-1px);
     }
   }
 
   &.create-modal-btn-primary {
-    background: linear-gradient(
-      135deg,
-      var(--color-accent, #e53935) 0%,
-      #c62828 100%
-    );
-    color: white;
-    box-shadow: 
-      0 4px 16px rgba(229, 57, 53, 0.4),
-      inset 0 1px 0 rgba(255, 255, 255, 0.2);
-    border: 1px solid rgba(229, 57, 53, 0.3);
+    background: var(--bi-accent);
+    color: #fff;
+    box-shadow: 0 1px 2px rgba(var(--bi-accent-rgb), 0.3);
+    border: 1px solid var(--bi-accent);
 
     &:hover:not(:disabled) {
-      background: linear-gradient(
-        135deg,
-        #c62828 0%,
-        #b71c1c 100%
-      );
-      box-shadow: 
-        0 6px 20px rgba(229, 57, 53, 0.5),
-        inset 0 1px 0 rgba(255, 255, 255, 0.3);
-      transform: translateY(-2px);
+      background: var(--bi-accent-hover);
+      box-shadow: 0 2px 8px rgba(var(--bi-accent-rgb), 0.35);
+      transform: translateY(-1px);
     }
 
     &:active:not(:disabled) {
       transform: translateY(0);
+      background: var(--bi-accent-active);
     }
   }
 }

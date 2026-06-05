@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div ref="paletteRef" class="dashboard-blocks-palette">
     <div class="palette-header">
       <h3 class="palette-title">Блоки</h3>
@@ -195,7 +195,7 @@ onMounted(() => {
   font-size: 16px;
   font-weight: 600;
   margin: 0;
-  color: var(--color-text-primary, #1a1a1a);
+  color: var(--color-primary-text);
 }
 
 .palette-content {
@@ -222,7 +222,7 @@ onMounted(() => {
 
   &:hover {
     background: rgba(0, 0, 0, 0.05);
-    border-color: var(--color-accent, #e53935);
+    border-color: var(--color-accent, #6D001A);
     transform: translateX(4px);
   }
 
@@ -232,13 +232,13 @@ onMounted(() => {
 }
 
 .palette-item-icon {
-  color: var(--color-text-secondary, #666);
+  color: var(--color-secondary-text);
   flex-shrink: 0;
 }
 
 .palette-item-label {
   font-size: 14px;
-  color: var(--color-text-primary, #1a1a1a);
+  color: var(--color-primary-text);
   font-weight: 500;
   flex: 1;
 }
@@ -259,7 +259,7 @@ onMounted(() => {
   padding: 1rem;
   text-align: center;
   font-size: 12px;
-  color: var(--color-text-secondary, #999);
+  color: var(--color-secondary-text);
 }
 
 .palette-saved-content {
@@ -301,7 +301,7 @@ onMounted(() => {
 
 .palette-item-sublabel {
   font-size: 11px;
-  color: var(--color-text-secondary, #999);
+  color: var(--color-secondary-text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

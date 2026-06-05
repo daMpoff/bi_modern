@@ -484,9 +484,9 @@ onUnmounted(() => {
 <style scoped lang="scss">
 .dashboard-block {
   position: relative;
-  background: #ffffff;
-  border: 1px solid rgba(0, 0, 0, 0.07);
-  border-radius: 8px;
+  background: var(--color-primary-background);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
   overflow: hidden;
   cursor: default;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
@@ -564,18 +564,17 @@ onUnmounted(() => {
   justify-content: center;
   width: 26px;
   height: 26px;
-  border: none;
+  border: 1px solid var(--color-border);
   border-radius: 6px;
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(4px);
-  color: var(--bs-secondary, #6c757d);
+  background: var(--color-primary-background);
+  color: var(--color-secondary-text);
   cursor: pointer;
   transition: all 0.15s ease;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 
   &:hover {
-    background: #fff;
-    color: var(--bs-primary, #0d6efd);
+    background: var(--color-hover-background);
+    color: var(--bs-primary);
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
   }
 

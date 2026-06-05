@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div v-if="show" class="pm-overlay" @click.self="$emit('close')">
     <div class="pm-modal pm-modal--sm">
       <div class="pm-header">
@@ -68,7 +68,7 @@
               </select>
               <input v-else v-model="leftKey" type="text" class="pm-input" placeholder="id" />
             </div>
-            <div style="padding-bottom: 0.5rem; color: var(--color-text-tertiary, #c7c7cc)">
+            <div style="padding-bottom: 0.5rem; color: var(--color-secondary-text)">
               <ArrowRight :size="16" />
             </div>
             <div style="flex: 1">
@@ -80,7 +80,7 @@
               <input v-else v-model="rightKey" type="text" class="pm-input" placeholder="user_id" />
             </div>
           </div>
-          <div v-if="suggestionsLoading && !suggestionsLoadedOnce" style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem; font-size: 13px; color: var(--color-text-secondary, #86868b)">
+          <div v-if="suggestionsLoading && !suggestionsLoadedOnce" style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem; font-size: 13px; color: var(--color-secondary-text)">
             <span class="spinner-border spinner-border-sm" role="status"></span>
             Загрузка полей...
           </div>

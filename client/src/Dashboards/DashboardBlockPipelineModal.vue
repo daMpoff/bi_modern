@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div
     v-if="show"
     class="dashboard-block-pipeline-modal-overlay"
@@ -54,7 +54,7 @@
                 v-if="!isDashboardOnlyPipeline && loadedPipelineId"
                 class="dashboard-pipeline-open-link"
               >
-                <a :href="`/bi/pipelines/${loadedPipelineId}`" class="btn btn-sm btn-outline-secondary" target="_blank" rel="noopener">
+                <a :href="`/bi-modern/pipelines/${loadedPipelineId}`" class="btn btn-sm btn-outline-secondary" target="_blank" rel="noopener">
                   Открыть в редакторе пайплайнов
                 </a>
               </div>
@@ -529,7 +529,7 @@ onBeforeUnmount(() => {
   font-size: 18px;
   font-weight: 600;
   margin: 0;
-  color: var(--color-text-primary, #1a1a1a);
+  color: var(--color-primary-text);
 }
 
 .modal-body-wrapper {

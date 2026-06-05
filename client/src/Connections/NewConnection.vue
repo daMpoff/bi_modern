@@ -31,7 +31,7 @@ const fileConnectors = computed(() =>
 )
 
 function handleClick(route) {
-  router.push(`/bi/connections/new/${route}`)
+  router.push(`/bi-modern/connections/new/${route}`)
 }
 </script>
 
@@ -89,8 +89,10 @@ function handleClick(route) {
 
 <style scoped lang="scss">
 @import '@/scss/_variables.scss';
+@import '../scss/_bi-theme.scss';
 
 .page {
+  @include bi-burgundy-tokens;
   position: relative;
   min-height: 100%;
   padding: 2rem 5rem;

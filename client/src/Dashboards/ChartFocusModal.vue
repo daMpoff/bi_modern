@@ -98,7 +98,7 @@ function handleClose() {
 .chart-focus-title {
   font-size: 1.125rem;
   font-weight: 600;
-  color: var(--color-text-primary, #1a1a1a);
+  color: var(--color-primary-text);
   margin: 0;
   line-height: 1.3;
 }
@@ -118,14 +118,14 @@ function handleClose() {
   background: transparent;
   border: none;
   border-radius: 8px;
-  color: var(--color-text-secondary, #666);
+  color: var(--color-secondary-text);
   cursor: pointer;
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 .chart-focus-close:hover {
   background: rgba(0, 0, 0, 0.06);
-  color: var(--color-text-primary, #1a1a1a);
+  color: var(--color-primary-text);
 }
 
 .chart-focus-body {

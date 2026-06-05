@@ -211,13 +211,13 @@ function goToConnection(row) {
   if (!row || !row.id) return
   const type = (row.connector_type_display || row.connector_type || '').toLowerCase().trim()
   const isFileConnection = type === 'file' || type === 'files' || type === 'файл' || type === 'файлы' || type.includes('file') || type.includes('файл')
-  if (isFileConnection) router.push(`/bi/connections/${row.id}/files/`)
-  else router.push(`/bi/connections/${row.id}/`)
+  if (isFileConnection) router.push(`/bi-modern/connections/${row.id}/files/`)
+  else router.push(`/bi-modern/connections/${row.id}/`)
 }
 
 function goToDashboard(row) {
   if (!row || !row.id) return
-  router.push(`/bi/dashboard/${row.id}/`)
+  router.push(`/bi-modern/dashboard/${row.id}/`)
 }
 
 function loadFavorites() {
@@ -392,8 +392,8 @@ function openRename(row) {
 }
 
 function getCopyLink(row) {
-  if (props.currentPage === 'connections') return `${window.location.origin}/bi/connections/${row.id}/`
-  if (props.currentPage === 'dashboards') return `${window.location.origin}/bi/dashboard/${row.id}/`
+  if (props.currentPage === 'connections') return `${window.location.origin}/bi-modern/connections/${row.id}/`
+  if (props.currentPage === 'dashboards') return `${window.location.origin}/bi-modern/dashboard/${row.id}/`
   return window.location.href
 }
 

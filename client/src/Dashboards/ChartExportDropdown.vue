@@ -171,13 +171,13 @@ async function onExportXlsx() {
   border-radius: 8px;
   cursor: pointer;
   background: transparent;
-  color: var(--color-text-secondary, #666);
+  color: var(--color-secondary-text);
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 .chart-export-btn:hover {
   background: rgba(0, 0, 0, 0.06);
-  color: var(--color-text-primary, #1a1a1a);
+  color: var(--color-primary-text);
 }
 
 .chart-export-btn--icon-only {
@@ -188,7 +188,7 @@ async function onExportXlsx() {
 .chart-export-btn--compact {
   width: 32px;
   height: 32px;
-  color: var(--color-text-secondary, #666);
+  color: var(--color-secondary-text);
   opacity: 0;
 }
 
@@ -200,7 +200,7 @@ async function onExportXlsx() {
 
 .chart-export-btn--compact:hover {
   background: rgba(0, 0, 0, 0.06);
-  color: var(--color-text-primary, #1a1a1a);
+  color: var(--color-primary-text);
 }
 
 .chart-export-menu {

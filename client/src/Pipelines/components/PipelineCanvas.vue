@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="pipeline-canvas-root">
     <div class="pipeline-toolbar">
       <div class="toolbar-section">
@@ -286,7 +286,7 @@ defineExpose({
 .toolbar-title {
   font-size: 11px;
   font-weight: 600;
-  color: var(--color-text-secondary, #86868b);
+  color: var(--color-secondary-text);
   text-transform: uppercase;
   letter-spacing: 0.06em;
   margin: 0 0 0.75rem 0;
@@ -326,7 +326,7 @@ defineExpose({
 
 .toolbar-item-label {
   font-size: 13px;
-  color: var(--color-text-primary, #1a1a1a);
+  color: var(--color-primary-text);
   font-weight: 500;
 }
 

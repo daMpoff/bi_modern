@@ -1,4 +1,4 @@
-﻿<script setup>
+<script setup>
 /**
  * Единый блок настроек графика и превью.
  * Используется в разделе «Данные» (модалка Новый/Редактировать график) и в дашборде (правая панель настроек графика).
@@ -226,7 +226,7 @@ defineExpose({ getPayload, canSave })
   display: block;
   font-size: 13px;
   font-weight: 600;
-  color: var(--color-text-primary, #1a1a1a);
+  color: var(--color-primary-text);
   margin-bottom: 0.5rem;
 }
 
@@ -267,9 +267,9 @@ defineExpose({ getPayload, canSave })
   }
 
   &.active {
-    background: var(--color-accent, #e53935);
+    background: var(--color-accent, #6D001A);
     color: white;
-    border-color: var(--color-accent, #e53935);
+    border-color: var(--color-accent, #6D001A);
   }
 }
 
@@ -302,7 +302,7 @@ defineExpose({ getPayload, canSave })
   }
 
   input {
-    accent-color: var(--color-accent, #e53935);
+    accent-color: var(--color-accent, #6D001A);
   }
 }
 
@@ -325,7 +325,7 @@ defineExpose({ getPayload, canSave })
 }
 
 .chart-preview-empty {
-  color: var(--color-text-secondary, #999);
+  color: var(--color-secondary-text);
   font-size: 14px;
   text-align: center;
 }

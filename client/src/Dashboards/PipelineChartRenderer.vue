@@ -1,4 +1,4 @@
-﻿<script setup>
+<script setup>
 import { computed, ref } from 'vue'
 import BiEchartsChart from '@/modules/bi_analysis_modern/client/src/components/BiEchartsChart.vue'
 import { buildEchartsOption } from '@/modules/bi_analysis_modern/client/src/js/buildEchartsOption.js'
@@ -60,7 +60,7 @@ const echartsOption = computed(() => {
   justify-content: center;
   width: 100%;
   height: 100%;
-  color: var(--color-text-secondary, #999);
+  color: var(--color-secondary-text);
   font-size: 14px;
 }
 </style>

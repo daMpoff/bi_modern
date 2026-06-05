@@ -28,7 +28,7 @@ export const listConfigs = {
   connections: {
     type: 'connections',
     endpoint: endpoints.bi.ConnectionsList,
-    createRoute: '/bi/connections/new',
+    createRoute: '/bi-modern/connections/new',
     createButtonText: 'Создать подключение',
     createButtonWidth: '15.0rem',
     searchPlaceholder: 'Поиск...',
@@ -48,7 +48,7 @@ export const listConfigs = {
   dashboards: {
     type: 'dashboards',
     endpoint: endpoints.bi.DashboardList,
-    createRoute: '/bi/dashboard/new',
+    createRoute: '/bi-modern/dashboard/new',
     createButtonText: 'Создать дашборд',
     createButtonWidth: '11rem',
     searchPlaceholder: 'Введите для поиска...',

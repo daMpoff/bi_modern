@@ -145,7 +145,7 @@ watch(() => props.show, (isOpen) => {
 
 .code-hint {
   font-size: 12px;
-  color: var(--color-text-tertiary, #c7c7cc);
+  color: var(--color-secondary-text);
   margin: 0.5rem 0 0;
 
   code {

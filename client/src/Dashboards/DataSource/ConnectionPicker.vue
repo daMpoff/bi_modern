@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="connection-picker">
     <div class="picker-header">
       <h4 class="picker-title">Выберите подключение</h4>
@@ -111,7 +111,7 @@ function selectConnection(conn) {
 }
 
 function goToConnections() {
-  router.push({ name: 'Connections' })
+  router.push({ name: 'ConnectionsModern' })
 }
 
 async function loadConnections() {
@@ -177,7 +177,7 @@ onMounted(() => {
 .picker-title {
   font-size: 14px;
   font-weight: 600;
-  color: var(--color-text-primary, #1a1a1a);
+  color: var(--color-primary-text);
   margin: 0 0 0.75rem 0;
 }
 
@@ -198,7 +198,7 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   padding: 2rem;
-  color: var(--color-text-secondary, #666);
+  color: var(--color-secondary-text);
   gap: 0.75rem;
 }
 
@@ -294,7 +294,7 @@ onMounted(() => {
 .connection-name {
   font-size: 14px;
   font-weight: 500;
-  color: var(--color-text-primary, #1a1a1a);
+  color: var(--color-primary-text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -302,7 +302,7 @@ onMounted(() => {
 
 .connection-type {
   font-size: 12px;
-  color: var(--color-text-secondary, #666);
+  color: var(--color-secondary-text);
 }
 
 .connection-check {

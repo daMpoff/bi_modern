@@ -322,7 +322,7 @@ onMounted(() => {
 <template>
   <div class="pipeline-editor-page">
     <div class="editor-header">
-      <button class="header-back-btn" @click="router.push('/bi/pipelines/')" title="К списку">
+      <button class="header-back-btn" @click="router.push('/bi-modern/pipelines/')" title="К списку">
         <ArrowLeft :size="18" />
       </button>
       <div class="header-title-group">

@@ -1,4 +1,4 @@
-﻿<script setup>
+<script setup>
 import { ref, computed } from 'vue'
 import { BarChart3 } from 'lucide-vue-next'
 import ChartSettingsPreview from '@/modules/bi_analysis_modern/client/src/components/ChartSettingsPreview.vue'
@@ -86,7 +86,7 @@ defineExpose({ getCurrentPayload })
   justify-content: center;
   padding: 2rem 1rem;
   text-align: center;
-  color: var(--color-text-secondary, #666);
+  color: var(--color-secondary-text);
   font-size: 13px;
   line-height: 1.5;
   opacity: 0.9;
@@ -100,7 +100,7 @@ defineExpose({ getCurrentPayload })
   border: none;
   border-radius: 8px;
   cursor: pointer;
-  background: var(--color-accent, #e53935);
+  background: var(--color-accent, #6D001A);
   color: white;
   transition: opacity 0.2s;
 
