@@ -2,16 +2,20 @@
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import ConnectorCard from '@/modules/bi_analysis_modern/client/src/Connections/components/ConnectorCard.vue'
+import ClickHouseIcon from '@/modules/bi_analysis_modern/client/src/assets/icons/clickhouse.svg'
+import MssqlIcon from '@/modules/bi_analysis_modern/client/src/assets/icons/mssql.svg'
+import PostgresIcon from '@/modules/bi_analysis_modern/client/src/assets/icons/postgres.svg'
+import FileIcon from '@/modules/bi_analysis_modern/client/src/assets/icons/folder_windows_style.svg'
 
 const searchQuery = ref('')
 const router = useRouter()
 
 // Список всех карточек
 const allConnectors = [
-  { name: 'ClickHouse', icon: '/src/core/bi/assets/icons/clickhouse.svg', category: 'db', route: 'clickhouse' },
-  { name: 'Microsoft SQL Server', icon: '/src/core/bi/assets/icons/mssql.svg', category: 'db', route: 'mssql' },
-  { name: 'PostgreSQL', icon: '/src/core/bi/assets/icons/postgres.svg', category: 'db', route: 'postgresql' },
-  { name: 'Файлы', icon: '/src/core/bi/assets/icons/folder_windows_style.svg', category: 'file', route: 'file' }
+  { name: 'ClickHouse', icon: ClickHouseIcon, category: 'db', route: 'clickhouse' },
+  { name: 'Microsoft SQL Server', icon: MssqlIcon, category: 'db', route: 'mssql' },
+  { name: 'PostgreSQL', icon: PostgresIcon, category: 'db', route: 'postgresql' },
+  { name: 'Файлы', icon: FileIcon, category: 'file', route: 'file' }
 ]
 
 // Отфильтрованные по поиску

@@ -1,7 +1,7 @@
 ﻿<template>
   <DatabaseConnectionForm
     title="PostgreSQL"
-    logo-url="/src/core/bi/assets/icons/postgres.svg"
+    :logo-url="PostgresIcon"
     :message="message"
     :error="error"
     :is-checked="isChecked"
@@ -87,6 +87,7 @@ import DatabaseFormFields from './DatabaseFormFields.vue'
 import ConnectionNameDialog from '@/modules/bi_analysis_modern/client/src/Connections/components/ConnectionNameDialog.vue'
 import { useDatabaseConnection } from './composables/useDatabaseConnection'
 import { useRouter } from 'vue-router'
+import PostgresIcon from '@/modules/bi_analysis_modern/client/src/assets/icons/postgres.svg'
 
 const router = useRouter()
 const formRef = ref(null)

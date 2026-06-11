@@ -100,7 +100,7 @@ function goToNewConnection() {
 
 <style scoped lang="scss">
 @import '@/scss/_variables.scss';
-@import '../../scss/_bi-theme.scss';
+@import '../../../scss/_bi-theme.scss';
 
 .main {
   @include bi-burgundy-tokens;

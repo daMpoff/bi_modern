@@ -1,7 +1,7 @@
 ﻿<template>
   <DatabaseConnectionForm
     title="ClickHouse"
-    logo-url="/src/core/bi/assets/icons/clickhouse.svg"
+    :logo-url="ClickHouseIcon"
     logo-class="clickhouse-logo"
     :message="message"
     :error="error"
@@ -77,6 +77,7 @@ import DatabaseFormFields from './DatabaseFormFields.vue'
 import ConnectionNameDialog from '@/modules/bi_analysis_modern/client/src/Connections/components/ConnectionNameDialog.vue'
 import { useDatabaseConnection } from './composables/useDatabaseConnection'
 import { useRouter } from 'vue-router'
+import ClickHouseIcon from '@/modules/bi_analysis_modern/client/src/assets/icons/clickhouse.svg'
 
 const router = useRouter()
 const formRef = ref(null)

@@ -6,7 +6,7 @@
           <button @click="goToNewConnection" class="icon-button" title="Новое подключение">
             <ArrowLeft class="icon" />
           </button>
-          <img src="/src/core/bi/assets/icons/folder_windows_style.svg" class="icon_name" />
+          <img :src="FileIcon" class="icon_name" />
           <div class="title">Файлы</div>
         </div>
       </div>
@@ -76,6 +76,7 @@ import FileItem from './FileItem.vue'
 import FilePreviewPanel from './FilePreviewPanel.vue'
 import XlsxSheetPicker from './FilePreview/XlsxSheetPicker.vue'
 import ConnectionNameDialog from '../components/ConnectionNameDialog.vue'
+import FileIcon from '@/modules/bi_analysis_modern/client/src/assets/icons/folder_windows_style.svg'
 
 import { useFileUploader } from '@/modules/bi_analysis_modern/client/src/components/js/useFileUploader'
 import { useTooltip } from '@/modules/bi_analysis_modern/client/src/components/js/useTooltip'
