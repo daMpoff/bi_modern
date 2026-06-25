@@ -245,6 +245,7 @@ import DashboardBlockPipelineModal from './DashboardBlockPipelineModal.vue'
 import DashboardBlockSelectorModal from './DashboardBlockSelectorModal.vue'
 import DashboardBlockTextModal from './DashboardBlockTextModal.vue'
 import ChartFocusModal from './ChartFocusModal.vue'
+import { logError } from '@/js/utils/logError.js'
 
 const route = useRoute()
 const router = useRouter()
@@ -429,7 +430,7 @@ function loadPlacementMode() {
       }
     }
   } catch (e) {
-    console.error('Ошибка загрузки режима размещения:', e)
+    logError('Ошибка загрузки режима размещения:', e)
   }
   
   // Если режим не сохранен или не был явно выбран - возвращаем null (показываем модальное окно)
@@ -466,12 +467,12 @@ async function savePlacementMode(mode, isUserSelected = false, rememberGlobal = 
           dashboard.value.placement_mode = mode
         }
       } catch (err) {
-        console.error('Ошибка сохранения режима размещения на сервере:', err)
+        logError('Ошибка сохранения режима размещения на сервере:', err)
         // Не прерываем выполнение, так как значение уже сохранено в localStorage
       }
     }
   } catch (e) {
-    console.error('Ошибка сохранения режима размещения:', e)
+    logError('Ошибка сохранения режима размещения:', e)
   }
 }
 
@@ -526,7 +527,7 @@ async function createDashboardAndRedirect() {
       return true
     }
   } catch (err) {
-    console.error('Ошибка создания дашборда:', err)
+    logError('Ошибка создания дашборда:', err)
     error.value = 'Не удалось создать дашборд: ' + (err.message || err)
   } finally {
     loading.value = false
@@ -586,7 +587,7 @@ async function loadDashboard() {
     // Если режим не был выбран явно, НЕ устанавливаем placementMode.value,
     // чтобы модальное окно могло появиться
   } catch (err) {
-    console.error('Ошибка загрузки дашборда:', err)
+    logError('Ошибка загрузки дашборда:', err)
     error.value = 'Не удалось загрузить дашборд: ' + (err.message || err)
   } finally {
     loading.value = false
@@ -684,7 +685,7 @@ async function handleBlockAdd(newBlock) {
           currentPage.value = data.pages[0]
         }
       } catch (err) {
-        console.error('Ошибка создания страницы:', err)
+        logError('Ошибка создания страницы:', err)
         toast.error('Не удалось создать страницу')
         return
       }
@@ -711,7 +712,7 @@ async function handleBlockAdd(newBlock) {
         engine: 'echarts'
       }
     } catch (err) {
-      console.error('Ошибка создания пайплайна/графика для блока:', err)
+      logError('Ошибка создания пайплайна/графика для блока:', err)
       toast.error('Не удалось создать график: ' + (err?.message || 'Неизвестная ошибка'))
       return
     }
@@ -736,7 +737,7 @@ async function handleBlockAdd(newBlock) {
     
     // Проверяем, что блок имеет id
     if (!blockData.id) {
-      console.error('Блок не имеет id:', blockData)
+      logError('Блок не имеет id:', blockData)
       toast.error('Ошибка: блок не был создан корректно')
       return
     }
@@ -756,7 +757,7 @@ async function handleBlockAdd(newBlock) {
     
     toast.success('Блок добавлен')
   } catch (err) {
-    console.error('Ошибка добавления блока:', err)
+    logError('Ошибка добавления блока:', err)
     toast.error('Не удалось добавить блок: ' + (err.message || 'Неизвестная ошибка'))
   }
 }
@@ -796,7 +797,7 @@ async function handleBlockUpdate(updatedBlock) {
       }
     }
   } catch (err) {
-    console.error('Ошибка обновления блока:', err)
+    logError('Ошибка обновления блока:', err)
     toast.error('Не удалось обновить блок')
   }
 }
@@ -812,7 +813,7 @@ async function handleBlockDelete(block) {
     }
     toast.success('Блок удален')
   } catch (err) {
-    console.error('Ошибка удаления блока:', err)
+    logError('Ошибка удаления блока:', err)
     toast.error('Не удалось удалить блок')
   }
 }
@@ -977,7 +978,7 @@ async function handleBlockConfigUpdate(updatedBlock) {
   try {
     await handleBlockUpdate(updatedBlock)
   } catch (err) {
-    console.error('Ошибка обновления настроек блока:', err)
+    logError('Ошибка обновления настроек блока:', err)
     toast.error('Не удалось применить настройки')
   }
 }
@@ -989,7 +990,7 @@ async function handlePipelineSave(updatedBlock) {
     showPipelineModal.value = false
     toast.success('Пайплайн сохранен')
   } catch (err) {
-    console.error('Ошибка сохранения пайплайна:', err)
+    logError('Ошибка сохранения пайплайна:', err)
     toast.error('Не удалось сохранить пайплайн')
   }
 }
@@ -1001,7 +1002,7 @@ async function handleSelectorSave(updatedBlock) {
     showSelectorModal.value = false
     toast.success('Настройки селектора сохранены')
   } catch (err) {
-    console.error('Ошибка сохранения селектора:', err)
+    logError('Ошибка сохранения селектора:', err)
     toast.error('Не удалось сохранить настройки')
   }
 }
@@ -1013,7 +1014,7 @@ async function handleTextSave(updatedBlock) {
     showTextModal.value = false
     toast.success('Текст сохранён')
   } catch (err) {
-    console.error('Ошибка сохранения текста:', err)
+    logError('Ошибка сохранения текста:', err)
     toast.error('Не удалось сохранить текст')
   }
 }

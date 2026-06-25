@@ -1,3 +1,4 @@
+import { logError } from '@/js/utils/logError.js'
 /**
  * Real-time WebSocket Client for BI Dashboard updates.
  *
@@ -155,7 +156,7 @@ export class BiRealtimeClient {
     const handlers = this._listeners[event]
     if (!handlers) return
     for (const h of handlers) {
-      try { h(data) } catch (e) { console.error(`[BiRealtime] handler error (${event}):`, e) }
+      try { h(data) } catch (e) { logError(`[BiRealtime] handler error (${event}):`, e) }
     }
   }
 

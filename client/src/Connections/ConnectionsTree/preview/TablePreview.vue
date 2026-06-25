@@ -117,6 +117,7 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { ChevronLeft, ChevronRight } from 'lucide-vue-next'
 import { apiClient } from '@/js/api/manager'
 import { biEndpoints } from '@/modules/bi_analysis_modern/client/src/js/endpoints'
+import { logError } from '@/js/utils/logError.js'
 
 const props = defineProps({
   table: {
@@ -189,7 +190,7 @@ async function loadPage(page) {
       error.value = res.message || 'Ошибка загрузки данных таблицы'
     }
   } catch (err) {
-    console.error('Ошибка загрузки страницы:', err)
+    logError('Ошибка загрузки страницы:', err)
     error.value = `Ошибка загрузки: ${err.message || 'Неизвестная ошибка'}`
   } finally {
     isLoadingPage.value = false

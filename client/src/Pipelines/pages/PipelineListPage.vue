@@ -5,6 +5,7 @@ import { useToast } from 'vue-toastification'
 import { Workflow, Search, MoreHorizontal, Pencil, Trash2, BarChart3, X } from 'lucide-vue-next'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import { fetchPipelines, createPipeline, deletePipeline } from '../js/pipelineApi.js'
+import { logError } from '@/js/utils/logError.js'
 
 const router = useRouter()
 const toast = useToast()
@@ -31,7 +32,7 @@ async function loadItems() {
   try {
     items.value = await fetchPipelines({ includeDashboardOnly: includeTemporary.value })
   } catch (err) {
-    console.error('Pipeline load error:', err)
+    logError('Pipeline load error:', err)
     toast.error('Ошибка загрузки пайплайнов')
   } finally {
     loading.value = false

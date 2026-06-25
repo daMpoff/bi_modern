@@ -118,6 +118,7 @@ import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import { useToast } from 'vue-toastification'
 import XlsxSheetPicker from '../Files/FilePreview/XlsxSheetPicker.vue'
 import { MAX_UPLOAD_SIZE_MB, MAX_UPLOAD_FILES } from '@/modules/bi_analysis_modern/client/src/js/uploadConfig'
+import { logError } from '@/js/utils/logError.js'
 
 const props = defineProps({
   node: {
@@ -297,7 +298,7 @@ async function loadChildren() {
       await loadFileColumns()
     }
   } catch (error) {
-    console.error('Ошибка загрузки дочерних элементов:', error)
+    logError('Ошибка загрузки дочерних элементов:', error)
   } finally {
     isLoading.value = false
   }
@@ -335,7 +336,7 @@ async function loadConnectionChildren() {
         children.value = []
       }
     } catch (error) {
-      console.error('Ошибка загрузки таблиц:', error)
+      logError('Ошибка загрузки таблиц:', error)
       children.value = []
     }
   }
@@ -492,7 +493,7 @@ async function processFiles(files, connectionId) {
   try {
     await processQueue(connectionId)
   } catch (err) {
-    console.error('[ConnectionTreeNode] processFiles:', err)
+    logError('[ConnectionTreeNode] processFiles:', err)
     toast.error(err?.message || 'Ошибка загрузки файлов')
     finishUpload(connectionId, false)
   }
@@ -648,11 +649,11 @@ async function confirmDeleteFile() {
       toast.success(`Файл "${props.node.name}" успешно удалён`)
       emit('file-deleted', { fileId, connectionId: props.node.connection_id })
     } else {
-      console.error('Unexpected delete response format:', res)
+      logError('Unexpected delete response format:', res)
       toast.error('Неожиданный формат ответа от сервера')
     }
   } catch (error) {
-    console.error('Ошибка удаления файла:', error)
+    logError('Ошибка удаления файла:', error)
     const errorMsg = error?.response?.data?.message || 
                      error?.response?.data?.detail ||
                      error?.response?.data?.error ||

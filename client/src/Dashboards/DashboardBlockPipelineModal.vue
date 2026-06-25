@@ -155,6 +155,7 @@ import { BarChart3, Code, Database, Play } from 'lucide-vue-next'
 import DataPreviewTable from '@/modules/bi_analysis_modern/client/src/components/DataPreviewTable.vue'
 import PipelineCanvas from '@/modules/bi_analysis_modern/client/src/Pipelines/components/PipelineCanvas.vue'
 import GraphsChartPanel from '@/modules/bi_analysis_modern/client/src/Graphs/GraphsChartPanel.vue'
+import { logError } from '@/js/utils/logError.js'
 
 const toast = useToast()
 const props = defineProps({
@@ -296,7 +297,7 @@ async function loadPipeline() {
       })
     }
   } catch (err) {
-    console.error('Dashboard load pipeline by chartId error:', err)
+    logError('Dashboard load pipeline by chartId error:', err)
     toast.error('Ошибка загрузки пайплайна: ' + (err?.message || err))
     initialPipelineNodes.value = []
     initialPipelineEdges.value = []
@@ -391,7 +392,7 @@ async function handleExecute() {
       toast.success(`Выполнено: ${totalRows.toLocaleString()} строк` + (totalRows > rows.length ? ` (показано ${rows.length.toLocaleString()})` : ''))
     }
   } catch (err) {
-    console.error('Dashboard pipeline execute error:', err)
+    logError('Dashboard pipeline execute error:', err)
     toast.error('Ошибка выполнения: ' + (err?.message || err))
     previewData.value = []
     previewColumns.value = []
@@ -413,7 +414,7 @@ async function handleSave() {
       const graphData = pipelineRef.value.getCleanGraphData()
       await updatePipeline(loadedPipelineId.value, { graph_data: graphData })
     } catch (err) {
-      console.error('Failed to sync Pipeline:', err)
+      logError('Failed to sync Pipeline:', err)
       toast.error('Не удалось сохранить пайплайн: ' + (err?.message || err))
       return
     }
@@ -427,7 +428,7 @@ async function handleSave() {
         chart_config: { ...builtConfig.chartConfig }
       })
     } catch (err) {
-      console.error('Failed to sync PipelineChart:', err)
+      logError('Failed to sync PipelineChart:', err)
     }
   }
 
@@ -460,7 +461,7 @@ watch(() => props.show, async (isOpen) => {
         const fresh = resolveBlockChartConfig(chartDetail)
         localChartConfig.value = { ...localChartConfig.value, ...fresh }
       } catch (err) {
-        console.error('Failed to fetch fresh PipelineChart config:', err)
+        logError('Failed to fetch fresh PipelineChart config:', err)
       }
     }
 

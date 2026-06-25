@@ -1,3 +1,4 @@
+import { logError } from '@/js/utils/logError.js'
 /**
  * DuckDB-WASM Client Manager for Client-Side OLAP.
  *
@@ -39,7 +40,7 @@ async function init() {
 
       conn = await db.connect()
     } catch (err) {
-      console.error('[BiDuckDB] Initialization failed:', err)
+      logError('[BiDuckDB] Initialization failed:', err)
       db = null
       conn = null
       throw err

@@ -6,6 +6,7 @@ import { LayoutDashboard, Search, MoreHorizontal, Eye, Pencil, Trash2, Settings,
 import { getListConfig } from '@/modules/bi_analysis_modern/client/src/js/listConfigs.js'
 import { useToast } from 'vue-toastification'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
+import { logError } from '@/js/utils/logError.js'
 
 const config = getListConfig('dashboards')
 const router = useRouter()
@@ -56,7 +57,7 @@ function loadSettings() {
       return { ...defaultSettings, ...parsed }
     }
   } catch (e) {
-    console.error('Ошибка загрузки настроек:', e)
+    logError('Ошибка загрузки настроек:', e)
   }
   return defaultSettings
 }
@@ -67,7 +68,7 @@ function saveSettings() {
     localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(gridSettings.value))
     toast.success('Настройки сохранены')
   } catch (e) {
-    console.error('Ошибка сохранения настроек:', e)
+    logError('Ошибка сохранения настроек:', e)
     toast.error('Не удалось сохранить настройки')
   }
 }
@@ -100,7 +101,7 @@ async function fetchItems() {
       }))
     }
   } catch (err) {
-    console.error('Ошибка загрузки дашбордов:', err)
+    logError('Ошибка загрузки дашбордов:', err)
   } finally {
     loading.value = false
   }
@@ -171,7 +172,7 @@ async function createDashboard() {
       router.push(`/bi-modern/dashboard/${data.id}/`)
     }
   } catch (err) {
-    console.error('Ошибка создания дашборда:', err)
+    logError('Ошибка создания дашборда:', err)
     toast.error('Ошибка при создании дашборда: ' + (err.message || err))
   } finally {
     isCreating.value = false

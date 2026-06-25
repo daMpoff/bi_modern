@@ -82,6 +82,7 @@ import { useFileUploader } from '@/modules/bi_analysis_modern/client/src/compone
 import { useTooltip } from '@/modules/bi_analysis_modern/client/src/components/js/useTooltip'
 import { useFileList } from '@/modules/bi_analysis_modern/client/src/components/js/useFileList'
 import { useFileActions } from '@/modules/bi_analysis_modern/client/src/components/js/useFileActions'
+import { logError } from '@/js/utils/logError.js'
 
 const router = useRouter()
 const fileInput = ref(null)
@@ -159,7 +160,7 @@ async function createConnection(data) {
     alert('Подключение успешно создано и файлы загружены!')
     router.push(`/bi-modern/connections/${newConnectionId}/files/`)
   } catch (err) {
-    console.error('[createConnection] Ошибка:', err)
+    logError('[createConnection] Ошибка:', err)
     alert('Произошла ошибка при создании подключения: ' + (err?.message || err))
   } finally {
     isCreatingConnection.value = false

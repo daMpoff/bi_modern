@@ -144,6 +144,7 @@ import ClickHouseIcon from '@/modules/bi_analysis_modern/client/src/assets/icons
 import PostgresIcon from '@/modules/bi_analysis_modern/client/src/assets/icons/postgres.svg'
 import MssqlIcon from '@/modules/bi_analysis_modern/client/src/assets/icons/mssql.svg'
 import FileIcon from '@/modules/bi_analysis_modern/client/src/assets/icons/folder_windows_style.svg'
+import { logWarn } from '@/js/utils/logError.js'
 
 const props = defineProps({
   cols: Array,
@@ -446,7 +447,7 @@ async function loadConnectionFilesStatus(connectionId) {
       connectionFilesStatus.value.set(connectionId, status)
       connectionFilesCache.value.set(connectionId, status)
     }
-  } catch (error) { console.warn(`Не удалось загрузить статус файлов для подключения ${connectionId}:`, error) }
+  } catch (error) { logWarn(`Не удалось загрузить статус файлов для подключения ${connectionId}:`, error) }
 }
 
 async function loadAllConnectionFilesStatus() {
@@ -475,7 +476,7 @@ async function loadAllConnectionFilesStatus() {
       lastCacheUpdate.value = now
       return
     }
-  } catch (error) { console.warn('Не удалось загрузить статусы файлов одним запросом:', error) }
+  } catch (error) { logWarn('Не удалось загрузить статусы файлов одним запросом:', error) }
   const connectionsToLoad = needsUpdate ? fileConnections : fileConnections.filter(conn => !connectionFilesCache.value.has(conn.id))
   if (connectionsToLoad.length === 0) return
   const BATCH_SIZE = 5

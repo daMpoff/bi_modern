@@ -2,6 +2,7 @@
 import { apiClient } from '@/js/api/manager'
 import { biEndpoints } from '@/modules/bi_analysis_modern/client/src/js/endpoints'
 import { isFileConnection } from './connectionType.js'
+import { logError } from '@/js/utils/logError.js'
 
 function normalizeFile(f) {
   return {
@@ -58,7 +59,7 @@ export function useConnectionItems(connectionIdRef, connectionTypeRef) {
         }
       }
     } catch (err) {
-      console.error('Ошибка загрузки элементов подключения:', err)
+      logError('Ошибка загрузки элементов подключения:', err)
       error.value = err
       items.value = []
     } finally {

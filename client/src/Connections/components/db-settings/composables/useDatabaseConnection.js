@@ -1,6 +1,7 @@
 import { ref } from 'vue'
 import { apiClient } from '@/js/api/manager'
 import { endpoints } from '@/js/api/endpoints'
+import { logError } from '@/js/utils/logError.js'
 
 export function useDatabaseConnection(dbType, defaultPort = 5432) {
   const form = ref(null)
@@ -57,7 +58,7 @@ export function useDatabaseConnection(dbType, defaultPort = 5432) {
         error.value = true
       }
     } catch (err) {
-      console.error('Ошибка проверки подключения:', err)
+      logError('Ошибка проверки подключения:', err)
       message.value = 'Не удалось выполнить запрос: ' + (err.message || 'Неизвестная ошибка')
       error.value = true
     }

@@ -150,6 +150,7 @@ import DashboardBlockText from './DashboardBlockText.vue'
 import BlockContentPlaceholder from './BlockContentPlaceholder.vue'
 import ChartExportDropdown from './ChartExportDropdown.vue'
 import { getBlockContentComponentKey, CONTENT_KEY_CHART, CONTENT_KEY_PLACEHOLDER, CONTENT_KEY_SELECTOR, CONTENT_KEY_TEXT } from './js/blockTypesRegistry.js'
+import { logError } from '@/js/utils/logError.js'
 
 const props = defineProps({
   blocks: {
@@ -377,7 +378,7 @@ function handleDrop(event) {
 
     emit('block-add', newBlock)
   } catch (error) {
-    console.error('Ошибка при добавлении блока:', error)
+    logError('Ошибка при добавлении блока:', error)
   }
 }
 

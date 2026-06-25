@@ -22,6 +22,7 @@
 import { ref, watch } from 'vue'
 import { apiClient } from '@/js/api/manager'
 import { endpoints } from '@/js/api/endpoints'
+import { logError } from '@/js/utils/logError.js'
 
 const props = defineProps({
   visible: Boolean,
@@ -81,7 +82,7 @@ async function submit() {
     }
 
   } catch (err) {
-    console.error('Ошибка при сохранении подключения:', err.response?.data || err)
+    logError('Ошибка при сохранении подключения:', err.response?.data || err)
     error.value = extractErrorMessage(err)
   } finally {
     loading.value = false

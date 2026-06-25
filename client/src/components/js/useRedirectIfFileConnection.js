@@ -2,6 +2,7 @@ import { onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { apiClient } from '@/js/api/manager'
 import { endpoints } from '@/js/api/endpoints'
+import { logError } from '@/js/utils/logError.js'
 
 export function useRedirectIfFileConnection() {
   const router = useRouter()
@@ -26,7 +27,7 @@ export function useRedirectIfFileConnection() {
         router.replace(`/bi-modern/connections/${connectionId}/files/`)
       }
     } else {
-      console.error('Ошибка загрузки подключения:', res.errors || res)
+      logError('Ошибка загрузки подключения:', res.errors || res)
     }
   })
 }

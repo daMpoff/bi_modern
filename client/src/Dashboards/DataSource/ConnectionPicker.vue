@@ -67,6 +67,7 @@ import ClickHouseIcon from '@/modules/bi_analysis_modern/client/src/assets/icons
 import PostgresIcon from '@/modules/bi_analysis_modern/client/src/assets/icons/postgres.svg'
 import MssqlIcon from '@/modules/bi_analysis_modern/client/src/assets/icons/mssql.svg'
 import FileIcon from '@/modules/bi_analysis_modern/client/src/assets/icons/folder_windows_style.svg'
+import { logError, logWarn } from '@/js/utils/logError.js'
 
 const props = defineProps({
   modelValue: {
@@ -127,7 +128,7 @@ async function loadConnections() {
       await checkFileConnectionsStatus()
     }
   } catch (err) {
-    console.error('Ошибка загрузки подключений:', err)
+    logError('Ошибка загрузки подключений:', err)
   } finally {
     loading.value = false
   }
@@ -150,7 +151,7 @@ async function checkFileConnectionsStatus() {
         }
       }
     } catch (err) {
-      console.warn(`Ошибка проверки файлов для ${conn.id}:`, err)
+      logWarn(`Ошибка проверки файлов для ${conn.id}:`, err)
     }
   }
 }

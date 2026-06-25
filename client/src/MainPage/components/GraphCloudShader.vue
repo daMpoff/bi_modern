@@ -6,6 +6,7 @@
 
 import { ref, onMounted, onUnmounted, nextTick } from 'vue'
 import { vertexShaderSource, fragmentShaderSource } from '../js/shader-sources.js'
+import { logError } from '@/js/utils/logError.js'
 
 const canvasRef = ref(null)
 let gl = null
@@ -23,7 +24,7 @@ function createShader(glCtx, type, source) {
   glCtx.compileShader(shader)
 
   if (!glCtx.getShaderParameter(shader, glCtx.COMPILE_STATUS)) {
-    console.error('Shader compilation error:', glCtx.getShaderInfoLog(shader))
+    logError('Shader compilation error:', glCtx.getShaderInfoLog(shader))
     glCtx.deleteShader(shader)
     return null
   }
@@ -38,7 +39,7 @@ function createProgram(glCtx, vs, fs) {
   glCtx.linkProgram(prog)
 
   if (!glCtx.getProgramParameter(prog, glCtx.LINK_STATUS)) {
-    console.error('Program linking error:', glCtx.getProgramInfoLog(prog))
+    logError('Program linking error:', glCtx.getProgramInfoLog(prog))
     glCtx.deleteProgram(prog)
     return null
   }

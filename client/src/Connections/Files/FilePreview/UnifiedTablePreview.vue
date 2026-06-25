@@ -220,6 +220,7 @@ import { RecycleScroller } from 'vue-virtual-scroller'
 import 'vue-virtual-scroller/dist/vue-virtual-scroller.css'
 import { apiClient } from '@/js/api/manager'
 import { endpoints } from '@/js/api/endpoints'
+import { logError, logWarn } from '@/js/utils/logError.js'
 
 const props = defineProps({ 
   file: Object,
@@ -623,7 +624,7 @@ async function copyColumnToCSV(columnIndex, event) {
     
     // Проверяем, не изменилось ли состояние hasHeader после операции
     if (hasHeader.value !== headerStateBefore) {
-      console.warn('hasHeader изменилось после copyColumnToCSV!', { 
+      logWarn('hasHeader изменилось после copyColumnToCSV!', { 
         before: headerStateBefore, 
         after: hasHeader.value,
         columnIndex 
@@ -632,7 +633,7 @@ async function copyColumnToCSV(columnIndex, event) {
       hasHeader.value = headerStateBefore
     }
   } catch (error) {
-    console.error('Ошибка копирования столбца:', error)
+    logError('Ошибка копирования столбца:', error)
     // Восстанавливаем исходное состояние при ошибке
     if (hasHeader.value !== headerStateBefore) {
       hasHeader.value = headerStateBefore
@@ -745,7 +746,7 @@ async function loadAllDataForSearch() {
       console.log('Загружены все данные для поиска:', { totalRows: parsed.length })
     }
   } catch (err) {
-    console.error('Ошибка загрузки всех данных для поиска:', err)
+    logError('Ошибка загрузки всех данных для поиска:', err)
   } finally {
     isSearchDataLoading.value = false
   }

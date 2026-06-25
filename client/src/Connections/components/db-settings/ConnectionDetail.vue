@@ -80,6 +80,7 @@ import { apiClient } from '@/js/api/manager'
 import { endpoints } from '@/js/api/endpoints'
 import ConnectionNameDialog from '@/modules/bi_analysis_modern/client/src/Connections/components/ConnectionNameDialog.vue'
 import { useRedirectIfFileConnection } from '@/modules/bi_analysis_modern/client/src/components/js/useRedirectIfFileConnection'
+import { logError } from '@/js/utils/logError.js'
 
 useRedirectIfFileConnection()
 
@@ -191,7 +192,7 @@ async function fetchConnection() {
     initialPassword.value = password.value
 
   } catch (err) {
-    console.error('Ошибка загрузки подключения:', err)
+    logError('Ошибка загрузки подключения:', err)
     message.value = 'Не удалось загрузить подключение'
     error.value = true
     isChecked.value = true
@@ -237,7 +238,7 @@ async function changeConnection() {
     initialPassword.value = password.value
 
   } catch (err) {
-    console.error('Ошибка при сохранении:', err)
+    logError('Ошибка при сохранении:', err)
     showAutoDismissMessage('Не удалось сохранить изменения', true)
   } finally {
     loading.value = false

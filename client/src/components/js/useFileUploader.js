@@ -1,6 +1,7 @@
 ﻿import { apiClient } from '@/js/api/manager'
 import { endpoints } from '@/js/api/endpoints'
 import { MAX_UPLOAD_SIZE_MB, MAX_UPLOAD_FILES } from '@/modules/bi_analysis_modern/client/src/js/uploadConfig'
+import { logError } from '@/js/utils/logError.js'
 
 export function useFileUploader(tempUploadedFiles, selectedFile, isSheetPickerVisible, currentUploadFile, availableSheets, loadUserFiles, connectionId, uploadedFiles = null, selectFileCallback = null, isFinalizingRef = null) {
 
@@ -38,7 +39,7 @@ export function useFileUploader(tempUploadedFiles, selectedFile, isSheetPickerVi
         }
       }
     } catch (error) {
-      console.error('[uploadFile] Исключение при загрузке:', error)
+      logError('[uploadFile] Исключение при загрузке:', error)
       throw error
     }
   }
@@ -102,7 +103,7 @@ export function useFileUploader(tempUploadedFiles, selectedFile, isSheetPickerVi
         }, 200)
       }
     } catch (error) {
-      console.error('[autoFinalizeAndSelect] Ошибка при финализации файлов:', error)
+      logError('[autoFinalizeAndSelect] Ошибка при финализации файлов:', error)
     } finally {
       if (isFinalizingRef) isFinalizingRef.value = false
     }
@@ -118,7 +119,7 @@ export function useFileUploader(tempUploadedFiles, selectedFile, isSheetPickerVi
       await Promise.all(uploadPromises)
       await autoFinalizeAndSelect()
     } catch (error) {
-      console.error('[handleSheetSelection] Ошибка при параллельной загрузке листов:', error)
+      logError('[handleSheetSelection] Ошибка при параллельной загрузке листов:', error)
     }
     currentUploadFile.value = null
   }
@@ -156,7 +157,7 @@ export function useFileUploader(tempUploadedFiles, selectedFile, isSheetPickerVi
           const sheetRes = await apiClient.upload(endpoints.bi.xlsxSheets, formData)
           return { file, sheetRes }
         } catch (error) {
-          console.error(`[handleFileUpload] Ошибка проверки листов для ${file.name}:`, error)
+          logError(`[handleFileUpload] Ошибка проверки листов для ${file.name}:`, error)
           return { file, sheetRes: null }
         }
       })
@@ -194,7 +195,7 @@ export function useFileUploader(tempUploadedFiles, selectedFile, isSheetPickerVi
     try {
       await Promise.all(uploadPromises)
     } catch (error) {
-      console.error('[handleFileUpload] Ошибка при параллельной загрузке:', error)
+      logError('[handleFileUpload] Ошибка при параллельной загрузке:', error)
     }
 
     event.target.value = ''

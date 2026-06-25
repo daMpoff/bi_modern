@@ -17,6 +17,7 @@ import {
 } from '../js/pipelineApi.js'
 import { apiClient } from '@/js/api/manager.js'
 import { biEndpoints } from '@/modules/bi_analysis_modern/client/src/js/endpoints.js'
+import { logError } from '@/js/utils/logError.js'
 
 const lineageNodeIcons = {
   dataSource: FileText,
@@ -131,7 +132,7 @@ async function loadPipeline() {
     }
   } catch (err) {
     toast.error('Ошибка загрузки пайплайна')
-    console.error(err)
+    logError(err)
   }
 }
 
@@ -170,7 +171,7 @@ async function loadCharts() {
   try {
     charts.value = await fetchPipelineCharts(pipelineId.value)
   } catch (err) {
-    console.error('Charts load error:', err)
+    logError('Charts load error:', err)
   }
 }
 

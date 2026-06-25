@@ -157,6 +157,7 @@ import { useFileUploader } from '@/modules/bi_analysis_modern/client/src/compone
 import { useTooltip } from '@/modules/bi_analysis_modern/client/src/components/js/useTooltip'
 import { useFileList } from '@/modules/bi_analysis_modern/client/src/components/js/useFileList'
 import { useFileActions } from '@/modules/bi_analysis_modern/client/src/components/js/useFileActions'
+import { logError } from '@/js/utils/logError.js'
 
 const router = useRouter()
 const route = useRoute()
@@ -261,14 +262,14 @@ async function loadConnectionFiles() {
       console.log('[loadConnectionFiles] Загружено файлов:', res.data.length)
       console.log('[loadConnectionFiles] Файлы:', res.data)
     } else {
-      console.error('[loadConnectionFiles] Ошибка получения файлов:', res.errors)
+      logError('[loadConnectionFiles] Ошибка получения файлов:', res.errors)
       fileError.value = {
         code: res.status || 500,
         message: res.errors || 'Неизвестная ошибка'
       }
     }
   } catch (error) {
-    console.error('[loadConnectionFiles] Исключение при загрузке файлов:', error)
+    logError('[loadConnectionFiles] Исключение при загрузке файлов:', error)
     fileError.value = {
       code: error.response?.status || 500,
       message: error.message || 'Ошибка сети'

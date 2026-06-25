@@ -88,6 +88,7 @@ import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import { useToast } from 'vue-toastification'
 import { apiClient } from '@/js/api/manager'
 import { biEndpoints } from '@/modules/bi_analysis_modern/client/src/js/endpoints'
+import { logError } from '@/js/utils/logError.js'
 
 const props = defineProps({
   connection: {
@@ -139,7 +140,7 @@ async function loadFilesCount() {
       filesCount.value = 0
     }
   } catch (error) {
-    console.error('Ошибка загрузки файлов:', error)
+    logError('Ошибка загрузки файлов:', error)
     filesCount.value = 0
   } finally {
     filesCountLoading.value = false
@@ -185,7 +186,7 @@ function handleDelete() {
   console.log('Connection type:', props.connection?.connector_type)
   
   if (!props.connection?.id) {
-    console.error('Cannot delete: connection.id is missing!', props.connection)
+    logError('Cannot delete: connection.id is missing!', props.connection)
     toast.error('Ошибка: не найден ID подключения')
     return
   }
@@ -198,7 +199,7 @@ async function confirmDelete() {
   console.log('Full connection object:', JSON.stringify(props.connection, null, 2))
   
   if (!props.connection?.id) {
-    console.error('Connection ID is missing!', props.connection)
+    logError('Connection ID is missing!', props.connection)
     toast.error('Ошибка: не найден ID подключения для удаления')
     return
   }
@@ -211,7 +212,7 @@ async function confirmDelete() {
     const connectionId = parseInt(props.connection.id, 10)
     
     if (isNaN(connectionId)) {
-      console.error('Invalid connection ID:', props.connection.id)
+      logError('Invalid connection ID:', props.connection.id)
       toast.error('Ошибка: неверный ID подключения')
       return
     }
@@ -250,10 +251,10 @@ async function confirmDelete() {
     }
     
     // Неожиданный формат ответа
-    console.error('Unexpected delete response format:', res)
+    logError('Unexpected delete response format:', res)
     toast.error('Неожиданный формат ответа от сервера')
   } catch (error) {
-    console.error('Ошибка удаления подключения:', error)
+    logError('Ошибка удаления подключения:', error)
     const errorMsg = error?.response?.data?.message || 
                      error?.response?.data?.detail ||
                      error?.response?.data?.error ||

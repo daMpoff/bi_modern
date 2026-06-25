@@ -1,6 +1,7 @@
 ﻿import { apiClient } from '@/js/api/manager'
 import { endpoints } from '@/js/api/endpoints'
 import { MAX_UPLOAD_SIZE_MB } from '@/modules/bi_analysis_modern/client/src/js/uploadConfig'
+import { logError, logWarn } from '@/js/utils/logError.js'
 
 export function useFileActions(uploadedFiles, selectedFile, fileToReplace, loadUserFiles, connectionId, isSheetPickerVisible, currentUploadFile, availableSheets, isReplacing, fileError = null, selectFileCallback = null) {
 
@@ -44,10 +45,10 @@ export function useFileActions(uploadedFiles, selectedFile, fileToReplace, loadU
 
         console.log('[deleteFile] файл удалён успешно')
       } else {
-        console.warn('[deleteFile] ошибка удаления:', res)
+        logWarn('[deleteFile] ошибка удаления:', res)
       }
     } catch (error) {
-      console.error('[deleteFile] ошибка при запросе:', error)
+      logError('[deleteFile] ошибка при запросе:', error)
     }
   }
 
@@ -103,7 +104,7 @@ export function useFileActions(uploadedFiles, selectedFile, fileToReplace, loadU
               selectedFile.value = { ...res.data }
             }
           } else {
-            console.error('[handleFileReplace] Ошибка замены файла с листом:', res.errors)
+            logError('[handleFileReplace] Ошибка замены файла с листом:', res.errors)
             alert('Не удалось заменить файл')
           }
           if (isReplacing) isReplacing.value = false
@@ -131,11 +132,11 @@ export function useFileActions(uploadedFiles, selectedFile, fileToReplace, loadU
           selectedFile.value = { ...res.data }
         }
       } else {
-        console.error('[handleFileReplace] Ошибка замены файла:', res.errors)
+        logError('[handleFileReplace] Ошибка замены файла:', res.errors)
         alert('Не удалось заменить файл')
       }
     } catch (error) {
-      console.error('[handleFileReplace] Ошибка при замене файла:', error)
+      logError('[handleFileReplace] Ошибка при замене файла:', error)
       alert('Произошла ошибка при замене файла')
     }
 
@@ -169,11 +170,11 @@ export function useFileActions(uploadedFiles, selectedFile, fileToReplace, loadU
           selectedFile.value = { ...res.data }
         }
       } else {
-        console.error('[handleFileReplaceWithSheets] Ошибка замены файла:', res.errors)
+        logError('[handleFileReplaceWithSheets] Ошибка замены файла:', res.errors)
         alert(`Не удалось заменить файл листом "${sheet}"`)
       }
     } catch (error) {
-      console.error('[handleFileReplaceWithSheets] Ошибка:', error)
+      logError('[handleFileReplaceWithSheets] Ошибка:', error)
       alert('Ошибка при замене файла')
     }
 
@@ -199,7 +200,7 @@ export function useFileActions(uploadedFiles, selectedFile, fileToReplace, loadU
       await loadUserFiles(connectionId)
     } else {
       alert('Ошибка переименования')
-      console.error('[renameFile] Ошибка:', res.errors)
+      logError('[renameFile] Ошибка:', res.errors)
     }
   }
 

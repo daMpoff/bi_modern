@@ -56,6 +56,7 @@ import { apiClient } from '@/js/api/manager'
 import { endpoints } from '@/js/api/endpoints'
 import { biEndpoints } from '@/modules/bi_analysis_modern/client/src/js/endpoints'
 import ConnectionTreeNode from './ConnectionsTree/ConnectionTreeNode.vue'
+import { logError } from '@/js/utils/logError.js'
 
 const emit = defineEmits(['create-connection', 'node-click', 'file-deleted'])
 
@@ -73,7 +74,7 @@ async function loadConnections() {
       connections.value = res.data || []
     }
   } catch (error) {
-    console.error('Ошибка загрузки подключений:', error)
+    logError('Ошибка загрузки подключений:', error)
   } finally {
     isLoading.value = false
   }
