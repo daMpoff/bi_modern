@@ -6,7 +6,6 @@
 
 import { ref, onMounted, onUnmounted, nextTick } from 'vue'
 import { vertexShaderSource, fragmentShaderSource } from '../js/shader-sources.js'
-import { logError } from '@/js/utils/logError.js'
 
 const canvasRef = ref(null)
 let gl = null

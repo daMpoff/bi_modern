@@ -117,7 +117,6 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { ChevronLeft, ChevronRight } from 'lucide-vue-next'
 import { apiClient } from '@/js/api/manager'
 import { biEndpoints } from '@/modules/bi_analysis_modern/client/src/js/endpoints'
-import { logError } from '@/js/utils/logError.js'
 
 const props = defineProps({
   table: {

@@ -2,7 +2,6 @@
 import { apiClient } from '@/js/api/manager'
 import { biEndpoints } from '@/modules/bi_analysis_modern/client/src/js/endpoints'
 import { isFileConnection } from './connectionType.js'
-import { logError } from '@/js/utils/logError.js'
 
 function normalizeFile(f) {
   return {

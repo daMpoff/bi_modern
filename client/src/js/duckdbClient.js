@@ -1,4 +1,3 @@
-import { logError } from '@/js/utils/logError.js'
 /**
  * DuckDB-WASM Client Manager for Client-Side OLAP.
  *

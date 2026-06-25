@@ -80,7 +80,6 @@ import { apiClient } from '@/js/api/manager'
 import { endpoints } from '@/js/api/endpoints'
 import ConnectionNameDialog from '@/modules/bi_analysis_modern/client/src/Connections/components/ConnectionNameDialog.vue'
 import { useRedirectIfFileConnection } from '@/modules/bi_analysis_modern/client/src/components/js/useRedirectIfFileConnection'
-import { logError } from '@/js/utils/logError.js'
 
 useRedirectIfFileConnection()
 

@@ -22,7 +22,6 @@
 import { ref, watch } from 'vue'
 import { apiClient } from '@/js/api/manager'
 import { endpoints } from '@/js/api/endpoints'
-import { logError } from '@/js/utils/logError.js'
 
 const props = defineProps({
   visible: Boolean,

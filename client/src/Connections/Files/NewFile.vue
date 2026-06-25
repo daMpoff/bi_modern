@@ -82,7 +82,6 @@ import { useFileUploader } from '@/modules/bi_analysis_modern/client/src/compone
 import { useTooltip } from '@/modules/bi_analysis_modern/client/src/components/js/useTooltip'
 import { useFileList } from '@/modules/bi_analysis_modern/client/src/components/js/useFileList'
 import { useFileActions } from '@/modules/bi_analysis_modern/client/src/components/js/useFileActions'
-import { logError } from '@/js/utils/logError.js'
 
 const router = useRouter()
 const fileInput = ref(null)

@@ -220,7 +220,6 @@ import { RecycleScroller } from 'vue-virtual-scroller'
 import 'vue-virtual-scroller/dist/vue-virtual-scroller.css'
 import { apiClient } from '@/js/api/manager'
 import { endpoints } from '@/js/api/endpoints'
-import { logError, logWarn } from '@/js/utils/logError.js'
 
 const props = defineProps({ 
   file: Object,

@@ -6,7 +6,6 @@ import { LayoutDashboard, Search, MoreHorizontal, Eye, Pencil, Trash2, Settings,
 import { getListConfig } from '@/modules/bi_analysis_modern/client/src/js/listConfigs.js'
 import { useToast } from 'vue-toastification'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
-import { logError } from '@/js/utils/logError.js'
 
 const config = getListConfig('dashboards')
 const router = useRouter()

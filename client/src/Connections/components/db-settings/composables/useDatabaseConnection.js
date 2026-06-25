@@ -1,7 +1,6 @@
 import { ref } from 'vue'
 import { apiClient } from '@/js/api/manager'
 import { endpoints } from '@/js/api/endpoints'
-import { logError } from '@/js/utils/logError.js'
 
 export function useDatabaseConnection(dbType, defaultPort = 5432) {
   const form = ref(null)

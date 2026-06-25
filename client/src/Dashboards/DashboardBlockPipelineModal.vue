@@ -155,7 +155,6 @@ import { BarChart3, Code, Database, Play } from 'lucide-vue-next'
 import DataPreviewTable from '@/modules/bi_analysis_modern/client/src/components/DataPreviewTable.vue'
 import PipelineCanvas from '@/modules/bi_analysis_modern/client/src/Pipelines/components/PipelineCanvas.vue'
 import GraphsChartPanel from '@/modules/bi_analysis_modern/client/src/Graphs/GraphsChartPanel.vue'
-import { logError } from '@/js/utils/logError.js'
 
 const toast = useToast()
 const props = defineProps({

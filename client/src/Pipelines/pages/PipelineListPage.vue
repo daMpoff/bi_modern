@@ -5,7 +5,6 @@ import { useToast } from 'vue-toastification'
 import { Workflow, Search, MoreHorizontal, Pencil, Trash2, BarChart3, X } from 'lucide-vue-next'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import { fetchPipelines, createPipeline, deletePipeline } from '../js/pipelineApi.js'
-import { logError } from '@/js/utils/logError.js'
 
 const router = useRouter()
 const toast = useToast()

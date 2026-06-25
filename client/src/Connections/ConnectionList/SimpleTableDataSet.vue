@@ -144,7 +144,6 @@ import ClickHouseIcon from '@/modules/bi_analysis_modern/client/src/assets/icons
 import PostgresIcon from '@/modules/bi_analysis_modern/client/src/assets/icons/postgres.svg'
 import MssqlIcon from '@/modules/bi_analysis_modern/client/src/assets/icons/mssql.svg'
 import FileIcon from '@/modules/bi_analysis_modern/client/src/assets/icons/folder_windows_style.svg'
-import { logWarn } from '@/js/utils/logError.js'
 
 const props = defineProps({
   cols: Array,

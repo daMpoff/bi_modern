@@ -3,7 +3,6 @@ import { ref, watch, computed, onMounted } from 'vue'
 import { apiClient } from '@/js/api/manager.js'
 import { useRouter } from 'vue-router'
 import SimpleTableDataSet from './SimpleTableDataSet.vue'
-import { logError } from '@/js/utils/logError.js'
 
 const props = defineProps({
   config: {

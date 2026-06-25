@@ -82,7 +82,6 @@ import ConnectionPicker from './DataSource/ConnectionPicker.vue'
 import TablePicker from './DataSource/TablePicker.vue'
 import { getConnectionType } from './DataSource/js/connectionType.js'
 import { getSourceItemKey, getSourceItemDisplayName } from './DataSource/js/sourceItemUtils.js'
-import { logWarn } from '@/js/utils/logError.js'
 
 const props = defineProps({
   show: {

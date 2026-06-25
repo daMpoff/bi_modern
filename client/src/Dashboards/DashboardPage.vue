@@ -245,7 +245,6 @@ import DashboardBlockPipelineModal from './DashboardBlockPipelineModal.vue'
 import DashboardBlockSelectorModal from './DashboardBlockSelectorModal.vue'
 import DashboardBlockTextModal from './DashboardBlockTextModal.vue'
 import ChartFocusModal from './ChartFocusModal.vue'
-import { logError } from '@/js/utils/logError.js'
 
 const route = useRoute()
 const router = useRouter()

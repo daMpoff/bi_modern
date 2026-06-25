@@ -88,7 +88,6 @@ import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import { useToast } from 'vue-toastification'
 import { apiClient } from '@/js/api/manager'
 import { biEndpoints } from '@/modules/bi_analysis_modern/client/src/js/endpoints'
-import { logError } from '@/js/utils/logError.js'
 
 const props = defineProps({
   connection: {

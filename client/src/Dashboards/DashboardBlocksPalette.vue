@@ -83,7 +83,6 @@ import {
 } from 'lucide-vue-next'
 import { BLOCK_TYPES_PALETTE } from './js/blockTypesRegistry.js'
 import { fetchPipelineCharts } from '@/modules/bi_analysis_modern/client/src/Pipelines/js/pipelineApi.js'
-import { logError } from '@/js/utils/logError.js'
 
 const emit = defineEmits(['drag-start', 'drag-end'])
 

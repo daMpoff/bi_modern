@@ -1,4 +1,3 @@
-import { logError } from '@/js/utils/logError.js'
 /**
  * Real-time WebSocket Client for BI Dashboard updates.
  *

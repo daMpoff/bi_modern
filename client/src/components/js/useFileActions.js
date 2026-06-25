@@ -1,7 +1,6 @@
 ﻿import { apiClient } from '@/js/api/manager'
 import { endpoints } from '@/js/api/endpoints'
 import { MAX_UPLOAD_SIZE_MB } from '@/modules/bi_analysis_modern/client/src/js/uploadConfig'
-import { logError, logWarn } from '@/js/utils/logError.js'
 
 export function useFileActions(uploadedFiles, selectedFile, fileToReplace, loadUserFiles, connectionId, isSheetPickerVisible, currentUploadFile, availableSheets, isReplacing, fileError = null, selectFileCallback = null) {
 
