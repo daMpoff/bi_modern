@@ -1,18 +1,23 @@
 <template>
-  <div v-if="show" class="pm-overlay" @click.self="$emit('close')">
-    <div class="pm-modal pm-modal--md">
-      <div class="pm-header">
-        <div class="pm-header-icon" style="background: rgba(139, 92, 246, 0.12); color: #8b5cf6">
-          <SquareFunction :size="20" />
-        </div>
-        <h3 class="pm-header-title">Настройки формулы</h3>
-        <button class="pm-header-close" @click="$emit('close')">
-          <X :size="16" />
-        </button>
+  <ModalCenter
+    modal-id="pipelineFormulaModal"
+    standalone
+    :visible="show"
+    :dialog-style="{ maxWidth: '600px' }"
+    :z-index="10050"
+    :close-on-esc="false"
+    body-class="p-0"
+    @close="$emit('close')"
+  >
+    <template #title>
+      <div class="pm-header-icon" style="background: rgba(139, 92, 246, 0.12); color: #8b5cf6">
+        <SquareFunction :size="20" />
       </div>
+      <span>Настройки формулы</span>
+    </template>
 
-      <div class="pm-body">
-        <div class="pm-section">
+    <div class="pm-body">
+      <div class="pm-section">
           <span class="pm-section-title">Выходное поле</span>
           <div style="margin-bottom: 0.75rem">
             <label class="pm-label">Имя поля результата</label>
@@ -58,19 +63,19 @@
             Используйте имена полей и математические операторы: +, -, *, /, (, )
           </p>
         </div>
-      </div>
-
-      <div class="pm-footer">
-        <button class="pm-btn pm-btn--secondary" @click="$emit('close')">Отмена</button>
-        <button class="pm-btn pm-btn--primary" @click="handleApply">Применить</button>
-      </div>
     </div>
-  </div>
+
+    <template #footer>
+      <button class="pm-btn pm-btn--secondary" @click="$emit('close')">Отмена</button>
+      <button class="pm-btn pm-btn--primary" @click="handleApply">Применить</button>
+    </template>
+  </ModalCenter>
 </template>
 
 <script setup>
 import { ref, watch } from 'vue'
-import { SquareFunction, X } from 'lucide-vue-next'
+import { SquareFunction } from 'lucide-vue-next'
+import ModalCenter from '@/components/ModalCenter.vue'
 
 const props = defineProps({
   show: { type: Boolean, default: false },

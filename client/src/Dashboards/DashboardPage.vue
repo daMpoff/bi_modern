@@ -1,55 +1,64 @@
 ﻿<template>
   <div class="dashboard-page" :class="{ 'is-view-mode': mode === 'view' }">
     <!-- Модальное окно выбора режима размещения -->
-    <div v-if="showPlacementModal" class="placement-modal-overlay" @click.self="handlePlacementModalClose">
-      <div class="placement-modal" @click.stop>
-        <div class="placement-modal-header">
-          <h3 class="placement-modal-title">Выберите режим размещения блоков</h3>
-          <p class="placement-modal-subtitle">Выберите способ размещения блоков на дашборде. Вы можете запомнить выбор для всех дашбордов.</p>
-        </div>
-        <div class="placement-modal-content">
-          <div class="placement-cards">
-            <div
-              class="placement-card"
-              :class="{ active: selectedPlacementMode === 'grid' }"
-              @click="selectPlacementMode('grid')"
-            >
-              <div class="placement-card-icon">
-                <LayoutGrid :size="48" />
-              </div>
-              <h4 class="placement-card-title">Сетка (12 колонок)</h4>
-              <p class="placement-card-description">
-                Блоки размещаются в сетке Bootstrap из 12 колонок. Подходит для структурированных дашбордов.
-              </p>
-            </div>
-            <div
-              class="placement-card"
-              :class="{ active: selectedPlacementMode === 'absolute' }"
-              @click="selectPlacementMode('absolute')"
-            >
-              <div class="placement-card-icon">
-                <Move :size="48" />
-              </div>
-              <h4 class="placement-card-title">Абсолютное размещение</h4>
-              <p class="placement-card-description">
-                Блоки размещаются свободно с абсолютными координатами. Подходит для творческих дашбордов.
-              </p>
-            </div>
+    <ModalCenter
+      modal-id="dashboardPlacementModeModal"
+      standalone
+      :visible="showPlacementModal"
+      :close-on-backdrop="false"
+      :close-on-esc="false"
+      :dialog-style="{ width: '800px', maxWidth: 'calc(100vw - 4rem)' }"
+      :z-index="10002"
+      @close="handlePlacementModalClose"
+    >
+      <template #title>Выберите режим размещения блоков</template>
+
+      <p class="placement-modal-subtitle">Выберите способ размещения блоков на дашборде. Вы можете запомнить выбор для всех дашбордов.</p>
+      <div class="placement-cards">
+        <div
+          class="placement-card"
+          :class="{ active: selectedPlacementMode === 'grid' }"
+          @click="selectPlacementMode('grid')"
+        >
+          <div class="placement-card-icon">
+            <LayoutGrid :size="48" />
           </div>
-          <div class="placement-modal-remember">
-            <label class="placement-remember-checkbox">
-              <input type="checkbox" v-model="rememberChoice" />
-              <span>Запомнить выбор для всех дашбордов</span>
-            </label>
-          </div>
+          <h4 class="placement-card-title">Сетка (12 колонок)</h4>
+          <p class="placement-card-description">
+            Блоки размещаются в сетке Bootstrap из 12 колонок. Подходит для структурированных дашбордов.
+          </p>
         </div>
-        <div class="placement-modal-actions">
-          <button class="placement-modal-btn placement-modal-btn-primary" @click="confirmPlacementMode" :disabled="!selectedPlacementMode">
-            Продолжить
-          </button>
+        <div
+          class="placement-card"
+          :class="{ active: selectedPlacementMode === 'absolute' }"
+          @click="selectPlacementMode('absolute')"
+        >
+          <div class="placement-card-icon">
+            <Move :size="48" />
+          </div>
+          <h4 class="placement-card-title">Абсолютное размещение</h4>
+          <p class="placement-card-description">
+            Блоки размещаются свободно с абсолютными координатами. Подходит для творческих дашбордов.
+          </p>
         </div>
       </div>
-    </div>
+      <div class="placement-modal-remember">
+        <label class="placement-remember-checkbox">
+          <input type="checkbox" v-model="rememberChoice" />
+          <span>Запомнить выбор для всех дашбордов</span>
+        </label>
+      </div>
+
+      <template #footer>
+        <button
+          class="placement-modal-btn placement-modal-btn-primary"
+          @click="confirmPlacementMode"
+          :disabled="!selectedPlacementMode"
+        >
+          Продолжить
+        </button>
+      </template>
+    </ModalCenter>
     <!-- Верхняя панель инструментов -->
     <div class="dashboard-toolbar">
       <div class="toolbar-left">
@@ -245,6 +254,7 @@ import DashboardBlockPipelineModal from './DashboardBlockPipelineModal.vue'
 import DashboardBlockSelectorModal from './DashboardBlockSelectorModal.vue'
 import DashboardBlockTextModal from './DashboardBlockTextModal.vue'
 import ChartFocusModal from './ChartFocusModal.vue'
+import ModalCenter from '@/components/ModalCenter.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -1421,77 +1431,12 @@ watch(dashboardId, async (id, prevId) => {
   }
 }
 
-// Модальное окно выбора режима размещения
-.placement-modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(
-    135deg,
-    rgba(0, 0, 0, 0.4) 0%,
-    rgba(0, 0, 0, 0.5) 100%
-  );
-  backdrop-filter: blur(12px) saturate(180%);
-  -webkit-backdrop-filter: blur(12px) saturate(180%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 10002;
-  padding: 2rem;
-}
-
-.placement-modal {
-  background: var(--color-primary-background);
-  border-radius: 16px;
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.25);
-  width: 800px;
-  max-width: calc(100vw - 4rem);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  border: 1px solid var(--color-border);
-  position: relative;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: linear-gradient(
-      90deg,
-      transparent 0%,
-      rgba(var(--bi-accent-rgb), 0.5) 50%,
-      transparent 100%
-    );
-    opacity: 0.7;
-  }
-}
-
-.placement-modal-header {
-  padding: 2rem 2rem 1.5rem 2rem;
-  border-bottom: 1px solid var(--color-border);
-  text-align: center;
-}
-
-.placement-modal-title {
-  font-size: 24px;
-  font-weight: 600;
-  margin: 0 0 0.5rem 0;
-  color: var(--color-primary-text);
-}
-
+// Модальное окно выбора режима размещения — стили контента
 .placement-modal-subtitle {
   font-size: 14px;
   color: var(--color-secondary-text);
-  margin: 0;
-}
-
-.placement-modal-content {
-  padding: 2rem;
+  margin: 0 0 1.5rem;
+  text-align: center;
 }
 
 .placement-cards {
@@ -1618,13 +1563,6 @@ watch(dashboardId, async (id, prevId) => {
   span {
     font-weight: 500;
   }
-}
-
-.placement-modal-actions {
-  padding: 1.5rem 2rem 2rem 2rem;
-  border-top: 1px solid var(--color-border);
-  display: flex;
-  justify-content: center;
 }
 
 .placement-modal-btn {

@@ -1,147 +1,142 @@
 <template>
-  <div
-    v-if="show"
-    class="dashboard-block-pipeline-modal-overlay"
-    @click.self="handleClose"
+  <ModalCenter
+    modal-id="dashboardBlockPipelineModal"
+    standalone
+    :visible="show"
+    :dialog-style="{ width: '95vw', maxWidth: '1600px', height: '90vh', maxHeight: '960px' }"
+    :z-index="10000"
+    :scrollable="false"
+    body-class="p-0"
+    @close="handleClose"
   >
-    <div class="dashboard-block-pipeline-modal" @click.stop>
-      <div class="modal-header">
-        <div class="d-flex align-items-center gap-2">
-          <component :is="blockIcon" :size="24" class="text-primary" />
-          <h5 class="modal-title mb-0">Настройки: {{ block?.type }}</h5>
-        </div>
-        <div class="modal-header-actions">
-          <button
-            v-if="block?.type !== 'График' || isDashboardOnlyPipeline || loadedPipelineId"
-            type="button"
-            class="header-btn header-btn-execute"
-            :disabled="executeLoading || !hasOutputNode"
-            :title="!hasOutputNode ? 'Добавьте блок «Выход» и соедините с источником' : undefined"
-            @click="handleExecute"
-          >
-            <Play v-if="!executeLoading" :size="16" />
-            <span v-else class="spinner-border spinner-border-sm"></span>
-            Выполнить
-          </button>
-          <button
-            type="button"
-            class="btn-close"
-            @click="handleClose"
-            :disabled="isLoading"
-          ></button>
-        </div>
+    <template #title>
+      <component :is="blockIcon" :size="24" class="text-primary" />
+      <span>Настройки: {{ block?.type }}</span>
+      <div class="pipeline-modal-header-actions ms-auto">
+        <button
+          v-if="block?.type !== 'График' || isDashboardOnlyPipeline || loadedPipelineId"
+          type="button"
+          class="header-btn header-btn-execute"
+          :disabled="executeLoading || !hasOutputNode"
+          :title="!hasOutputNode ? 'Добавьте блок «Выход» и соедините с источником' : undefined"
+          @click="handleExecute"
+        >
+          <Play v-if="!executeLoading" :size="16" />
+          <span v-else class="spinner-border spinner-border-sm"></span>
+          Выполнить
+        </button>
       </div>
+    </template>
 
-      <div class="modal-body-wrapper">
-        <div class="modal-body">
-          <template v-if="block?.type === 'График' && (isDashboardOnlyPipeline || loadedPipelineId)">
-            <div class="modal-body-pipeline-wrap">
-              <PipelineCanvas
-                ref="pipelineRef"
-                context="dashboard"
-                :initial-nodes="initialPipelineNodes"
-                :initial-edges="initialPipelineEdges"
-                :show-execute-button="false"
-                :show-clear-all="true"
-                :preview-data="previewData"
-                :preview-columns="previewColumns"
-                :execute-loading="executeLoading"
-                :on-execute="handleExecute"
-                @block-config-update="onBlockConfigUpdate"
-                @nodes-update="onNodesUpdate"
-              />
-              <div
-                v-if="!isDashboardOnlyPipeline && loadedPipelineId"
-                class="dashboard-pipeline-open-link"
-              >
-                <a :href="`/bi-modern/pipelines/${loadedPipelineId}`" class="btn btn-sm btn-outline-secondary" target="_blank" rel="noopener">
-                  Открыть в редакторе пайплайнов
-                </a>
-              </div>
-            </div>
-            <div
-              class="panel-resize-handle"
-              :class="{ resizing: isPanelResizing }"
-              @mousedown="startPanelResize"
-              title="Изменить ширину панели"
-            ></div>
-          </template>
-          <PipelineCanvas
-            v-else-if="block?.type !== 'График'"
-            ref="pipelineRef"
-            context="dashboard"
-            :initial-nodes="initialPipelineNodes"
-            :initial-edges="initialPipelineEdges"
-            :show-execute-button="false"
-            :show-clear-all="true"
-            :preview-data="previewData"
-            :preview-columns="previewColumns"
-            :execute-loading="executeLoading"
-            :on-execute="handleExecute"
-            @block-config-update="onBlockConfigUpdate"
-            @nodes-update="onNodesUpdate"
-          />
-          <div
-            v-if="block?.type === 'График'"
-            class="modal-right-panel"
-            :style="{ width: rightPanelWidth + 'px' }"
-          >
-            <div class="chart-card-fields">
-              <div class="mb-2">
-                <label class="form-label small mb-1">Название карточки</label>
-                <input
-                  v-model="chartTitle"
-                  type="text"
-                  class="form-control form-control-sm"
-                  placeholder="Например: Продажи по регионам"
-                />
-              </div>
-              <div class="mb-2">
-                <label class="form-label small mb-1">Подзаголовок</label>
-                <input
-                  v-model="chartSubtitle"
-                  type="text"
-                  class="form-control form-control-sm"
-                  placeholder="Необязательно"
-                />
-              </div>
-            </div>
-            <GraphsChartPanel
-              ref="chartPanelRef"
-              :chart-config="selectedChartConfig"
-              :available-fields="pipelineOutputFields"
+    <div class="pipeline-modal-body-wrapper">
+      <div class="pipeline-modal-body">
+        <template v-if="block?.type === 'График' && (isDashboardOnlyPipeline || loadedPipelineId)">
+          <div class="pipeline-modal-body-pipeline-wrap">
+            <PipelineCanvas
+              ref="pipelineRef"
+              context="dashboard"
+              :initial-nodes="initialPipelineNodes"
+              :initial-edges="initialPipelineEdges"
+              :show-execute-button="false"
+              :show-clear-all="true"
               :preview-data="previewData"
-              :has-chart-node="hasOutputNode"
-              @apply="handleChartPanelApply"
+              :preview-columns="previewColumns"
+              :execute-loading="executeLoading"
+              :on-execute="handleExecute"
+              @block-config-update="onBlockConfigUpdate"
+              @nodes-update="onNodesUpdate"
             />
+            <div
+              v-if="!isDashboardOnlyPipeline && loadedPipelineId"
+              class="dashboard-pipeline-open-link"
+            >
+              <a :href="`/bi-modern/pipelines/${loadedPipelineId}`" class="btn btn-sm btn-outline-secondary" target="_blank" rel="noopener">
+                Открыть в редакторе пайплайнов
+              </a>
+            </div>
           </div>
-        </div>
-
-        <DataPreviewTable
-          :columns="previewColumns"
-          :data="previewData"
-          :rows-count="previewRowsCount"
-          :collapsed="previewCollapsed"
-          @update:collapsed="previewCollapsed = $event"
+          <div
+            class="panel-resize-handle"
+            :class="{ resizing: isPanelResizing }"
+            @mousedown="startPanelResize"
+            title="Изменить ширину панели"
+          ></div>
+        </template>
+        <PipelineCanvas
+          v-else-if="block?.type !== 'График'"
+          ref="pipelineRef"
+          context="dashboard"
+          :initial-nodes="initialPipelineNodes"
+          :initial-edges="initialPipelineEdges"
+          :show-execute-button="false"
+          :show-clear-all="true"
+          :preview-data="previewData"
+          :preview-columns="previewColumns"
+          :execute-loading="executeLoading"
+          :on-execute="handleExecute"
+          @block-config-update="onBlockConfigUpdate"
+          @nodes-update="onNodesUpdate"
         />
+        <div
+          v-if="block?.type === 'График'"
+          class="pipeline-modal-right-panel"
+          :style="{ width: rightPanelWidth + 'px' }"
+        >
+          <div class="chart-card-fields">
+            <div class="mb-2">
+              <label class="form-label small mb-1">Название карточки</label>
+              <input
+                v-model="chartTitle"
+                type="text"
+                class="form-control form-control-sm"
+                placeholder="Например: Продажи по регионам"
+              />
+            </div>
+            <div class="mb-2">
+              <label class="form-label small mb-1">Подзаголовок</label>
+              <input
+                v-model="chartSubtitle"
+                type="text"
+                class="form-control form-control-sm"
+                placeholder="Необязательно"
+              />
+            </div>
+          </div>
+          <GraphsChartPanel
+            ref="chartPanelRef"
+            :chart-config="selectedChartConfig"
+            :available-fields="pipelineOutputFields"
+            :preview-data="previewData"
+            :has-chart-node="hasOutputNode"
+            @apply="handleChartPanelApply"
+          />
+        </div>
       </div>
 
-      <div class="modal-footer">
-        <button
-          type="button"
-          class="btn btn-secondary"
-          @click="handleClose"
-          :disabled="isLoading"
-        >Отмена</button>
-        <button
-          type="button"
-          class="btn btn-primary"
-          @click="handleSave"
-          :disabled="isLoading"
-        >Сохранить</button>
-      </div>
+      <DataPreviewTable
+        :columns="previewColumns"
+        :data="previewData"
+        :rows-count="previewRowsCount"
+        :collapsed="previewCollapsed"
+        @update:collapsed="previewCollapsed = $event"
+      />
     </div>
-  </div>
+
+    <template #footer>
+      <button
+        type="button"
+        class="btn btn-secondary"
+        @click="handleClose"
+        :disabled="isLoading"
+      >Отмена</button>
+      <button
+        type="button"
+        class="btn btn-primary"
+        @click="handleSave"
+        :disabled="isLoading"
+      >Сохранить</button>
+    </template>
+  </ModalCenter>
 </template>
 
 <script setup>
@@ -152,6 +147,7 @@ import { biEndpoints } from '@/modules/bi_analysis_modern/client/src/js/endpoint
 import { fetchPipelineChartDetail, fetchPipelineDetail, savePipelineChart, updatePipeline } from '@/modules/bi_analysis_modern/client/src/Pipelines/js/pipelineApi.js'
 import { resolveBlockChartConfig } from '@/modules/bi_analysis_modern/client/src/js/chartConfigUtils.js'
 import { BarChart3, Code, Database, Play } from 'lucide-vue-next'
+import ModalCenter from '@/components/ModalCenter.vue'
 import DataPreviewTable from '@/modules/bi_analysis_modern/client/src/components/DataPreviewTable.vue'
 import PipelineCanvas from '@/modules/bi_analysis_modern/client/src/Pipelines/components/PipelineCanvas.vue'
 import GraphsChartPanel from '@/modules/bi_analysis_modern/client/src/Graphs/GraphsChartPanel.vue'
@@ -181,9 +177,7 @@ const isDashboardOnlyPipeline = ref(false)
 const chartTitle = ref('')
 const chartSubtitle = ref('')
 
-// Local chart config state — survives within the modal session and is saved to block config
 const localChartConfig = ref(null)
-// Saved output field names — restored from block config to avoid requiring re-execution
 const savedOutputFields = ref([])
 
 const MIN_PANEL_WIDTH = 360
@@ -225,7 +219,6 @@ function stopPanelResize() {
 }
 
 const pipelineOutputFields = computed(() => {
-  // Use live preview columns if available (after execution), otherwise fall back to saved fields
   const cols = previewColumns.value.length > 0
     ? previewColumns.value
     : savedOutputFields.value
@@ -255,9 +248,6 @@ const blockIcon = computed(() => {
   return icons[props.block?.type] || BarChart3
 })
 
-/**
- * Normalizes legacy 'chart' nodes to 'output' for backward compatibility.
- */
 function normalizeNode(n) {
   if (n.type === 'chart') {
     return { ...n, type: 'output', data: { ...n.data, label: 'Выход', nodeType: 'output' } }
@@ -331,7 +321,6 @@ function onBlockConfigUpdate(chartConfig) {
 }
 
 function handleChartPanelApply(config) {
-  // Store chart settings locally so they survive within this modal session
   localChartConfig.value = { ...(localChartConfig.value || {}), ...config }
   const base = buildBlockConfig()
   emit('block-config-update', {
@@ -451,8 +440,6 @@ watch(() => props.show, async (isOpen) => {
     }
     savedOutputFields.value = Array.isArray(cfg.outputFields) ? cfg.outputFields : []
 
-    // When pipelineChartId exists, fetch fresh chart config from PipelineChart API
-    // so the modal always shows current fields (even if block.config is stale)
     const pipelineChartId = cfg.pipelineChartId
     if (pipelineChartId) {
       try {
@@ -464,7 +451,6 @@ watch(() => props.show, async (isOpen) => {
       }
     }
 
-    // Reset preview (will be populated after execution)
     previewData.value = []
     previewColumns.value = []
     previewRowsCount.value = 0
@@ -483,77 +469,34 @@ onBeforeUnmount(() => {
 <style scoped lang="scss">
 @import '@/modules/bi_analysis_modern/client/src/Pipelines/scss/pipeline-editor.scss';
 
-.dashboard-block-pipeline-modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 10000;
-  padding: 2rem;
-}
-
-.dashboard-block-pipeline-modal {
-  background: var(--color-primary-background, #fff);
-  border-radius: 12px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-  width: 95vw;
-  max-width: 1600px;
-  height: 90vh;
-  max-height: 960px;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.modal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 1.25rem 1.5rem;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-  flex-shrink: 0;
-}
-
-.modal-header-actions {
+.pipeline-modal-header-actions {
   display: flex;
   align-items: center;
   gap: 0.5rem;
 }
 
-.modal-title {
-  font-size: 18px;
-  font-weight: 600;
-  margin: 0;
-  color: var(--color-primary-text);
-}
-
-.modal-body-wrapper {
+.pipeline-modal-body-wrapper {
   flex: 1;
   display: flex;
   flex-direction: column;
   overflow: hidden;
   min-height: 0;
+  height: 100%;
 }
 
-.modal-body {
+.pipeline-modal-body {
   flex: 1;
   overflow: hidden;
-  padding: 0;
   display: flex;
   min-height: 0;
   min-width: 0;
 }
 
-.modal-body > :first-child {
+.pipeline-modal-body > :first-child {
   min-width: 0;
 }
 
-.modal-body-pipeline-wrap {
+.pipeline-modal-body-pipeline-wrap {
   position: relative;
   flex: 1;
   min-width: 0;
@@ -582,7 +525,7 @@ onBeforeUnmount(() => {
   }
 }
 
-.modal-right-panel {
+.pipeline-modal-right-panel {
   min-width: 360px;
   max-width: 800px;
   background: rgba(255, 255, 255, 0.98);
@@ -596,16 +539,6 @@ onBeforeUnmount(() => {
 .chart-card-fields {
   padding: 0.75rem 1rem 0;
   border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-  flex-shrink: 0;
-}
-
-.modal-footer {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 0.75rem;
-  padding: 1rem 1.5rem;
-  border-top: 1px solid rgba(0, 0, 0, 0.1);
   flex-shrink: 0;
 }
 </style>

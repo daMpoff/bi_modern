@@ -1,17 +1,20 @@
 <template>
-  <div v-if="show" class="datasource-modal-overlay" @click.self="handleClose">
-    <div class="datasource-modal">
-      <div class="modal-header">
-        <div class="d-flex align-items-center gap-2">
-          <Database :size="22" class="text-primary" />
-          <h5 class="modal-title mb-0">Источник данных</h5>
-        </div>
-        <button type="button" class="btn-close" @click="handleClose"></button>
-      </div>
+  <ModalCenter
+    modal-id="pipelineDataSourceModal"
+    standalone
+    :visible="show"
+    :dialog-style="{ maxWidth: '600px' }"
+    :z-index="10050"
+    :close-on-esc="false"
+    @close="handleClose"
+  >
+    <template #title>
+      <Database :size="22" class="text-primary" />
+      <span>Источник данных</span>
+    </template>
 
-      <div class="modal-body">
-        <!-- Режим: Собрать из подключения -->
-        <div class="mode-content">
+    <!-- Режим: Собрать из подключения -->
+    <div class="mode-content">
           <div class="inline-steps">
             <!-- Шаг 1: Подключение -->
             <div class="step-panel" :class="{ completed: !!selectedConnection }">
@@ -53,24 +56,22 @@
               </div>
             </div>
           </div>
-        </div>
-      </div>
-
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" @click="handleClose">
-          Отмена
-        </button>
-        <button
-          type="button"
-          class="btn btn-primary"
-          :disabled="!canApply"
-          @click="handleApply"
-        >
-          Применить
-        </button>
-      </div>
     </div>
-  </div>
+
+    <template #footer>
+      <button type="button" class="btn btn-secondary" @click="handleClose">
+        Отмена
+      </button>
+      <button
+        type="button"
+        class="btn btn-primary"
+        :disabled="!canApply"
+        @click="handleApply"
+      >
+        Применить
+      </button>
+    </template>
+  </ModalCenter>
 </template>
 
 <script setup>
@@ -78,6 +79,7 @@ import { ref, computed, watch } from 'vue'
 import { Database, ChevronDown } from 'lucide-vue-next'
 import { apiClient } from '@/js/api/manager'
 import { biEndpoints } from '@/modules/bi_analysis_modern/client/src/js/endpoints'
+import ModalCenter from '@/components/ModalCenter.vue'
 import ConnectionPicker from './DataSource/ConnectionPicker.vue'
 import TablePicker from './DataSource/TablePicker.vue'
 import { getConnectionType } from './DataSource/js/connectionType.js'
@@ -215,51 +217,6 @@ watch(() => props.initialConfig, (config) => {
 </script>
 
 <style scoped lang="scss">
-.datasource-modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 10050;
-}
-
-.datasource-modal {
-  background: var(--color-primary-background, #fff);
-  border-radius: 12px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-  width: 90vw;
-  max-width: 600px;
-  max-height: 85vh;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.modal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 1rem 1.5rem;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-  flex-shrink: 0;
-}
-
-.modal-title {
-  font-size: 16px;
-  font-weight: 600;
-}
-
-.modal-body {
-  flex: 1;
-  overflow-y: auto;
-  padding: 1.5rem;
-}
-
 .mode-content {
   min-height: 300px;
 }
@@ -355,15 +312,5 @@ watch(() => props.initialConfig, (config) => {
   border-top: 1px solid rgba(0, 0, 0, 0.05);
   max-height: 300px;
   overflow-y: auto;
-}
-
-.modal-footer {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 0.75rem;
-  padding: 1rem 1.5rem;
-  border-top: 1px solid rgba(0, 0, 0, 0.1);
-  flex-shrink: 0;
 }
 </style>

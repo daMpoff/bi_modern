@@ -2,8 +2,9 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useToast } from 'vue-toastification'
-import { Workflow, Search, MoreHorizontal, Pencil, Trash2, BarChart3, X } from 'lucide-vue-next'
+import { Workflow, Search, MoreHorizontal, Pencil, Trash2, BarChart3 } from 'lucide-vue-next'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
+import ModalCenter from '@/components/ModalCenter.vue'
 import { fetchPipelines, createPipeline, deletePipeline } from '../js/pipelineApi.js'
 
 const router = useRouter()
@@ -242,38 +243,37 @@ onUnmounted(() => {
       @close="cancelDelete"
     />
 
-    <div v-if="showCreateModal" class="create-modal-overlay" @click="closeCreateModal">
-      <div class="create-modal" @click.stop>
-        <div class="create-modal-header">
-          <h3 class="create-modal-title">Создать пайплайн</h3>
-          <button class="create-modal-close" @click="closeCreateModal">
-            <X :size="20" />
-          </button>
-        </div>
-        <div class="create-modal-content">
-          <div class="create-modal-field">
-            <label class="create-modal-label">Название пайплайна</label>
-            <input
-              type="text"
-              class="create-modal-input"
-              v-model="newName"
-              placeholder="Введите название"
-              @keyup.enter="handleCreate"
-              :disabled="isCreating"
-              autofocus
-            />
-          </div>
-        </div>
-        <div class="create-modal-actions">
-          <button class="create-modal-btn create-modal-btn-secondary" @click="closeCreateModal" :disabled="isCreating">
-            Отмена
-          </button>
-          <button class="create-modal-btn create-modal-btn-primary" @click="handleCreate" :disabled="isCreating || !newName.trim()">
-            Создать
-          </button>
-        </div>
+    <ModalCenter
+      modal-id="pipelineListCreateModal"
+      standalone
+      :visible="showCreateModal"
+      title="Создать пайплайн"
+      :dialog-style="{ width: '500px', maxWidth: 'calc(100vw - 4rem)' }"
+      :z-index="10001"
+      @close="closeCreateModal"
+    >
+      <div class="create-modal-field">
+        <label class="create-modal-label">Название пайплайна</label>
+        <input
+          type="text"
+          class="create-modal-input"
+          v-model="newName"
+          placeholder="Введите название"
+          @keyup.enter="handleCreate"
+          :disabled="isCreating"
+          autofocus
+        />
       </div>
-    </div>
+
+      <template #footer>
+        <button class="create-modal-btn create-modal-btn-secondary" @click="closeCreateModal" :disabled="isCreating">
+          Отмена
+        </button>
+        <button class="create-modal-btn create-modal-btn-primary" @click="handleCreate" :disabled="isCreating || !newName.trim()">
+          Создать
+        </button>
+      </template>
+    </ModalCenter>
   </div>
 </template>
 

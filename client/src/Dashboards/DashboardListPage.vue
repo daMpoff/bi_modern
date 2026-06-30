@@ -2,10 +2,11 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { apiClient } from '@/js/api/manager.js'
-import { LayoutDashboard, Search, MoreHorizontal, Eye, Pencil, Trash2, Settings, X } from 'lucide-vue-next'
+import { LayoutDashboard, Search, MoreHorizontal, Eye, Pencil, Trash2, Settings } from 'lucide-vue-next'
 import { getListConfig } from '@/modules/bi_analysis_modern/client/src/js/listConfigs.js'
 import { useToast } from 'vue-toastification'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
+import ModalCenter from '@/components/ModalCenter.vue'
 
 const config = getListConfig('dashboards')
 const router = useRouter()
@@ -423,154 +424,147 @@ onUnmounted(() => {
     />
 
     <!-- Модальное окно настроек -->
-    <div v-if="showSettingsModal" class="settings-modal-overlay" @click="closeSettings">
-      <div class="settings-modal" @click.stop>
-        <div class="settings-modal-header">
-          <h3 class="settings-modal-title">Настройки отображения</h3>
-          <button class="settings-modal-close" @click="closeSettings">
-            <X :size="20" />
+    <ModalCenter
+      modal-id="dashboardListSettingsModal"
+      standalone
+      :visible="showSettingsModal"
+      title="Настройки отображения"
+      :dialog-style="{ width: '720px', maxWidth: 'calc(100vw - 4rem)' }"
+      :z-index="10001"
+      @close="closeSettings"
+    >
+      <div class="settings-section">
+        <label class="settings-label">Размер карточек</label>
+        <div class="settings-options">
+          <button
+            class="settings-option"
+            :class="{ active: gridSettings.cardSize === 'small' }"
+            @click="gridSettings.cardSize = 'small'"
+          >
+            Маленькие
+          </button>
+          <button
+            class="settings-option"
+            :class="{ active: gridSettings.cardSize === 'medium' }"
+            @click="gridSettings.cardSize = 'medium'"
+          >
+            Средние
+          </button>
+          <button
+            class="settings-option"
+            :class="{ active: gridSettings.cardSize === 'large' }"
+            @click="gridSettings.cardSize = 'large'"
+          >
+            Большие
           </button>
         </div>
-        <div class="settings-modal-content">
-          <!-- Размер карточек -->
-          <div class="settings-section">
-            <label class="settings-label">Размер карточек</label>
-            <div class="settings-options">
-              <button 
-                class="settings-option" 
-                :class="{ active: gridSettings.cardSize === 'small' }"
-                @click="gridSettings.cardSize = 'small'"
-              >
-                Маленькие
-              </button>
-              <button 
-                class="settings-option" 
-                :class="{ active: gridSettings.cardSize === 'medium' }"
-                @click="gridSettings.cardSize = 'medium'"
-              >
-                Средние
-              </button>
-              <button 
-                class="settings-option" 
-                :class="{ active: gridSettings.cardSize === 'large' }"
-                @click="gridSettings.cardSize = 'large'"
-              >
-                Большие
-              </button>
-            </div>
-          </div>
+      </div>
 
-          <!-- Минимальная ширина карточки -->
-          <div class="settings-section">
-            <label class="settings-label">Минимальная ширина карточки: {{ gridSettings.minCardWidth }}px</label>
-            <input 
-              type="range" 
-              class="settings-range" 
-              min="200" 
-              max="400" 
-              step="20"
-              v-model.number="gridSettings.minCardWidth"
-            />
-            <div class="settings-range-labels">
-              <span>200px</span>
-              <span>400px</span>
-            </div>
-          </div>
-
-          <!-- Отступ между карточками -->
-          <div class="settings-section">
-            <label class="settings-label">Отступ между карточками: {{ gridSettings.gridGap }}rem</label>
-            <input 
-              type="range" 
-              class="settings-range" 
-              min="0.5" 
-              max="3" 
-              step="0.5"
-              v-model.number="gridSettings.gridGap"
-            />
-            <div class="settings-range-labels">
-              <span>0.5rem</span>
-              <span>3rem</span>
-            </div>
-          </div>
-
-          <!-- Отображение элементов -->
-          <div class="settings-section">
-            <label class="settings-label">Отображение элементов</label>
-            <div class="settings-checkboxes">
-              <label class="settings-checkbox">
-                <input type="checkbox" v-model="gridSettings.showDescription" />
-                <span>Показывать описание</span>
-              </label>
-              <label class="settings-checkbox">
-                <input type="checkbox" v-model="gridSettings.showDate" />
-                <span>Показывать дату создания</span>
-              </label>
-            </div>
-          </div>
-
-          <!-- Сортировка по умолчанию -->
-          <div class="settings-section">
-            <label class="settings-label">Сортировка по умолчанию</label>
-            <select class="settings-select" v-model="gridSettings.defaultSort">
-              <option value="new">Сначала новые</option>
-              <option value="old">Сначала старые</option>
-              <option value="az">А-Я</option>
-              <option value="za">Я-А</option>
-            </select>
-          </div>
-
-          <!-- Кнопки действий -->
-          <div class="settings-actions">
-            <button class="settings-btn settings-btn-secondary" @click="resetSettings">
-              Сбросить
-            </button>
-            <div class="settings-actions-right">
-              <button class="settings-btn settings-btn-secondary" @click="closeSettings">
-                Отмена
-              </button>
-              <button class="settings-btn settings-btn-primary" @click="saveSettings(); closeSettings()">
-                Сохранить
-              </button>
-            </div>
-          </div>
+      <div class="settings-section">
+        <label class="settings-label">Минимальная ширина карточки: {{ gridSettings.minCardWidth }}px</label>
+        <input
+          type="range"
+          class="settings-range"
+          min="200"
+          max="400"
+          step="20"
+          v-model.number="gridSettings.minCardWidth"
+        />
+        <div class="settings-range-labels">
+          <span>200px</span>
+          <span>400px</span>
         </div>
       </div>
-    </div>
+
+      <div class="settings-section">
+        <label class="settings-label">Отступ между карточками: {{ gridSettings.gridGap }}rem</label>
+        <input
+          type="range"
+          class="settings-range"
+          min="0.5"
+          max="3"
+          step="0.5"
+          v-model.number="gridSettings.gridGap"
+        />
+        <div class="settings-range-labels">
+          <span>0.5rem</span>
+          <span>3rem</span>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <label class="settings-label">Отображение элементов</label>
+        <div class="settings-checkboxes">
+          <label class="settings-checkbox">
+            <input type="checkbox" v-model="gridSettings.showDescription" />
+            <span>Показывать описание</span>
+          </label>
+          <label class="settings-checkbox">
+            <input type="checkbox" v-model="gridSettings.showDate" />
+            <span>Показывать дату создания</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <label class="settings-label">Сортировка по умолчанию</label>
+        <select class="settings-select" v-model="gridSettings.defaultSort">
+          <option value="new">Сначала новые</option>
+          <option value="old">Сначала старые</option>
+          <option value="az">А-Я</option>
+          <option value="za">Я-А</option>
+        </select>
+      </div>
+
+      <template #footer>
+        <div class="settings-footer">
+          <button class="settings-btn settings-btn-secondary" @click="resetSettings">
+            Сбросить
+          </button>
+          <div class="settings-actions-right">
+            <button class="settings-btn settings-btn-secondary" @click="closeSettings">
+              Отмена
+            </button>
+            <button class="settings-btn settings-btn-primary" @click="saveSettings(); closeSettings()">
+              Сохранить
+            </button>
+          </div>
+        </div>
+      </template>
+    </ModalCenter>
 
     <!-- Модальное окно создания дашборда -->
-    <div v-if="showCreateModal" class="create-modal-overlay" @click="closeCreateModal">
-      <div class="create-modal" @click.stop>
-        <div class="create-modal-header">
-          <h3 class="create-modal-title">Создать дашборд</h3>
-          <button class="create-modal-close" @click="closeCreateModal">
-            <X :size="20" />
-          </button>
-        </div>
-        <div class="create-modal-content">
-          <div class="create-modal-field">
-            <label class="create-modal-label">Название дашборда</label>
-            <input
-              type="text"
-              class="create-modal-input"
-              v-model="newDashboardName"
-              placeholder="Введите название дашборда"
-              @keyup.enter="createDashboard"
-              :disabled="isCreating"
-              autofocus
-            />
-          </div>
-        </div>
-        <div class="create-modal-actions">
-          <button class="create-modal-btn create-modal-btn-secondary" @click="closeCreateModal" :disabled="isCreating">
-            Отмена
-          </button>
-          <button class="create-modal-btn create-modal-btn-primary" @click="createDashboard" :disabled="isCreating || !newDashboardName.trim()">
-            Создать
-          </button>
-        </div>
+    <ModalCenter
+      modal-id="dashboardListCreateModal"
+      standalone
+      :visible="showCreateModal"
+      title="Создать дашборд"
+      :dialog-style="{ width: '500px', maxWidth: 'calc(100vw - 4rem)' }"
+      :z-index="10001"
+      @close="closeCreateModal"
+    >
+      <div class="create-modal-field">
+        <label class="create-modal-label">Название дашборда</label>
+        <input
+          type="text"
+          class="create-modal-input"
+          v-model="newDashboardName"
+          placeholder="Введите название дашборда"
+          @keyup.enter="createDashboard"
+          :disabled="isCreating"
+          autofocus
+        />
       </div>
-    </div>
+
+      <template #footer>
+        <button class="create-modal-btn create-modal-btn-secondary" @click="closeCreateModal" :disabled="isCreating">
+          Отмена
+        </button>
+        <button class="create-modal-btn create-modal-btn-primary" @click="createDashboard" :disabled="isCreating || !newDashboardName.trim()">
+          Создать
+        </button>
+      </template>
+    </ModalCenter>
   </div>
 </template>
 
@@ -1134,98 +1128,6 @@ onUnmounted(() => {
   border-top: 1px solid rgba(0, 0, 0, 0.08);
 }
 
-.settings-modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(
-    135deg,
-    rgba(0, 0, 0, 0.4) 0%,
-    rgba(0, 0, 0, 0.5) 100%
-  );
-  backdrop-filter: blur(12px) saturate(180%);
-  -webkit-backdrop-filter: blur(12px) saturate(180%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 10001;
-  padding: 2rem;
-}
-
-.settings-modal {
-  background: var(--color-primary-background);
-  border-radius: 16px;
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.25);
-  width: 720px;
-  max-width: calc(100vw - 4rem);
-  max-height: calc(100vh - 4rem);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  border: 1px solid var(--color-border);
-  position: relative;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: linear-gradient(
-      90deg,
-      transparent 0%,
-      rgba(var(--bi-accent-rgb), 0.5) 50%,
-      transparent 100%
-    );
-    opacity: 0.7;
-  }
-}
-
-.settings-modal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 2rem 2rem 1.5rem 2rem;
-  border-bottom: 1px solid var(--color-border);
-  position: relative;
-  z-index: 1;
-}
-
-.settings-modal-title {
-  font-size: 20px;
-  font-weight: 600;
-  margin: 0;
-  color: var(--color-primary-text);
-}
-
-.settings-modal-close {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  background: transparent;
-  border: none;
-  border-radius: 8px;
-  color: var(--color-secondary-text);
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background: rgba(0, 0, 0, 0.05);
-    color: var(--color-primary-text);
-  }
-}
-
-.settings-modal-content {
-  padding: 2rem;
-  overflow-y: auto;
-  flex: 1;
-}
-
 .settings-section {
   margin-bottom: 2rem;
 
@@ -1357,13 +1259,12 @@ onUnmounted(() => {
   }
 }
 
-.settings-actions {
+.settings-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-top: 1.5rem;
-  border-top: 1px solid var(--color-border);
-  margin-top: 1rem;
+  width: 100%;
+  gap: 0.75rem;
 }
 
 .settings-actions-right {
@@ -1410,96 +1311,7 @@ onUnmounted(() => {
   }
 }
 
-// Модальное окно создания дашборда
-.create-modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(
-    135deg,
-    rgba(0, 0, 0, 0.4) 0%,
-    rgba(0, 0, 0, 0.5) 100%
-  );
-  backdrop-filter: blur(12px) saturate(180%);
-  -webkit-backdrop-filter: blur(12px) saturate(180%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 10001;
-  padding: 2rem;
-}
-
-.create-modal {
-  background: var(--color-primary-background);
-  border-radius: 16px;
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.25);
-  width: 500px;
-  max-width: calc(100vw - 4rem);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  border: 1px solid var(--color-border);
-  position: relative;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: linear-gradient(
-      90deg,
-      transparent 0%,
-      rgba(var(--bi-accent-rgb), 0.5) 50%,
-      transparent 100%
-    );
-    opacity: 0.7;
-  }
-}
-
-.create-modal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 2rem 2rem 1.5rem 2rem;
-  border-bottom: 1px solid var(--color-border);
-  position: relative;
-  z-index: 1;
-}
-
-.create-modal-title {
-  font-size: 20px;
-  font-weight: 600;
-  margin: 0;
-  color: var(--color-primary-text);
-}
-
-.create-modal-close {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  background: transparent;
-  border: none;
-  border-radius: 8px;
-  color: var(--color-secondary-text);
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background: rgba(0, 0, 0, 0.05);
-    color: var(--color-primary-text);
-  }
-}
-
-.create-modal-content {
-  padding: 2rem;
-}
-
+// Модальное окно создания дашборда — контент
 .create-modal-field {
   display: flex;
   flex-direction: column;
@@ -1537,14 +1349,6 @@ onUnmounted(() => {
     color: var(--color-secondary-text);
     opacity: 0.6;
   }
-}
-
-.create-modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.75rem;
-  padding: 1.5rem 2rem 2rem 2rem;
-  border-top: 1px solid var(--color-border);
 }
 
 .create-modal-btn {

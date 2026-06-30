@@ -96,37 +96,43 @@
     </teleport>
 
   </div>
-  <transition name="fade-modal">
-    <div v-if="showDeleteDialog" class="modal-overlay" @click.self="cancelDelete">
-      <div class="modal-dialog">
-        <div class="modal-title">Вы действительно хотите удалить
-          <span class="item-name">"{{ rowToDelete?.name || rowToDelete?.original_filename || 'элемент' }}"</span>
-          <span style="font-weight: normal">({{ getTypeName(rowToDelete) }})</span>?
-        </div>
-        <div class="modal-actions">
-          <button class="btn btn-danger" @click="confirmDelete" :disabled="isDeleteLocked">{{ isDeleteLocked ? `Да
-            (${deleteCountdown})` : 'Да' }}</button>
-          <button class="btn btn-outline-secondary" @click="cancelDelete">Нет</button>
-        </div>
-      </div>
-    </div>
-  </transition>
+  <ConfirmDialog
+    :show="showDeleteDialog"
+    title="Подтверждение удаления"
+    :message="deleteConfirmMessage"
+    confirm-text="Да"
+    cancel-text="Нет"
+    :confirm-countdown-seconds="3"
+    @confirm="confirmDelete"
+    @close="cancelDelete"
+  />
 
-  <transition name="fade-modal">
-    <div v-if="showRenameDialog" class="modal-overlay" @click.self="cancelRename">
-      <div class="modal-dialog">
-        <div class="modal-title">Укажите новое название элементу</div>
-        <input id="rename-input" class="form-control" v-model="renameValue" :disabled="renameLoading" maxlength="128"
-          @keyup.enter="doRename" style="margin-bottom: 1rem; width: 100%; font-size: 1.05rem;" autocomplete="off" />
-        <div v-if="renameError" style="color: #f87171; margin-bottom: 1rem;">{{ renameError }}</div>
-        <div class="modal-actions">
-          <button class="btn btn-primary" @click="doRename"
-            :disabled="renameLoading || !renameValue.trim()">Сохранить</button>
-          <button class="btn btn-secondary" @click="cancelRename" :disabled="renameLoading">Отмена</button>
-        </div>
-      </div>
-    </div>
-  </transition>
+  <ModalCenter
+    modal-id="simpleTableRenameDialog"
+    standalone
+    :visible="showRenameDialog"
+    title="Укажите новое название элементу"
+    :dialog-style="{ maxWidth: '480px' }"
+    @close="cancelRename"
+  >
+    <input
+      id="rename-input"
+      class="form-control rename-input"
+      v-model="renameValue"
+      :disabled="renameLoading"
+      maxlength="128"
+      autocomplete="off"
+      @keyup.enter="doRename"
+    />
+    <div v-if="renameError" class="rename-error">{{ renameError }}</div>
+
+    <template #footer>
+      <button class="btn btn-primary" @click="doRename" :disabled="renameLoading || !renameValue.trim()">
+        Сохранить
+      </button>
+      <button class="btn btn-secondary" @click="cancelRename" :disabled="renameLoading">Отмена</button>
+    </template>
+  </ModalCenter>
 
   <transition name="fade-modal">
     <div v-if="showCopySuccess" class="copy-success-toast" :style="{ opacity: copyOpacity }">
@@ -140,6 +146,8 @@ import { ref, watch, onMounted, computed } from 'vue'
 import { Star, MoreHorizontal, Trash2, CaseSensitive, Link, TriangleAlert, Table, LayoutDashboard } from 'lucide-vue-next'
 import { useRouter } from 'vue-router'
 import { apiClient } from '@/js/api/manager.js'
+import ConfirmDialog from '@/components/ConfirmDialog.vue'
+import ModalCenter from '@/components/ModalCenter.vue'
 import ClickHouseIcon from '@/modules/bi_analysis_modern/client/src/assets/icons/clickhouse.svg'
 import PostgresIcon from '@/modules/bi_analysis_modern/client/src/assets/icons/postgres.svg'
 import MssqlIcon from '@/modules/bi_analysis_modern/client/src/assets/icons/mssql.svg'
@@ -181,9 +189,12 @@ const favoritesInCurrentList = computed(() => {
 
 const showDeleteDialog = ref(false)
 const rowToDelete = ref(null)
-const isDeleteLocked = ref(false)
-const deleteCountdown = ref(3)
-let countdownTimer = null
+
+const deleteConfirmMessage = computed(() => {
+  const name = rowToDelete.value?.name || rowToDelete.value?.original_filename || 'элемент'
+  const typeName = getTypeName(rowToDelete.value)
+  return `Вы действительно хотите удалить «${name}» (${typeName})?`
+})
 
 const showRenameDialog = ref(false)
 const rowToRename = ref(null)
@@ -316,7 +327,7 @@ function getDeleteEndpoint(row) {
 }
 
 async function confirmDelete() {
-  if (isDeleteLocked.value || !rowToDelete.value) return
+  if (!rowToDelete.value) return
   const endpoint = getDeleteEndpoint(rowToDelete.value)
   if (!endpoint) return
   try {
@@ -330,20 +341,11 @@ async function confirmDelete() {
 function askDelete(row) {
   rowToDelete.value = row
   showDeleteDialog.value = true
-  isDeleteLocked.value = true
-  deleteCountdown.value = 3
-  if (countdownTimer) clearInterval(countdownTimer)
-  countdownTimer = setInterval(() => {
-    if (deleteCountdown.value > 1) deleteCountdown.value -= 1
-    else { isDeleteLocked.value = false; clearInterval(countdownTimer) }
-  }, 1000)
 }
 
 function cancelDelete() {
   showDeleteDialog.value = false
   rowToDelete.value = null
-  isDeleteLocked.value = false
-  if (countdownTimer) clearInterval(countdownTimer)
 }
 
 function getRowById(id) { return props.users.find(u => u.id === id) }
@@ -549,13 +551,15 @@ defineExpose({ clearConnectionFilesCache })
 .menu-dropdown hr { margin: 4px 0; }
 .menu-item:hover { background-color: var(--color-hover-background); }
 .menu-item.danger { color: #f87171; }
-.fade-modal-enter-active, .fade-modal-leave-active { transition: opacity 0.25s; }
-.fade-modal-enter-from, .fade-modal-leave-to { opacity: 0; }
-.modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 10050; background: rgba(0, 0, 0, 0.48); display: flex; align-items: center; justify-content: center; }
-.modal-dialog { background: #212127; color: #fff; padding: 2rem 2.5rem; border-radius: 16px; box-shadow: 0 8px 40px 0 rgba(0, 0, 0, 0.32); min-width: 340px; max-width: 90vw; display: flex; flex-direction: column; align-items: center; pointer-events: all; }
-.modal-title { margin-bottom: 1.6rem; font-size: 1.15rem; text-align: center; font-weight: 500; }
-.item-name { font-weight: bold; color: #f87171; margin: 0 0.3em; word-break: break-all; }
-.modal-actions { display: flex; gap: 1.5rem; }
-.btn { min-width: 78px; padding: 0.5em 1.4em; border: none; border-radius: 6px; font-size: 1rem; transition: background 0.2s, color 0.2s, box-shadow 0.15s; }
+.rename-input {
+  width: 100%;
+  font-size: 1.05rem;
+}
+
+.rename-error {
+  color: #f87171;
+  margin-top: 1rem;
+}
+
 .copy-success-toast { position: fixed; bottom: 44px; left: 50%; transform: translateX(-50%); background: var(--color-primary-background); color: var(--color-primary-text); font-size: 1rem; padding: 1.1rem 2rem; border-radius: 12px; z-index: 20000; box-shadow: 0 2px 12px #0007; pointer-events: none; opacity: 1; transition: opacity 0.2s linear; }
 </style>

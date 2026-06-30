@@ -1,112 +1,116 @@
 <template>
-  <div v-if="show" class="pm-overlay" @click.self="$emit('close')">
-    <div class="pm-modal pm-modal--sm">
-      <div class="pm-header">
-        <div class="pm-header-icon" style="background: rgba(236, 72, 153, 0.12); color: #ec4899">
-          <GitMerge :size="20" />
-        </div>
-        <h3 class="pm-header-title">Настройки соединения</h3>
-        <button class="pm-header-close" @click="$emit('close')">
-          <X :size="16" />
-        </button>
+  <ModalCenter
+    modal-id="pipelineJoinModal"
+    standalone
+    :visible="show"
+    :dialog-style="{ maxWidth: '480px' }"
+    :z-index="10050"
+    body-class="p-0"
+    @close="$emit('close')"
+  >
+    <template #title>
+      <div class="pm-header-icon" style="background: rgba(236, 72, 153, 0.12); color: #ec4899">
+        <GitMerge :size="20" />
       </div>
+      <span>Настройки соединения</span>
+    </template>
 
-      <div class="pm-body">
-        <div class="pm-section">
-          <span class="pm-section-title">Тип связи</span>
-          <div class="pm-chip-group">
-            <button
-              v-for="jt in joinTypes"
-              :key="jt.value"
-              class="pm-chip"
-              :class="{ 'pm-chip--active': joinType === jt.value }"
-              @click="joinType = jt.value"
-            >
-              <component :is="jt.icon" style="width: 28px; height: 14px" />
-              <span>{{ jt.label }}</span>
-            </button>
-          </div>
-        </div>
-
-        <div v-if="suggestions.length > 0" class="pm-section">
-          <span class="pm-section-title">Совпадающие поля</span>
-          <div class="pm-chip-group">
-            <button
-              v-for="(s, idx) in suggestions"
-              :key="idx"
-              class="pm-chip"
-              :class="{ 'pm-chip--active': leftKey === s.leftKey && rightKey === s.rightKey }"
-              @click="applySuggestion(s)"
-            >
-              <span>{{ s.leftKey }}</span>
-              <Link2 :size="12" style="opacity: 0.5" />
-              <span>{{ s.rightKey }}</span>
-            </button>
-          </div>
-        </div>
-
-        <div class="pm-section">
-          <div class="pm-section-row">
-            <span class="pm-section-title">Ключевые поля</span>
-            <button
-              type="button"
-              class="pm-btn pm-btn--secondary pm-btn--sm"
-              :disabled="!canSuggest || suggestionsLoading"
-              @click="pickSuggestedKeys"
-            >
-              <span v-if="suggestionsLoading" class="spinner-border spinner-border-sm" role="status"></span>
-              <Link2 v-else :size="14" />
-              Подобрать ключи
-            </button>
-          </div>
-          <div style="display: flex; gap: 0.75rem; align-items: flex-end">
-            <div style="flex: 1">
-              <label class="pm-label">Левая таблица</label>
-              <select v-if="leftColumns.length > 0" v-model="leftKey" class="pm-select">
-                <option value="">-- выберите --</option>
-                <option v-for="col in leftColumns" :key="col" :value="col">{{ col }}</option>
-              </select>
-              <input v-else v-model="leftKey" type="text" class="pm-input" placeholder="id" />
-            </div>
-            <div style="padding-bottom: 0.5rem; color: var(--color-secondary-text)">
-              <ArrowRight :size="16" />
-            </div>
-            <div style="flex: 1">
-              <label class="pm-label">Правая таблица</label>
-              <select v-if="rightColumns.length > 0" v-model="rightKey" class="pm-select">
-                <option value="">-- выберите --</option>
-                <option v-for="col in rightColumns" :key="col" :value="col">{{ col }}</option>
-              </select>
-              <input v-else v-model="rightKey" type="text" class="pm-input" placeholder="user_id" />
-            </div>
-          </div>
-          <div v-if="suggestionsLoading && !suggestionsLoadedOnce" style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem; font-size: 13px; color: var(--color-secondary-text)">
-            <span class="spinner-border spinner-border-sm" role="status"></span>
-            Загрузка полей...
-          </div>
+    <div class="pm-body">
+      <div class="pm-section">
+        <span class="pm-section-title">Тип связи</span>
+        <div class="pm-chip-group">
+          <button
+            v-for="jt in joinTypes"
+            :key="jt.value"
+            class="pm-chip"
+            :class="{ 'pm-chip--active': joinType === jt.value }"
+            @click="joinType = jt.value"
+          >
+            <component :is="jt.icon" style="width: 28px; height: 14px" />
+            <span>{{ jt.label }}</span>
+          </button>
         </div>
       </div>
 
-      <div class="pm-footer">
-        <button class="pm-btn pm-btn--secondary" @click="$emit('close')">Отмена</button>
-        <button class="pm-btn pm-btn--primary" @click="handleApply">Применить</button>
+      <div v-if="suggestions.length > 0" class="pm-section">
+        <span class="pm-section-title">Совпадающие поля</span>
+        <div class="pm-chip-group">
+          <button
+            v-for="(s, idx) in suggestions"
+            :key="idx"
+            class="pm-chip"
+            :class="{ 'pm-chip--active': leftKey === s.leftKey && rightKey === s.rightKey }"
+            @click="applySuggestion(s)"
+          >
+            <span>{{ s.leftKey }}</span>
+            <Link2 :size="12" style="opacity: 0.5" />
+            <span>{{ s.rightKey }}</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="pm-section">
+        <div class="pm-section-row">
+          <span class="pm-section-title">Ключевые поля</span>
+          <button
+            type="button"
+            class="pm-btn pm-btn--secondary pm-btn--sm"
+            :disabled="!canSuggest || suggestionsLoading"
+            @click="pickSuggestedKeys"
+          >
+            <span v-if="suggestionsLoading" class="spinner-border spinner-border-sm" role="status"></span>
+            <Link2 v-else :size="14" />
+            Подобрать ключи
+          </button>
+        </div>
+        <div style="display: flex; gap: 0.75rem; align-items: flex-end">
+          <div style="flex: 1">
+            <label class="pm-label">Левая таблица</label>
+            <select v-if="leftColumns.length > 0" v-model="leftKey" class="pm-select">
+              <option value="">-- выберите --</option>
+              <option v-for="col in leftColumns" :key="col" :value="col">{{ col }}</option>
+            </select>
+            <input v-else v-model="leftKey" type="text" class="pm-input" placeholder="id" />
+          </div>
+          <div style="padding-bottom: 0.5rem; color: var(--color-secondary-text)">
+            <ArrowRight :size="16" />
+          </div>
+          <div style="flex: 1">
+            <label class="pm-label">Правая таблица</label>
+            <select v-if="rightColumns.length > 0" v-model="rightKey" class="pm-select">
+              <option value="">-- выберите --</option>
+              <option v-for="col in rightColumns" :key="col" :value="col">{{ col }}</option>
+            </select>
+            <input v-else v-model="rightKey" type="text" class="pm-input" placeholder="user_id" />
+          </div>
+        </div>
+        <div v-if="suggestionsLoading && !suggestionsLoadedOnce" style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem; font-size: 13px; color: var(--color-secondary-text)">
+          <span class="spinner-border spinner-border-sm" role="status"></span>
+          Загрузка полей...
+        </div>
       </div>
     </div>
-  </div>
+
+    <template #footer>
+      <button class="pm-btn pm-btn--secondary" @click="$emit('close')">Отмена</button>
+      <button class="pm-btn pm-btn--primary" @click="handleApply">Применить</button>
+    </template>
+  </ModalCenter>
 </template>
 
 <script setup>
 import { ref, watch, computed } from 'vue'
-import { GitMerge, ArrowRight, Link2, X } from 'lucide-vue-next'
+import { GitMerge, ArrowRight, Link2 } from 'lucide-vue-next'
 import { useToast } from 'vue-toastification'
 import { apiClient } from '@/js/api/manager'
 import { biEndpoints } from '@/modules/bi_analysis_modern/client/src/js/endpoints'
-
-const toast = useToast()
+import ModalCenter from '@/components/ModalCenter.vue'
 import JoinInnerIcon from '@/modules/bi_analysis_modern/client/src/components/icons/JoinInnerIcon.vue'
 import JoinLeftIcon from '@/modules/bi_analysis_modern/client/src/components/icons/JoinLeftIcon.vue'
 import JoinRightIcon from '@/modules/bi_analysis_modern/client/src/components/icons/JoinRightIcon.vue'
 import JoinFullIcon from '@/modules/bi_analysis_modern/client/src/components/icons/JoinFullIcon.vue'
+
+const toast = useToast()
 
 const props = defineProps({
   show: { type: Boolean, default: false },
