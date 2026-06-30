@@ -1,151 +1,140 @@
 <template>
-  <div
-    v-if="show"
-    class="text-modal-overlay"
-    @click.self="handleClose"
+  <ModalCenter
+    modal-id="dashboardBlockTextModal"
+    standalone
+    :visible="show"
+    title="Редактор текста"
+    :dialog-style="{ maxWidth: '720px', width: '92vw' }"
+    :z-index="1050"
+    @close="handleClose"
   >
-    <div class="text-modal" @click.stop>
-      <!-- Header -->
-      <div class="modal-header">
-        <h5 class="modal-title mb-0">Редактор текста</h5>
-        <button type="button" class="btn-close" @click="handleClose" />
+    <div class="mb-3">
+      <label class="form-label">Заголовок блока</label>
+      <input
+        v-model="form.title"
+        type="text"
+        class="form-control"
+        placeholder="Необязательно"
+      />
+    </div>
+
+    <div class="editor-toolbar">
+      <div class="toolbar-group">
+        <button
+          v-for="btn in formattingButtons"
+          :key="btn.cmd"
+          type="button"
+          class="toolbar-btn"
+          :title="btn.title"
+          @mousedown.prevent
+          @click="execCommand(btn.cmd, btn.value)"
+        >
+          <component :is="btn.icon" :size="16" />
+        </button>
       </div>
 
-      <!-- Body -->
-      <div class="modal-body">
-        <!-- Block title input -->
-        <div class="mb-3">
-          <label class="form-label">Заголовок блока</label>
+      <div class="toolbar-divider" />
+
+      <div class="toolbar-group">
+        <button
+          v-for="btn in headingButtons"
+          :key="btn.cmd + btn.value"
+          type="button"
+          class="toolbar-btn toolbar-btn-text"
+          :title="btn.title"
+          @mousedown.prevent
+          @click="execCommand(btn.cmd, btn.value)"
+        >
+          {{ btn.label }}
+        </button>
+      </div>
+
+      <div class="toolbar-divider" />
+
+      <div class="toolbar-group">
+        <button
+          v-for="btn in alignButtons"
+          :key="btn.cmd"
+          type="button"
+          class="toolbar-btn"
+          :title="btn.title"
+          @mousedown.prevent
+          @click="execCommand(btn.cmd)"
+        >
+          <component :is="btn.icon" :size="16" />
+        </button>
+      </div>
+
+      <div class="toolbar-divider" />
+
+      <div class="toolbar-group">
+        <button
+          v-for="btn in listButtons"
+          :key="btn.cmd"
+          type="button"
+          class="toolbar-btn"
+          :title="btn.title"
+          @mousedown.prevent
+          @click="execCommand(btn.cmd)"
+        >
+          <component :is="btn.icon" :size="16" />
+        </button>
+      </div>
+
+      <div class="toolbar-divider" />
+
+      <div class="toolbar-group">
+        <label class="toolbar-btn toolbar-btn-color" title="Цвет текста">
+          <Type :size="16" />
           <input
-            v-model="form.title"
-            type="text"
-            class="form-control"
-            placeholder="Необязательно"
+            type="color"
+            class="color-input"
+            :value="currentColor"
+            @input="handleColorChange"
           />
-        </div>
-
-        <!-- Toolbar -->
-        <div class="editor-toolbar">
-          <div class="toolbar-group">
-            <button
-              v-for="btn in formattingButtons"
-              :key="btn.cmd"
-              type="button"
-              class="toolbar-btn"
-              :title="btn.title"
-              @mousedown.prevent
-              @click="execCommand(btn.cmd, btn.value)"
-            >
-              <component :is="btn.icon" :size="16" />
-            </button>
-          </div>
-
-          <div class="toolbar-divider" />
-
-          <div class="toolbar-group">
-            <button
-              v-for="btn in headingButtons"
-              :key="btn.cmd + btn.value"
-              type="button"
-              class="toolbar-btn toolbar-btn-text"
-              :title="btn.title"
-              @mousedown.prevent
-              @click="execCommand(btn.cmd, btn.value)"
-            >
-              {{ btn.label }}
-            </button>
-          </div>
-
-          <div class="toolbar-divider" />
-
-          <div class="toolbar-group">
-            <button
-              v-for="btn in alignButtons"
-              :key="btn.cmd"
-              type="button"
-              class="toolbar-btn"
-              :title="btn.title"
-              @mousedown.prevent
-              @click="execCommand(btn.cmd)"
-            >
-              <component :is="btn.icon" :size="16" />
-            </button>
-          </div>
-
-          <div class="toolbar-divider" />
-
-          <div class="toolbar-group">
-            <button
-              v-for="btn in listButtons"
-              :key="btn.cmd"
-              type="button"
-              class="toolbar-btn"
-              :title="btn.title"
-              @mousedown.prevent
-              @click="execCommand(btn.cmd)"
-            >
-              <component :is="btn.icon" :size="16" />
-            </button>
-          </div>
-
-          <div class="toolbar-divider" />
-
-          <div class="toolbar-group">
-            <label class="toolbar-btn toolbar-btn-color" title="Цвет текста">
-              <Type :size="16" />
-              <input
-                type="color"
-                class="color-input"
-                :value="currentColor"
-                @input="handleColorChange"
-              />
-              <span class="color-indicator" :style="{ backgroundColor: currentColor }" />
-            </label>
-            <button
-              type="button"
-              class="toolbar-btn"
-              title="Очистить форматирование"
-              @mousedown.prevent
-              @click="execCommand('removeFormat')"
-            >
-              <RemoveFormatting :size="16" />
-            </button>
-          </div>
-
-          <div class="toolbar-divider" />
-
-          <div class="toolbar-group">
-            <select
-              class="toolbar-select"
-              :value="form.fontSize"
-              @change="handleFontSizeChange"
-            >
-              <option v-for="s in fontSizes" :key="s" :value="s">{{ s }}</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- Contenteditable editor -->
-        <div
-          ref="editorRef"
-          class="editor-area"
-          contenteditable="true"
-          @input="handleEditorInput"
-          @paste="handlePaste"
-        />
+          <span class="color-indicator" :style="{ backgroundColor: currentColor }" />
+        </label>
+        <button
+          type="button"
+          class="toolbar-btn"
+          title="Очистить форматирование"
+          @mousedown.prevent
+          @click="execCommand('removeFormat')"
+        >
+          <RemoveFormatting :size="16" />
+        </button>
       </div>
 
-      <!-- Footer -->
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" @click="handleClose">
-          Отмена
-        </button>
-        <button type="button" class="btn btn-primary" @click="handleSave">
-          Сохранить
-        </button>
+      <div class="toolbar-divider" />
+
+      <div class="toolbar-group">
+        <select
+          class="toolbar-select"
+          :value="form.fontSize"
+          @change="handleFontSizeChange"
+        >
+          <option v-for="s in fontSizes" :key="s" :value="s">{{ s }}</option>
+        </select>
       </div>
     </div>
-  </div>
+
+    <div
+      ref="editorRef"
+      class="editor-area"
+      contenteditable="true"
+      @input="handleEditorInput"
+      @paste="handlePaste"
+    />
+
+    <template #footer>
+      <button type="button" class="btn btn-secondary" @click="handleClose">
+        Отмена
+      </button>
+      <button type="button" class="btn btn-primary" @click="handleSave">
+        Сохранить
+      </button>
+    </template>
+  </ModalCenter>
 </template>
 
 <script setup>
@@ -156,6 +145,7 @@ import {
   List, ListOrdered,
   Type, RemoveFormatting
 } from 'lucide-vue-next'
+import ModalCenter from '@/components/ModalCenter.vue'
 
 const props = defineProps({
   show: { type: Boolean, default: false },
@@ -177,7 +167,6 @@ const form = ref({
 
 const fontSizes = ['12px', '13px', '14px', '15px', '16px', '18px', '20px', '24px']
 
-// Toolbar button definitions
 const formattingButtons = [
   { cmd: 'bold', title: 'Жирный (Ctrl+B)', icon: Bold },
   { cmd: 'italic', title: 'Курсив (Ctrl+I)', icon: Italic },
@@ -203,7 +192,6 @@ const listButtons = [
   { cmd: 'insertOrderedList', title: 'Нумерованный список', icon: ListOrdered }
 ]
 
-// Initialize form when modal opens
 watch(
   () => [props.show, props.block],
   () => {
@@ -256,13 +244,11 @@ function handleEditorInput() {
 }
 
 function handlePaste(e) {
-  // Strip formatting from pasted content — keep only plain text + basic HTML
   e.preventDefault()
   const html = e.clipboardData?.getData('text/html')
   const text = e.clipboardData?.getData('text/plain') || ''
 
   if (html) {
-    // Clean pasted HTML: keep basic tags only
     const cleaned = html
       .replace(/<meta[^>]*>/gi, '')
       .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
@@ -295,54 +281,6 @@ function handleSave() {
 </script>
 
 <style scoped lang="scss">
-.text-modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.45);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1050;
-}
-
-.text-modal {
-  background: var(--bs-body-bg, #fff);
-  border-radius: 10px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
-  width: 720px;
-  max-width: 92vw;
-  max-height: 90vh;
-  display: flex;
-  flex-direction: column;
-}
-
-.modal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 1rem 1.25rem;
-  border-bottom: 1px solid var(--bs-border-color, #dee2e6);
-}
-
-.modal-title {
-  font-size: 1.1rem;
-}
-
-.modal-body {
-  padding: 1.25rem;
-  overflow-y: auto;
-  flex: 1;
-}
-
-.modal-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.5rem;
-  padding: 1rem 1.25rem;
-  border-top: 1px solid var(--bs-border-color, #dee2e6);
-}
-
-/* Toolbar */
 .editor-toolbar {
   display: flex;
   align-items: center;
@@ -430,7 +368,6 @@ function handleSave() {
   cursor: pointer;
 }
 
-/* Editor area */
 .editor-area {
   min-height: 280px;
   max-height: 50vh;

@@ -1,37 +1,41 @@
 ﻿<template>
-  <div v-if="show" class="pm-overlay" @click.self="$emit('close')">
-    <div class="pm-modal pm-modal--md pm-modal--chart-settings">
-      <div class="pm-header">
-        <div class="pm-header-icon" style="background: rgba(6, 182, 212, 0.12); color: #06b6d4">
-          <BarChart3 :size="20" />
-        </div>
-        <h3 class="pm-header-title">Настройки графика</h3>
-        <button class="pm-header-close" @click="$emit('close')">
-          <X :size="16" />
-        </button>
+  <ModalCenter
+    modal-id="pipelineChartSettingsModal"
+    standalone
+    :visible="show"
+    :dialog-style="{ maxWidth: '600px' }"
+    :z-index="10050"
+    body-class="p-0"
+    @close="$emit('close')"
+  >
+    <template #title>
+      <div class="pm-header-icon" style="background: rgba(6, 182, 212, 0.12); color: #06b6d4">
+        <BarChart3 :size="20" />
       </div>
+      <span>Настройки графика</span>
+    </template>
 
-      <div class="pm-body">
-        <ChartSettingsPreview
-          ref="chartSettingsRef"
-          :available-fields="availableFieldsFormatted"
-          :preview-data="effectivePreviewData"
-          :config="configForPreview"
-          :require-chart-name="false"
-        />
-      </div>
-
-      <div class="pm-footer">
-        <button class="pm-btn pm-btn--secondary" @click="$emit('close')">Отмена</button>
-        <button class="pm-btn pm-btn--primary" :disabled="!canApply" @click="handleApply">Применить</button>
-      </div>
+    <div class="pm-body pm-body--chart-settings">
+      <ChartSettingsPreview
+        ref="chartSettingsRef"
+        :available-fields="availableFieldsFormatted"
+        :preview-data="effectivePreviewData"
+        :config="configForPreview"
+        :require-chart-name="false"
+      />
     </div>
-  </div>
+
+    <template #footer>
+      <button class="pm-btn pm-btn--secondary" @click="$emit('close')">Отмена</button>
+      <button class="pm-btn pm-btn--primary" :disabled="!canApply" @click="handleApply">Применить</button>
+    </template>
+  </ModalCenter>
 </template>
 
 <script setup>
 import { ref, computed, inject } from 'vue'
-import { BarChart3, X } from 'lucide-vue-next'
+import { BarChart3 } from 'lucide-vue-next'
+import ModalCenter from '@/components/ModalCenter.vue'
 import ChartSettingsPreview from '@/modules/bi_analysis_modern/client/src/components/ChartSettingsPreview.vue'
 
 const props = defineProps({
@@ -100,7 +104,7 @@ function handleApply() {
 <style scoped lang="scss">
 @import '../scss/pipeline-modals.scss';
 
-.pm-modal--chart-settings .pm-body {
+.pm-body--chart-settings {
   max-height: 70vh;
   overflow-y: auto;
 }

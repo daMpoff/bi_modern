@@ -5,6 +5,7 @@
       modal-id="dashboardPlacementModeModal"
       standalone
       :visible="showPlacementModal"
+      :show-close-button="false"
       :close-on-backdrop="false"
       :close-on-esc="false"
       :dialog-style="{ width: '800px', maxWidth: 'calc(100vw - 4rem)' }"

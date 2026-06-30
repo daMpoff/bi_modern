@@ -1,119 +1,123 @@
 ﻿<template>
-  <div v-if="show" class="pm-overlay" @click.self="$emit('close')">
-    <div class="pm-modal pm-modal--md">
-      <div class="pm-header">
-        <div class="pm-header-icon" style="background: rgba(245, 158, 11, 0.12); color: #f59e0b">
-          <Filter :size="20" />
-        </div>
-        <h3 class="pm-header-title">Настройки фильтра</h3>
-        <button class="pm-header-close" @click="$emit('close')">
-          <X :size="16" />
-        </button>
+  <ModalCenter
+    modal-id="pipelineFilterModal"
+    standalone
+    :visible="show"
+    :dialog-style="{ maxWidth: '600px' }"
+    :z-index="10050"
+    body-class="p-0"
+    @close="$emit('close')"
+  >
+    <template #title>
+      <div class="pm-header-icon" style="background: rgba(245, 158, 11, 0.12); color: #f59e0b">
+        <Filter :size="20" />
       </div>
+      <span>Настройки фильтра</span>
+    </template>
 
-      <div class="pm-body">
-        <div class="pm-section">
-          <div class="pm-row" style="justify-content: space-between; margin-bottom: 0.75rem">
-            <span class="pm-section-title" style="margin: 0">Условия фильтрации</span>
-            <button class="pm-btn pm-btn--outline pm-btn--sm" @click="addCondition">
-              <Plus :size="14" />
-              Добавить
-            </button>
-          </div>
+    <div class="pm-body">
+      <div class="pm-section">
+        <div class="pm-row" style="justify-content: space-between; margin-bottom: 0.75rem">
+          <span class="pm-section-title" style="margin: 0">Условия фильтрации</span>
+          <button class="pm-btn pm-btn--outline pm-btn--sm" @click="addCondition">
+            <Plus :size="14" />
+            Добавить
+          </button>
+        </div>
 
-          <div v-if="conditions.length === 0" class="pm-empty">
-            <Filter :size="28" style="opacity: 0.4" />
-            <span class="pm-empty-text">Нет условий фильтрации</span>
-            <span class="pm-empty-hint">Добавьте условие для фильтрации данных</span>
-          </div>
+        <div v-if="conditions.length === 0" class="pm-empty">
+          <Filter :size="28" style="opacity: 0.4" />
+          <span class="pm-empty-text">Нет условий фильтрации</span>
+          <span class="pm-empty-hint">Добавьте условие для фильтрации данных</span>
+        </div>
 
-          <div v-for="(cond, idx) in conditions" :key="idx" class="pm-card">
-            <div class="pm-row">
-              <select
-                v-if="availableFields.length > 0"
-                v-model="cond.field"
-                class="pm-select"
-                style="flex: 1; min-width: 110px"
-                @change="onFieldChange(cond)"
-              >
-                <option value="">-- Поле --</option>
-                <option v-for="f in availableFields" :key="f.name" :value="f.name">{{ f.name }}</option>
-              </select>
-              <input
-                v-else
-                v-model="cond.field"
-                type="text"
-                class="pm-input"
-                style="flex: 1; min-width: 110px"
-                placeholder="Поле"
-              />
+        <div v-for="(cond, idx) in conditions" :key="idx" class="pm-card">
+          <div class="pm-row">
+            <select
+              v-if="availableFields.length > 0"
+              v-model="cond.field"
+              class="pm-select"
+              style="flex: 1; min-width: 110px"
+              @change="onFieldChange(cond)"
+            >
+              <option value="">-- Поле --</option>
+              <option v-for="f in availableFields" :key="f.name" :value="f.name">{{ f.name }}</option>
+            </select>
+            <input
+              v-else
+              v-model="cond.field"
+              type="text"
+              class="pm-input"
+              style="flex: 1; min-width: 110px"
+              placeholder="Поле"
+            />
 
-              <select
-                v-model="cond.operator"
-                class="pm-select"
-                style="width: 135px; flex-shrink: 0"
-                @change="onOperatorChange(cond)"
-              >
-                <option
-                  v-for="op in operatorsForCondition(cond)"
-                  :key="op.value"
-                  :value="op.value"
-                >{{ op.label }}</option>
-              </select>
+            <select
+              v-model="cond.operator"
+              class="pm-select"
+              style="width: 135px; flex-shrink: 0"
+              @change="onOperatorChange(cond)"
+            >
+              <option
+                v-for="op in operatorsForCondition(cond)"
+                :key="op.value"
+                :value="op.value"
+              >{{ op.label }}</option>
+            </select>
 
-              <template v-if="needsValue(cond.operator)">
-                <template v-if="isBetween(cond.operator)">
-                  <input
-                    type="text"
-                    :value="betweenMin(cond)"
-                    class="pm-input"
-                    style="flex: 1; min-width: 72px"
-                    placeholder="Мин или $параметр"
-                    @input="e => setBetweenMin(cond, e.target.value)"
-                  />
-                  <input
-                    type="text"
-                    :value="betweenMax(cond)"
-                    class="pm-input"
-                    style="flex: 1; min-width: 72px"
-                    placeholder="Макс или $параметр"
-                    @input="e => setBetweenMax(cond, e.target.value)"
-                  />
-                </template>
-                <template v-else-if="valueInputType(cond) === 'boolean'">
-                  <select v-model="cond.value" class="pm-select" style="flex: 1; min-width: 80px">
-                    <option v-for="opt in BOOLEAN_OPTIONS" :key="String(opt.value)" :value="opt.value">{{ opt.label }}</option>
-                  </select>
-                </template>
+            <template v-if="needsValue(cond.operator)">
+              <template v-if="isBetween(cond.operator)">
                 <input
-                  v-else
-                  v-model="cond.value"
                   type="text"
+                  :value="betweenMin(cond)"
                   class="pm-input"
-                  style="flex: 1; min-width: 90px"
-                  :placeholder="valueInputType(cond) === 'date' ? 'ГГГГ-ММ-ДД или $параметр' : 'Значение или $параметр'"
+                  style="flex: 1; min-width: 72px"
+                  placeholder="Мин или $параметр"
+                  @input="e => setBetweenMin(cond, e.target.value)"
+                />
+                <input
+                  type="text"
+                  :value="betweenMax(cond)"
+                  class="pm-input"
+                  style="flex: 1; min-width: 72px"
+                  placeholder="Макс или $параметр"
+                  @input="e => setBetweenMax(cond, e.target.value)"
                 />
               </template>
+              <template v-else-if="valueInputType(cond) === 'boolean'">
+                <select v-model="cond.value" class="pm-select" style="flex: 1; min-width: 80px">
+                  <option v-for="opt in BOOLEAN_OPTIONS" :key="String(opt.value)" :value="opt.value">{{ opt.label }}</option>
+                </select>
+              </template>
+              <input
+                v-else
+                v-model="cond.value"
+                type="text"
+                class="pm-input"
+                style="flex: 1; min-width: 90px"
+                :placeholder="valueInputType(cond) === 'date' ? 'ГГГГ-ММ-ДД или $параметр' : 'Значение или $параметр'"
+              />
+            </template>
 
-              <button class="pm-btn pm-btn--danger pm-btn--icon pm-btn--sm" @click="removeCondition(idx)">
-                <X :size="14" />
-              </button>
-            </div>
+            <button class="pm-btn pm-btn--danger pm-btn--icon pm-btn--sm" @click="removeCondition(idx)">
+              <X :size="14" />
+            </button>
           </div>
         </div>
       </div>
-
-      <div class="pm-footer">
-        <button class="pm-btn pm-btn--secondary" @click="$emit('close')">Отмена</button>
-        <button class="pm-btn pm-btn--primary" @click="handleApply">Применить</button>
-      </div>
     </div>
-  </div>
+
+    <template #footer>
+      <button class="pm-btn pm-btn--secondary" @click="$emit('close')">Отмена</button>
+      <button class="pm-btn pm-btn--primary" @click="handleApply">Применить</button>
+    </template>
+  </ModalCenter>
 </template>
 
 <script setup>
 import { ref, watch } from 'vue'
 import { Filter, Plus, X } from 'lucide-vue-next'
+import ModalCenter from '@/components/ModalCenter.vue'
 import {
   getOperatorsForFieldType,
   needsValue as needsValueFn,
@@ -146,13 +150,6 @@ function isBetween(operator) { return isBetweenOperator(operator) }
 
 function valueInputType(cond) {
   return getValueInputTypeFn(fieldTypeForCondition(cond), cond.operator)
-}
-
-function betweenInputType(cond) {
-  const t = fieldTypeForCondition(cond)
-  if (t === 'date') return 'date'
-  if (t === 'number') return 'number'
-  return 'text'
 }
 
 function ensureBetweenValue(cond) {

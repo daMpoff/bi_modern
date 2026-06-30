@@ -1,89 +1,87 @@
 ﻿<template>
-  <div
-    v-if="show"
-    class="dashboard-block-selector-modal-overlay"
-    @click.self="handleClose"
+  <ModalCenter
+    modal-id="dashboardBlockSelectorModal"
+    standalone
+    :visible="show"
+    title="Настройки селектора"
+    :dialog-style="{ minWidth: '400px', maxWidth: '90vw' }"
+    :z-index="1050"
+    @close="handleClose"
   >
-    <div class="dashboard-block-selector-modal" @click.stop>
-      <div class="modal-header">
-        <h5 class="modal-title mb-0">Настройки селектора</h5>
-        <button type="button" class="btn-close" @click="handleClose"></button>
-      </div>
-      <div class="modal-body">
-        <div class="mb-3">
-          <label class="form-label">Пайплайн</label>
-          <select
-            v-model="form.pipelineId"
-            class="form-select"
-            @change="onPipelineChange"
-          >
-            <option :value="null">Выберите пайплайн</option>
-            <option
-              v-for="p in pipelines"
-              :key="p.id"
-              :value="p.id"
-            >
-              {{ p.name || `Пайплайн ${p.id}` }}
-            </option>
-          </select>
-        </div>
-        <div class="mb-3">
-          <label class="form-label">Поле (источник вариантов)</label>
-          <select
-            v-model="form.fieldName"
-            class="form-select"
-            :disabled="!form.pipelineId || fieldsLoading"
-          >
-            <option value="">Выберите поле</option>
-            <option
-              v-for="f in fields"
-              :key="f.name"
-              :value="f.name"
-            >
-              {{ f.name }} ({{ f.type || 'd' }})
-            </option>
-          </select>
-          <span v-if="fieldsLoading" class="text-muted small">Загрузка...</span>
-        </div>
-        <div class="mb-3">
-          <label class="form-label">Имя параметра</label>
-          <input
-            v-model="form.paramName"
-            type="text"
-            class="form-control"
-            placeholder="например, min_glucose"
-          />
-          <small class="form-text text-muted">Указывайте имя без знака $, в фильтрах используйте $имя_параметра</small>
-        </div>
-        <div class="mb-3">
-          <label class="form-label">Подпись (необязательно)</label>
-          <input
-            v-model="form.label"
-            type="text"
-            class="form-control"
-            placeholder="например, Глюкоза"
-          />
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" @click="handleClose">
-          Отмена
-        </button>
-        <button
-          type="button"
-          class="btn btn-primary"
-          :disabled="!form.pipelineId || !form.fieldName || !form.paramName"
-          @click="handleSave"
+    <div class="mb-3">
+      <label class="form-label">Пайплайн</label>
+      <select
+        v-model="form.pipelineId"
+        class="form-select"
+        @change="onPipelineChange"
+      >
+        <option :value="null">Выберите пайплайн</option>
+        <option
+          v-for="p in pipelines"
+          :key="p.id"
+          :value="p.id"
         >
-          Применить
-        </button>
-      </div>
+          {{ p.name || `Пайплайн ${p.id}` }}
+        </option>
+      </select>
     </div>
-  </div>
+    <div class="mb-3">
+      <label class="form-label">Поле (источник вариантов)</label>
+      <select
+        v-model="form.fieldName"
+        class="form-select"
+        :disabled="!form.pipelineId || fieldsLoading"
+      >
+        <option value="">Выберите поле</option>
+        <option
+          v-for="f in fields"
+          :key="f.name"
+          :value="f.name"
+        >
+          {{ f.name }} ({{ f.type || 'auto' }})
+        </option>
+      </select>
+      <span v-if="fieldsLoading" class="text-muted small">Загрузка...</span>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Имя параметра</label>
+      <input
+        v-model="form.paramName"
+        type="text"
+        class="form-control"
+        placeholder="например, min_glucose"
+      />
+      <small class="form-text text-muted">Указывайте имя без знака $, в фильтрах используйте $имя_параметра</small>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Подпись (необязательно)</label>
+      <input
+        v-model="form.label"
+        type="text"
+        class="form-control"
+        placeholder="например, Глюкоза"
+      />
+    </div>
+
+    <template #footer>
+      <button type="button" class="btn btn-secondary" @click="handleClose">
+        Отмена
+      </button>
+      <button
+        type="button"
+        class="btn btn-primary"
+        :disabled="!form.pipelineId || !form.fieldName || !form.paramName"
+        @click="handleSave"
+      >
+        Применить
+      </button>
+    </template>
+  </ModalCenter>
 </template>
 
 <script setup>
 import { ref, watch } from 'vue'
+import ModalCenter from '@/components/ModalCenter.vue'
 import { fetchPipelines, fetchPipelineFields } from '@/modules/bi_analysis_modern/client/src/Pipelines/js/pipelineApi.js'
 
 const props = defineProps({
@@ -111,7 +109,6 @@ watch(
     form.value = {
       pipelineId: props.block?.config?.pipelineId ?? null,
       fieldName: props.block?.config?.fieldName ?? '',
-      // В конфиге храним имя без $, но на всякий случай очищаем старые варианты
       paramName: (props.block?.config?.paramName || '').replace(/^\$/u, '') || props.block?.config?.fieldName || '',
       label: props.block?.config?.label ?? ''
     }
@@ -166,48 +163,6 @@ function handleSave() {
 </script>
 
 <style scoped lang="scss">
-.dashboard-block-selector-modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.4);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1050;
-}
-
-.dashboard-block-selector-modal {
-  background: var(--bs-body-bg, #fff);
-  border-radius: 8px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-  min-width: 400px;
-  max-width: 90vw;
-}
-
-.modal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 1rem 1.25rem;
-  border-bottom: 1px solid var(--bs-border-color, #dee2e6);
-}
-
-.modal-title {
-  font-size: 1.1rem;
-}
-
-.modal-body {
-  padding: 1.25rem;
-}
-
-.modal-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.5rem;
-  padding: 1rem 1.25rem;
-  border-top: 1px solid var(--bs-border-color, #dee2e6);
-}
-
 .form-text {
   display: block;
   margin-top: 0.25rem;
