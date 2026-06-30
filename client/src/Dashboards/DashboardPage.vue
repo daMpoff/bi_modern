@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="dashboard-page" :class="{ 'is-view-mode': mode === 'view' }">
     <!-- Модальное окно выбора режима размещения -->
     <ModalCenter
@@ -244,7 +244,7 @@
 import { ref, computed, onMounted, onUnmounted, watch, nextTick, provide } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { LayoutGrid, Move, Undo2, Redo2, Settings, Download, ChevronDown, Image, FileText } from 'lucide-vue-next'
-import { useToast } from 'vue-toastification'
+import { useToast } from '@/js/utils/toast.js'
 import { apiClient } from '@/js/api/manager.js'
 import { biEndpoints } from '@/modules/bi_analysis_modern/client/src/js/endpoints.js'
 import { createPipeline, createPipelineChart } from '@/modules/bi_analysis_modern/client/src/Pipelines/js/pipelineApi.js'

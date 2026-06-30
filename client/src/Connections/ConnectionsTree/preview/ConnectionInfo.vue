@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="connection-info">
     <!-- Декоративные элементы -->
     <div class="decorative-elements">
@@ -68,24 +68,14 @@
         </div>
       </div>
     </div>
-    
-    <ConfirmDialog
-      :show="showConfirmDialog"
-      title="Удаление подключения"
-      :message="`Вы уверены, что хотите удалить подключение &quot;${connection.name}&quot;? Это действие нельзя отменить.`"
-      confirm-text="Удалить"
-      cancel-text="Отмена"
-      @confirm="confirmDelete"
-      @close="showConfirmDialog = false"
-    />
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
 import { Trash2 } from 'lucide-vue-next'
-import ConfirmDialog from '@/components/ConfirmDialog.vue'
-import { useToast } from 'vue-toastification'
+import { confirmDelete } from '@/js/utils/confirm.js'
+import { useToast } from '@/js/utils/toast.js'
 import { apiClient } from '@/js/api/manager'
 import { biEndpoints } from '@/modules/bi_analysis_modern/client/src/js/endpoints'
 
@@ -99,7 +89,6 @@ const props = defineProps({
 const emit = defineEmits(['deleted'])
 
 const toast = useToast()
-const showConfirmDialog = ref(false)
 const isDeleting = ref(false)
 const filesCount = ref(null)
 const filesCountLoading = ref(false)
@@ -178,86 +167,61 @@ watch(() => props.connection?.id, () => {
   }
 })
 
-function handleDelete() {
-  console.log('handleDelete called, connection:', props.connection)
-  console.log('Connection ID:', props.connection?.id)
-  console.log('Connection name:', props.connection?.name)
-  console.log('Connection type:', props.connection?.connector_type)
-  
+async function handleDelete() {
   if (!props.connection?.id) {
     logError('Cannot delete: connection.id is missing!', props.connection)
     toast.error('Ошибка: не найден ID подключения')
     return
   }
-  
-  showConfirmDialog.value = true
-}
 
-async function confirmDelete() {
-  console.log('confirmDelete called')
-  console.log('Full connection object:', JSON.stringify(props.connection, null, 2))
-  
-  if (!props.connection?.id) {
-    logError('Connection ID is missing!', props.connection)
-    toast.error('Ошибка: не найден ID подключения для удаления')
+  const ok = await confirmDelete(
+    'Удаление подключения',
+    `Удалить подключение «${props.connection.name || ''}»?`,
+  )
+  if (!ok) {
     return
   }
-  
+
   isDeleting.value = true
-  showConfirmDialog.value = false
-  
+
   try {
-    // Убеждаемся, что id это число
     const connectionId = parseInt(props.connection.id, 10)
-    
+
     if (isNaN(connectionId)) {
       logError('Invalid connection ID:', props.connection.id)
       toast.error('Ошибка: неверный ID подключения')
       return
     }
-    
+
     const endpoint = biEndpoints.bi.connectionDetail(connectionId)
-    
-    console.log('Deleting connection:', {
-      id: connectionId,
-      idType: typeof connectionId,
-      originalId: props.connection.id,
-      name: props.connection.name,
-      endpoint: endpoint
-    })
-    
     const res = await apiClient.delete(endpoint)
-    
-    // Обработка успешного удаления (204 No Content или success: true)
+
     if (res && (res.success === true || res.status === 204 || res.status === 200)) {
       toast.success(`Подключение "${props.connection.name}" успешно удалено`)
       emit('deleted', props.connection.id)
       return
     }
-    
-    // Если success явно false или есть ошибка
+
     if (res && res.success === false) {
       const errorMsg = res.message || res.error || 'Ошибка при удалении подключения'
       toast.error(errorMsg)
       return
     }
-    
-    // Если ответ не содержит success, но статус успешный
+
     if (res && (res.status >= 200 && res.status < 300)) {
       toast.success(`Подключение "${props.connection.name}" успешно удалено`)
       emit('deleted', props.connection.id)
       return
     }
-    
-    // Неожиданный формат ответа
+
     logError('Unexpected delete response format:', res)
     toast.error('Неожиданный формат ответа от сервера')
   } catch (error) {
     logError('Ошибка удаления подключения:', error)
-    const errorMsg = error?.response?.data?.message || 
+    const errorMsg = error?.response?.data?.message ||
                      error?.response?.data?.detail ||
                      error?.response?.data?.error ||
-                     error?.message || 
+                     error?.message ||
                      'Ошибка при удалении подключения'
     toast.error(errorMsg)
   } finally {

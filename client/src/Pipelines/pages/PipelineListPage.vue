@@ -1,9 +1,9 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { useToast } from 'vue-toastification'
+import { useToast } from '@/js/utils/toast.js'
 import { Workflow, Search, MoreHorizontal, Pencil, Trash2, BarChart3 } from 'lucide-vue-next'
-import ConfirmDialog from '@/components/ConfirmDialog.vue'
+import { confirmDelete } from '@/js/utils/confirm.js'
 import ModalCenter from '@/components/ModalCenter.vue'
 import { fetchPipelines, createPipeline, deletePipeline } from '../js/pipelineApi.js'
 
@@ -19,9 +19,6 @@ const loading = ref(false)
 const showMenu = ref(false)
 const menuPosition = ref({ top: '0px', left: '0px' })
 const menuItemId = ref(null)
-
-const showDeleteDialog = ref(false)
-const itemToDelete = ref(null)
 
 const showCreateModal = ref(false)
 const newName = ref('')
@@ -106,27 +103,24 @@ function closeMenu() { showMenu.value = false }
 
 function getItemById(id) { return items.value.find(d => d.id === id) }
 
-function askDelete(pipeline) {
-  itemToDelete.value = pipeline
-  showDeleteDialog.value = true
+async function askDelete(pipeline) {
   closeMenu()
-}
 
-function cancelDelete() {
-  showDeleteDialog.value = false
-  itemToDelete.value = null
-}
+  const name = pipeline?.name || 'пайплайн'
+  const ok = await confirmDelete(
+    'Удаление пайплайна',
+    `Вы уверены, что хотите удалить пайплайн «${name}»?`,
+  )
+  if (!ok) {
+    return
+  }
 
-async function confirmDelete() {
-  if (!itemToDelete.value) return
   try {
-    await deletePipeline(itemToDelete.value.id)
+    await deletePipeline(pipeline.id)
     toast.success('Пайплайн удален')
-    items.value = items.value.filter(item => item.id !== itemToDelete.value.id)
-    cancelDelete()
+    items.value = items.value.filter(item => item.id !== pipeline.id)
   } catch (err) {
     toast.error('Ошибка удаления: ' + (err.message || err))
-    cancelDelete()
   }
 }
 
@@ -230,18 +224,6 @@ onUnmounted(() => {
         </div>
       </div>
     </teleport>
-
-    <ConfirmDialog
-      :show="showDeleteDialog"
-      title="Удаление пайплайна"
-      :message="itemToDelete?.is_dashboard_only
-        ? `Удалить пайплайн «${itemToDelete?.name || ''}»? Будут удалены пайплайн, его графики и блоки этих графиков со всех дашбордов.`
-        : `Удалить пайплайн «${itemToDelete?.name || ''}» и все его графики?`"
-      confirm-text="Удалить"
-      cancel-text="Отмена"
-      @confirm="confirmDelete"
-      @close="cancelDelete"
-    />
 
     <ModalCenter
       modal-id="pipelineListCreateModal"

@@ -1,11 +1,12 @@
 ﻿import { apiClient } from '@/js/api/manager'
 import { endpoints } from '@/js/api/endpoints'
 import { MAX_UPLOAD_SIZE_MB } from '@/modules/bi_analysis_modern/client/src/js/uploadConfig'
+import { confirmDelete } from '@/js/utils/confirm.js'
 
 export function useFileActions(uploadedFiles, selectedFile, fileToReplace, loadUserFiles, connectionId, isSheetPickerVisible, currentUploadFile, availableSheets, isReplacing, fileError = null, selectFileCallback = null) {
 
   async function deleteFile(file) {
-    const confirmed = confirm(`Вы уверены, что хотите удалить файл "${file.name}"?`)
+    const confirmed = await confirmDelete('Удаление', `Вы уверены, что хотите удалить файл "${file.name}"?`)
     if (!confirmed) return
 
     try {

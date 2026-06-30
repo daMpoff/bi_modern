@@ -1,13 +1,13 @@
-﻿<script setup>
+<script setup>
 import { ref, computed, onMounted, nextTick, provide } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useToast } from 'vue-toastification'
+import { useToast } from '@/js/utils/toast.js'
 import {
   ArrowLeft, Save, Play, Plus, BarChart3,
   Pencil, Trash2, AlertTriangle, GitBranch,
   FileText, Filter, Sigma, Combine, Calculator, Code2, FileOutput
 } from 'lucide-vue-next'
-import ConfirmDialog from '@/components/ConfirmDialog.vue'
+import { confirmDelete } from '@/js/utils/confirm.js'
 import DataPreviewTable from '@/modules/bi_analysis_modern/client/src/components/DataPreviewTable.vue'
 import PipelineCanvas from '@/modules/bi_analysis_modern/client/src/Pipelines/components/PipelineCanvas.vue'
 import PipelineChartModal from './PipelineChartModal.vue'
@@ -62,9 +62,6 @@ const saveLoading = ref(false)
 const showChartModal = ref(false)
 const editingChart = ref(null)
 const pipelineOutputFields = ref([])
-
-const showDeleteChartDialog = ref(false)
-const chartToDelete = ref(null)
 
 const lineageNodes = ref([])
 const lineageError = ref(null)
@@ -290,27 +287,20 @@ async function handleSaveChart(chartData) {
   }
 }
 
-function askDeleteChart(chart) {
-  chartToDelete.value = chart
-  showDeleteChartDialog.value = true
-}
-
-async function confirmDeleteChart() {
-  if (!chartToDelete.value) return
+async function askDeleteChart(chart) {
+  const chartName = chart.name || chart.title || 'без названия'
+  const ok = await confirmDelete(
+    'Удаление графика',
+    `Удалить график «${chartName}»?`,
+  )
+  if (!ok) return
   try {
-    await deletePipelineChart(chartToDelete.value.id)
+    await deletePipelineChart(chart.id)
     toast.success('График удален')
     await loadCharts()
   } catch {
     toast.error('Ошибка удаления')
   }
-  chartToDelete.value = null
-  showDeleteChartDialog.value = false
-}
-
-function cancelDeleteChart() {
-  chartToDelete.value = null
-  showDeleteChartDialog.value = false
 }
 
 onMounted(() => {
@@ -524,16 +514,6 @@ onMounted(() => {
       :preview-data="previewData"
       @close="closeChartModal"
       @save="handleSaveChart"
-    />
-
-    <ConfirmDialog
-      :show="showDeleteChartDialog"
-      title="Удаление графика"
-      :message="`Удалить график «${chartToDelete?.name || ''}»? График будет удалён со всех дашбордов.`"
-      confirm-text="Удалить"
-      cancel-text="Отмена"
-      @confirm="confirmDeleteChart"
-      @close="cancelDeleteChart"
     />
   </div>
 </template>

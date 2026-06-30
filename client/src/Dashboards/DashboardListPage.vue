@@ -4,8 +4,8 @@ import { useRouter } from 'vue-router'
 import { apiClient } from '@/js/api/manager.js'
 import { LayoutDashboard, Search, MoreHorizontal, Eye, Pencil, Trash2, Settings } from 'lucide-vue-next'
 import { getListConfig } from '@/modules/bi_analysis_modern/client/src/js/listConfigs.js'
-import { useToast } from 'vue-toastification'
-import ConfirmDialog from '@/components/ConfirmDialog.vue'
+import { useToast } from '@/js/utils/toast.js'
+import { confirmAction } from '@/js/utils/confirm.js'
 import ModalCenter from '@/components/ModalCenter.vue'
 
 const config = getListConfig('dashboards')
@@ -22,14 +22,7 @@ const showMenu = ref(false)
 const menuPosition = ref({ top: '0px', left: '0px' })
 const menuDashboardId = ref(null)
 
-// Удаление
-const showDeleteDialog = ref(false)
-const dashboardToDelete = ref(null)
-const isDeleteLocked = ref(false)
-const deleteCountdown = ref(3)
-let countdownTimer = null
-
-// Настройки отображения
+// Меню действий
 const SETTINGS_STORAGE_KEY = 'dashboards_list_settings'
 const showSettingsModal = ref(false)
 
@@ -224,52 +217,36 @@ function getDashboardById(id) {
   return items.value.find(d => d.id === id)
 }
 
-// Удаление дашборда
-function askDelete(dashboard) {
-  dashboardToDelete.value = dashboard
-  showDeleteDialog.value = true
-  isDeleteLocked.value = true
-  deleteCountdown.value = 3
+async function askDelete(dashboard) {
   closeMenu()
-  
-  if (countdownTimer) clearInterval(countdownTimer)
-  countdownTimer = setInterval(() => {
-    if (deleteCountdown.value > 1) {
-      deleteCountdown.value -= 1
-    } else {
-      isDeleteLocked.value = false
-      clearInterval(countdownTimer)
-    }
-  }, 1000)
-}
 
-function cancelDelete() {
-  showDeleteDialog.value = false
-  dashboardToDelete.value = null
-  isDeleteLocked.value = false
-  if (countdownTimer) clearInterval(countdownTimer)
-}
+  const name = dashboard?.name || 'дашборд'
+  const ok = await confirmAction({
+    title: 'Удаление дашборда',
+    message: `Вы действительно хотите удалить дашборд «${name}»? Это действие нельзя отменить.`,
+    confirmText: 'Удалить',
+    variant: 'danger',
+    confirmCountdownSeconds: 3,
+  })
+  if (!ok) {
+    return
+  }
 
-async function confirmDelete() {
-  if (isDeleteLocked.value || !dashboardToDelete.value) return
-  
-  const endpoint = `/bi_analysis/bi_dashboards/${dashboardToDelete.value.id}/`
-  
+  const endpoint = `/bi_analysis/bi_dashboards/${dashboard.id}/`
+
   try {
     const res = await apiClient.delete(endpoint)
     if (res.success !== false) {
       toast.success('Дашборд успешно удален')
-      // Удаляем из списка
-      const idx = items.value.findIndex(item => item.id === dashboardToDelete.value.id)
-      if (idx !== -1) items.value.splice(idx, 1)
-      cancelDelete()
+      const idx = items.value.findIndex(item => item.id === dashboard.id)
+      if (idx !== -1) {
+        items.value.splice(idx, 1)
+      }
     } else {
       toast.error('Ошибка при удалении: ' + (res.message || ''))
-      cancelDelete()
     }
   } catch (err) {
     toast.error('Ошибка при удалении: ' + (err.message || err))
-    cancelDelete()
   }
 }
 
@@ -305,7 +282,6 @@ onMounted(() => {
 
 onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside)
-  if (countdownTimer) clearInterval(countdownTimer)
 })
 </script>
 
@@ -412,16 +388,6 @@ onUnmounted(() => {
     </teleport>
 
     <!-- Модальное окно удаления -->
-    <ConfirmDialog
-      :show="showDeleteDialog"
-      title="Удаление дашборда"
-      :message="`Вы действительно хотите удалить дашборд &quot;${dashboardToDelete?.name || 'элемент'}&quot;?`"
-      confirm-text="Удалить"
-      cancel-text="Отмена"
-      :loading="isDeleteLocked"
-      @confirm="confirmDelete"
-      @close="cancelDelete"
-    />
 
     <!-- Модальное окно настроек -->
     <ModalCenter

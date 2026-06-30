@@ -141,7 +141,7 @@
 
 <script setup>
 import { ref, computed, watch, onBeforeUnmount } from 'vue'
-import { useToast } from 'vue-toastification'
+import { useToast } from '@/js/utils/toast.js'
 import { apiClient } from '@/js/api/manager.js'
 import { biEndpoints } from '@/modules/bi_analysis_modern/client/src/js/endpoints.js'
 import { fetchPipelineChartDetail, fetchPipelineDetail, savePipelineChart, updatePipeline } from '@/modules/bi_analysis_modern/client/src/Pipelines/js/pipelineApi.js'

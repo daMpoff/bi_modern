@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="tree-node" :class="{ 'tree-node--expanded': isExpanded }">
     <div
       class="tree-node__content"
@@ -88,16 +88,6 @@
         />
       </template>
     </div>
-    
-    <ConfirmDialog
-      :show="showConfirmDialog"
-      title="Удаление файла"
-      :message="`Вы уверены, что хотите удалить файл &quot;${nodeLabel}&quot;? Это действие нельзя отменить.`"
-      confirm-text="Удалить"
-      cancel-text="Отмена"
-      @confirm="confirmDeleteFile"
-      @close="showConfirmDialog = false"
-    />
     <XlsxSheetPicker
       :visible="sheetPickerVisible"
       :filename="sheetPickerFilename"
@@ -114,8 +104,8 @@ import { ref, computed, watch } from 'vue'
 import { ChevronRight, Database, FileText, Table, File, Folder, Trash2, Plus } from 'lucide-vue-next'
 import { apiClient } from '@/js/api/manager'
 import { biEndpoints } from '@/modules/bi_analysis_modern/client/src/js/endpoints'
-import ConfirmDialog from '@/components/ConfirmDialog.vue'
-import { useToast } from 'vue-toastification'
+import { confirmDelete } from '@/js/utils/confirm.js'
+import { useToast } from '@/js/utils/toast.js'
 import XlsxSheetPicker from '../Files/FilePreview/XlsxSheetPicker.vue'
 import { MAX_UPLOAD_SIZE_MB, MAX_UPLOAD_FILES } from '@/modules/bi_analysis_modern/client/src/js/uploadConfig'
 
@@ -139,7 +129,6 @@ const emit = defineEmits(['toggle-expand', 'node-click', 'file-deleted'])
 const children = ref([])
 const isLoading = ref(false)
 const toast = useToast()
-const showConfirmDialog = ref(false)
 const isDeleting = ref(false)
 
 const isDropTarget = ref(false)
@@ -614,30 +603,28 @@ function handleFileDeleted({ fileId, connectionId }) {
 }
 
 // Удаление файла
-function handleDeleteFile() {
-  showConfirmDialog.value = true
-}
-
-async function confirmDeleteFile() {
-  if (!props.node?.id) {
-    toast.error('Ошибка: не найден ID файла')
+async function handleDeleteFile() {
+  const ok = await confirmDelete(
+    'Удаление файла',
+    `Удалить файл «${props.node?.name || ''}»?`,
+  )
+  if (!ok || !props.node?.id) {
     return
   }
-  
+
   isDeleting.value = true
-  showConfirmDialog.value = false
-  
+
   try {
     const fileId = parseInt(props.node.id, 10)
-    
+
     if (isNaN(fileId)) {
       toast.error('Ошибка: неверный ID файла')
       return
     }
-    
+
     const endpoint = biEndpoints.bi.uploadDelete(fileId)
     const res = await apiClient.delete(endpoint)
-    
+
     if (res && (res.success === true || res.status === 204 || res.status === 200)) {
       toast.success(`Файл "${props.node.name}" успешно удалён`)
       emit('file-deleted', { fileId, connectionId: props.node.connection_id })
@@ -653,10 +640,10 @@ async function confirmDeleteFile() {
     }
   } catch (error) {
     logError('Ошибка удаления файла:', error)
-    const errorMsg = error?.response?.data?.message || 
+    const errorMsg = error?.response?.data?.message ||
                      error?.response?.data?.detail ||
                      error?.response?.data?.error ||
-                     error?.message || 
+                     error?.message ||
                      'Ошибка при удалении файла'
     toast.error(errorMsg)
   } finally {

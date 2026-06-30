@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div ref="rootRef" class="dashboard-block-chart-preview">
     <div class="chart-preview-inner">
       <!-- Skeleton placeholder when out of viewport (virtualization) -->
@@ -37,7 +37,7 @@
 
 <script setup>
 import { ref, watch, onMounted, onBeforeUnmount, computed, inject } from 'vue'
-import { useToast } from 'vue-toastification'
+import { useToast } from '@/js/utils/toast.js'
 import { apiClient } from '@/js/api/manager.js'
 import { biEndpoints } from '@/modules/bi_analysis_modern/client/src/js/endpoints.js'
 import { resolveBlockChartConfig } from '@/modules/bi_analysis_modern/client/src/js/chartConfigUtils.js'

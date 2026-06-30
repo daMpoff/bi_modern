@@ -136,36 +136,6 @@
       @close="editor.closeAllModals()"
       @apply="editor.applyConfig"
     />
-
-    <ConfirmDialog
-      :show="editor.showDeleteConfirm.value"
-      title="Удаление блока"
-      message="Удалить этот блок пайплайна?"
-      confirm-text="Удалить"
-      cancel-text="Отмена"
-      @confirm="editor.confirmDeleteNode()"
-      @close="editor.cancelDeleteNode()"
-    />
-
-    <ConfirmDialog
-      :show="editor.showClearAllConfirm.value"
-      title="Стереть все"
-      message="Удалить все блоки и связи пайплайна?"
-      confirm-text="Стереть все"
-      cancel-text="Отмена"
-      @confirm="editor.confirmClearAll()"
-      @close="editor.cancelClearAll()"
-    />
-
-    <ConfirmDialog
-      :show="editor.showDeleteEdgeConfirm.value"
-      title="Удаление связи"
-      message="Удалить эту связь между блоками?"
-      confirm-text="Удалить"
-      cancel-text="Отмена"
-      @confirm="editor.confirmDeleteEdge()"
-      @close="editor.cancelDeleteEdge()"
-    />
   </div>
 </template>
 
@@ -177,7 +147,7 @@ import '@vue-flow/core/dist/style.css'
 import '@vue-flow/core/dist/theme-default.css'
 import '@vue-flow/minimap/dist/style.css'
 import { Play, Trash2 } from 'lucide-vue-next'
-import ConfirmDialog from '@/components/ConfirmDialog.vue'
+import { confirmAction, confirmDelete } from '@/js/utils/confirm.js'
 
 const PipelineDataSourceModal = defineAsyncComponent(() => import('@/modules/bi_analysis_modern/client/src/Dashboards/PipelineDataSourceModal.vue'))
 const PipelineFilterModal = defineAsyncComponent(() => import('./PipelineFilterModal.vue'))

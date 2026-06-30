@@ -101,7 +101,7 @@
 <script setup>
 import { ref, watch, computed } from 'vue'
 import { GitMerge, ArrowRight, Link2 } from 'lucide-vue-next'
-import { useToast } from 'vue-toastification'
+import { useToast } from '@/js/utils/toast.js'
 import { apiClient } from '@/js/api/manager'
 import { biEndpoints } from '@/modules/bi_analysis_modern/client/src/js/endpoints'
 import ModalCenter from '@/components/ModalCenter.vue'

@@ -1,6 +1,7 @@
 import { ref, computed, nextTick } from 'vue'
 import { useVueFlow } from '@vue-flow/core'
-import { useToast } from 'vue-toastification'
+import { useToast } from '@/js/utils/toast.js'
+import { confirmAction, confirmDelete } from '@/js/utils/confirm.js'
 import {
   getBlockTypesForContext, getNodeTypesMap,
   getBlockLabel, getSingletonTypes
@@ -46,11 +47,6 @@ export function usePipelineEditor(context = 'dashboard', options = {}) {
   const availableFields = ref([])
   const availableFieldsSimple = ref([])
 
-  const showDeleteConfirm = ref(false)
-  const nodeToDelete = ref(null)
-  const showDeleteEdgeConfirm = ref(false)
-  const edgeToDelete = ref(null)
-  const showClearAllConfirm = ref(false)
   const pipelineWarning = ref('')
   let warningTimeout = null
 
@@ -243,11 +239,22 @@ export function usePipelineEditor(context = 'dashboard', options = {}) {
     }
   }
 
-  function handleEdgeClick(event) {
+  async function handleEdgeClick(event) {
     const edgeId = event.edge?.id
-    if (!edgeId) return
-    edgeToDelete.value = edgeId
-    showDeleteEdgeConfirm.value = true
+    if (!edgeId) {
+      return
+    }
+
+    const ok = await confirmDelete(
+      'Удаление связи',
+      'Удалить связь между блоками?',
+    )
+    if (!ok) {
+      return
+    }
+
+    edges.value = edges.value.filter(e => e.id !== edgeId)
+    toast.success('Связь удалена')
   }
 
   async function loadFieldsForNode(nodeId) {
@@ -379,54 +386,37 @@ export function usePipelineEditor(context = 'dashboard', options = {}) {
     closeAllModals()
   }
 
-  function openDeleteConfirm(nodeId) {
+  async function openDeleteConfirm(nodeId) {
     if (isNodeConnectedToJoin(nodeId)) {
       showWarning('Невозможно удалить блок: он подключен к блоку "Соединение". Сначала удалите блок "Соединение".')
       return
     }
-    nodeToDelete.value = nodeId
-    showDeleteConfirm.value = true
+
+    const ok = await confirmDelete(
+      'Удаление блока',
+      'Удалить этот блок из пайплайна?',
+    )
+    if (!ok) {
+      return
+    }
+
+    nodes.value = nodes.value.filter(n => n.id !== nodeId)
+    edges.value = edges.value.filter(e => e.source !== nodeId && e.target !== nodeId)
   }
 
-  function confirmDeleteNode() {
-    const id = nodeToDelete.value
-    if (!id) return
-    nodes.value = nodes.value.filter(n => n.id !== id)
-    edges.value = edges.value.filter(e => e.source !== id && e.target !== id)
-    nodeToDelete.value = null
-    showDeleteConfirm.value = false
-  }
+  async function openClearAllConfirm() {
+    const ok = await confirmAction({
+      title: 'Очистка пайплайна',
+      message: 'Удалить все блоки и связи с холста?',
+      confirmText: 'Очистить',
+      variant: 'danger',
+    })
+    if (!ok) {
+      return
+    }
 
-  function cancelDeleteNode() {
-    nodeToDelete.value = null
-    showDeleteConfirm.value = false
-  }
-
-  function confirmDeleteEdge() {
-    if (!edgeToDelete.value) return
-    edges.value = edges.value.filter(e => e.id !== edgeToDelete.value)
-    edgeToDelete.value = null
-    showDeleteEdgeConfirm.value = false
-    toast.success('Связь удалена')
-  }
-
-  function cancelDeleteEdge() {
-    edgeToDelete.value = null
-    showDeleteEdgeConfirm.value = false
-  }
-
-  function openClearAllConfirm() {
-    showClearAllConfirm.value = true
-  }
-
-  function confirmClearAll() {
     nodes.value = []
     edges.value = []
-    showClearAllConfirm.value = false
-  }
-
-  function cancelClearAll() {
-    showClearAllConfirm.value = false
   }
 
   function loadPipelineData(pipelineNodes, pipelineEdges) {
@@ -484,11 +474,6 @@ export function usePipelineEditor(context = 'dashboard', options = {}) {
     joinLeftSource,
     joinRightSource,
 
-    showDeleteConfirm,
-    nodeToDelete,
-    showDeleteEdgeConfirm,
-    showClearAllConfirm,
-
     addNode,
     handleToolbarDragStart,
     handleToolbarDragEnd,
@@ -501,13 +486,7 @@ export function usePipelineEditor(context = 'dashboard', options = {}) {
     closeAllModals,
     applyConfig,
     openDeleteConfirm,
-    confirmDeleteNode,
-    cancelDeleteNode,
-    confirmDeleteEdge,
-    cancelDeleteEdge,
     openClearAllConfirm,
-    confirmClearAll,
-    cancelClearAll,
     loadPipelineData,
     getCleanGraphData,
     clearWarning,

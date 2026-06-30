@@ -96,16 +96,6 @@
     </teleport>
 
   </div>
-  <ConfirmDialog
-    :show="showDeleteDialog"
-    title="Подтверждение удаления"
-    :message="deleteConfirmMessage"
-    confirm-text="Да"
-    cancel-text="Нет"
-    :confirm-countdown-seconds="3"
-    @confirm="confirmDelete"
-    @close="cancelDelete"
-  />
 
   <ModalCenter
     modal-id="simpleTableRenameDialog"
@@ -146,7 +136,7 @@ import { ref, watch, onMounted, computed } from 'vue'
 import { Star, MoreHorizontal, Trash2, CaseSensitive, Link, TriangleAlert, Table, LayoutDashboard } from 'lucide-vue-next'
 import { useRouter } from 'vue-router'
 import { apiClient } from '@/js/api/manager.js'
-import ConfirmDialog from '@/components/ConfirmDialog.vue'
+import { confirmDelete } from '@/js/utils/confirm.js'
 import ModalCenter from '@/components/ModalCenter.vue'
 import ClickHouseIcon from '@/modules/bi_analysis_modern/client/src/assets/icons/clickhouse.svg'
 import PostgresIcon from '@/modules/bi_analysis_modern/client/src/assets/icons/postgres.svg'
@@ -185,15 +175,6 @@ const sortedUsers = computed(() => {
 const favoritesInCurrentList = computed(() => {
   if (!props.users) return 0
   return props.users.filter(user => isFavorite(user.id)).length
-})
-
-const showDeleteDialog = ref(false)
-const rowToDelete = ref(null)
-
-const deleteConfirmMessage = computed(() => {
-  const name = rowToDelete.value?.name || rowToDelete.value?.original_filename || 'элемент'
-  const typeName = getTypeName(rowToDelete.value)
-  return `Вы действительно хотите удалить «${name}» (${typeName})?`
 })
 
 const showRenameDialog = ref(false)
@@ -326,26 +307,33 @@ function getDeleteEndpoint(row) {
   return ''
 }
 
-async function confirmDelete() {
-  if (!rowToDelete.value) return
-  const endpoint = getDeleteEndpoint(rowToDelete.value)
-  if (!endpoint) return
+async function askDelete(row) {
+  const name = row?.name || row?.original_filename || 'элемент'
+  const typeName = getTypeName(row)
+  const ok = await confirmDelete(
+    'Удаление',
+    `Вы действительно хотите удалить "${name}" (${typeName})?`,
+  )
+  if (!ok) {
+    return
+  }
+
+  const endpoint = getDeleteEndpoint(row)
+  if (!endpoint) {
+    return
+  }
+
   try {
     const res = await apiClient.delete(endpoint)
-    if (res.success) { emit('delete-row', rowToDelete.value); closeMenu() }
-    else alert('Ошибка при удалении: ' + (res.message || ''))
-  } catch (err) { alert('Ошибка при удалении: ' + err) }
-  finally { cancelDelete() }
-}
-
-function askDelete(row) {
-  rowToDelete.value = row
-  showDeleteDialog.value = true
-}
-
-function cancelDelete() {
-  showDeleteDialog.value = false
-  rowToDelete.value = null
+    if (res.success) {
+      emit('delete-row', row)
+      closeMenu()
+    } else {
+      alert('Ошибка при удалении: ' + (res.message || ''))
+    }
+  } catch (err) {
+    alert('Ошибка при удалении: ' + err)
+  }
 }
 
 function getRowById(id) { return props.users.find(u => u.id === id) }

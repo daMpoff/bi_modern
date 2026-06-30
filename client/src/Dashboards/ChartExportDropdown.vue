@@ -38,7 +38,7 @@
 <script setup>
 import { ref } from 'vue'
 import { Download, Image, FileText, FileSpreadsheet } from 'lucide-vue-next'
-import { useToast } from 'vue-toastification'
+import { useToast } from '@/js/utils/toast.js'
 import { useDropdown } from '@/composables/useDropdown.js'
 
 const props = defineProps({
