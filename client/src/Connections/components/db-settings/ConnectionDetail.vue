@@ -73,11 +73,14 @@
 </template>
 
 <script setup>
+import clickhouseIcon from '../../../assets/icons/clickhouse.svg'
+import mssqlIcon from '../../../assets/icons/mssql.svg'
+import postgresIcon from '../../../assets/icons/postgres.svg'
 import { CircleCheck, OctagonAlert, ArrowLeft, Trash } from 'lucide-vue-next'
 import { useRouter, useRoute } from 'vue-router'
 import { ref, onMounted, computed } from 'vue'
 import { apiClient } from '@/js/api/manager'
-import { endpoints } from '@/js/api/endpoints'
+import { biEndpoints as endpoints } from '@/modules/bi_analysis_modern/client/src/js/endpoints.js'
 import ConnectionNameDialog from '@/modules/bi_analysis_modern/client/src/Connections/components/ConnectionNameDialog.vue'
 import { useRedirectIfFileConnection } from '@/modules/bi_analysis_modern/client/src/components/js/useRedirectIfFileConnection'
 
@@ -98,6 +101,8 @@ const initialHost = ref('')
 const initialPort = ref('')
 const initialUsername = ref('')
 const initialPassword = ref('')
+const initialDatabase = ref('')
+const loadedConnectionType = ref('')
 
 const message = ref('')
 const error = ref(false)
@@ -113,20 +118,20 @@ const connectionType = computed(() => {
   if (path.includes('/clickhouse')) return 'clickhouse'
   if (path.includes('/mssql')) return 'mssql'
   if (path.includes('/postgresql')) return 'postgresql'
-  return 'clickhouse' // по умолчанию
+  return loadedConnectionType.value === 'postgres' ? 'postgresql' : (loadedConnectionType.value || 'clickhouse')
 })
 
 // Определяем путь к логотипу в зависимости от типа подключения
 function getLogoPath() {
   switch (connectionType.value) {
     case 'clickhouse':
-      return '@/modules/bi_analysis_modern/client/src/assets/ClickHouse_Logo.svg'
+      return clickhouseIcon
     case 'mssql':
-      return '@/modules/bi_analysis_modern/client/src/assets/icons/mssql.svg'
+      return mssqlIcon
     case 'postgresql':
-      return '@/modules/bi_analysis_modern/client/src/assets/icons/postgres.svg'
+      return postgresIcon
     default:
-      return '@/modules/bi_analysis_modern/client/src/assets/ClickHouse_Logo.svg'
+      return clickhouseIcon
   }
 }
 
@@ -134,7 +139,8 @@ const isChanged = computed(() => {
   return host.value !== initialHost.value ||
          port.value !== initialPort.value ||
          username.value !== initialUsername.value ||
-         password.value !== initialPassword.value
+         password.value !== initialPassword.value ||
+         database.value !== initialDatabase.value
 })
 
 const isConnectionValid = computed(() => {
@@ -176,12 +182,13 @@ async function fetchConnection() {
     const response = await apiClient.get(`${endpoints.bi.ConnectionsList}${id}/`)
 
     const data = response.data
+    loadedConnectionType.value = data.connector_type
 
     connectionName.value = data.name || '{Ошибка получения названия подключения}'
 
     host.value = data.config.host || ''
     port.value = data.config.port || ''
-    username.value = data.config.user || ''
+    username.value = data.config.user || data.config.username || ''
     database.value = data.config.database || ''
     password.value = data.config.password || ''
 
@@ -189,6 +196,7 @@ async function fetchConnection() {
     initialPort.value = port.value
     initialUsername.value = username.value
     initialPassword.value = password.value
+    initialDatabase.value = database.value
 
   } catch (err) {
     logError('Ошибка загрузки подключения:', err)
@@ -224,6 +232,7 @@ async function changeConnection() {
         port: port.value,
         user: username.value,
         password: password.value,
+        database: database.value,
       }
     }
 
@@ -235,6 +244,7 @@ async function changeConnection() {
     initialPort.value = port.value
     initialUsername.value = username.value
     initialPassword.value = password.value
+    initialDatabase.value = database.value
 
   } catch (err) {
     logError('Ошибка при сохранении:', err)

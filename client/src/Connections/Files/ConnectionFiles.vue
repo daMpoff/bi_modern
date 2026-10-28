@@ -252,7 +252,7 @@ async function loadConnectionFiles() {
   console.log('[loadConnectionFiles] Загружаю файлы для подключения:', currentConnectionId)
 
   try {
-    const res = await apiClient.getUploadedFiles(`bi_analysis/bi_datasets/connection/${currentConnectionId}/files/`)
+    const res = await apiClient.get(`bi_analysis_modern/bi_datasets/connection/${currentConnectionId}/files/`)
     console.log('[loadConnectionFiles] Ответ сервера:', res)
     
     if (res.success) {
@@ -331,7 +331,7 @@ async function loadConnectionInfo() {
   const currentConnectionId = route.params.pk
   if (!currentConnectionId) return
 
-  const res = await apiClient.get(`bi_analysis/bi_connections/${currentConnectionId}/`)
+  const res = await apiClient.get(`bi_analysis_modern/bi_connections/${currentConnectionId}/`)
   if (res.success && res.data?.name) {
     connectionName.value = res.data.name
   }

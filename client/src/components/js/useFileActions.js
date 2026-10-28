@@ -1,5 +1,5 @@
 ﻿import { apiClient } from '@/js/api/manager'
-import { endpoints } from '@/js/api/endpoints'
+import { biEndpoints as endpoints } from '@/modules/bi_analysis_modern/client/src/js/endpoints.js'
 import { MAX_UPLOAD_SIZE_MB } from '@/modules/bi_analysis_modern/client/src/js/uploadConfig'
 import { confirmDelete } from '@/js/utils/confirm.js'
 
@@ -72,7 +72,7 @@ export function useFileActions(uploadedFiles, selectedFile, fileToReplace, loadU
       if (file.name.endsWith('.xlsx')) {
         const formData = new FormData()
         formData.append('file', file)
-        const sheetRes = await apiClient.upload(endpoints.bi.xlsxSheets, formData)
+        const sheetRes = await apiClient.post(endpoints.bi.xlsxSheets, formData)
 
         if (sheetRes.success && sheetRes.data.sheets.length > 1) {
           const tempFile = {

@@ -7,7 +7,6 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 
-from drf_yasg.utils import swagger_auto_schema
 
 from .data_source_provider import get_columns_meta
 from .graph_execute import execute_graph

@@ -6,7 +6,7 @@ export default {
       "requiresAuth": true
     }
   },
-  "Dashboards": {
+  "DashboardsModern": {
     "path": "/bi-modern/dashboard/",
     "component": "@/modules/bi_analysis_modern/client/src/Dashboards/DashboardListPage.vue",
     "meta": {

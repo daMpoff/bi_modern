@@ -302,8 +302,8 @@ function getTypeName(row) {
 }
 
 function getDeleteEndpoint(row) {
-  if (props.currentPage === 'connections' || row.type === 'connection') return `/bi_analysis/bi_connections/${row.id}/`
-  if (props.currentPage === 'dashboards' || row.type === 'dashboard') return `/bi_analysis/bi_dashboards/${row.id}/`
+  if (props.currentPage === 'connections' || row.type === 'connection') return `/bi_analysis_modern/bi_connections/${row.id}/`
+  if (props.currentPage === 'dashboards' || row.type === 'dashboard') return `/bi_analysis_modern/bi_dashboards/${row.id}/`
   return ''
 }
 
@@ -354,10 +354,10 @@ async function doRename() {
   let endpoint = ''
   let payload = {}
   if (props.currentPage === 'connections' || row.type === 'connection') {
-    endpoint = `/bi_analysis/bi_connections/${row.id}/`
+    endpoint = `/bi_analysis_modern/bi_connections/${row.id}/`
     payload = { name: renameValue.value }
   } else if (props.currentPage === 'dashboards' || row.type === 'dashboard') {
-    endpoint = `/bi_analysis/bi_dashboards/${row.id}/`
+    endpoint = `/bi_analysis_modern/bi_dashboards/${row.id}/`
     payload = { name: renameValue.value }
   }
   if (!endpoint) return
@@ -427,7 +427,7 @@ async function loadConnectionFilesStatus(connectionId) {
   const cached = connectionFilesCache.value.get(connectionId)
   if (cached) { connectionFilesStatus.value.set(connectionId, cached); return }
   try {
-    const res = await apiClient.get(`bi_analysis/bi_datasets/connection/${connectionId}/files/`)
+    const res = await apiClient.get(`bi_analysis_modern/bi_datasets/connection/${connectionId}/files/`)
     if (res.success && res.data) {
       const files = Array.isArray(res.data) ? res.data : []
       const hasMissingFiles = files.length === 0
@@ -455,7 +455,7 @@ async function loadAllConnectionFilesStatus() {
     return
   }
   try {
-    const res = await apiClient.get('bi_analysis/bi_connections/files-status/')
+    const res = await apiClient.get('bi_analysis_modern/bi_connections/files-status/')
     if (res.success && res.data) {
       Object.entries(res.data).forEach(([connectionId, status]) => {
         const id = parseInt(connectionId)

@@ -4,9 +4,19 @@
   "private": true,
   "type": "module",
   "description": "BI Analysis Modern - клиентская часть",
+  "scripts": {
+    "test": "node --test tests/*.test.mjs"
+  },
   "dependencies": {
+    "@duckdb/duckdb-wasm": "1.33.1-dev57.0",
+    "@vue-flow/core": "^1.45.0",
     "@vue-flow/minimap": "^1.5.4",
+    "apache-arrow": "^21.2.0",
+    "echarts": "^6.1.0",
+    "html2canvas": "^1.4.1",
     "jspdf": "^4.2.0",
-    "uplot": "^1.6.32"
+    "uplot": "^1.6.32",
+    "vue-echarts": "^8.0.0",
+    "vue-virtual-scroller": "^3.0.5"
   }
 }

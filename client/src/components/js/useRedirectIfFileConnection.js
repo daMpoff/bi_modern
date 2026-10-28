@@ -1,7 +1,7 @@
 import { onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { apiClient } from '@/js/api/manager'
-import { endpoints } from '@/js/api/endpoints'
+import { biEndpoints as endpoints } from '@/modules/bi_analysis_modern/client/src/js/endpoints.js'
 
 export function useRedirectIfFileConnection() {
   const router = useRouter()

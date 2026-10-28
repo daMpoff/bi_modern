@@ -53,7 +53,6 @@
 import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import { Plus, Search } from 'lucide-vue-next'
 import { apiClient } from '@/js/api/manager'
-import { endpoints } from '@/js/api/endpoints'
 import { biEndpoints } from '@/modules/bi_analysis_modern/client/src/js/endpoints'
 import ConnectionTreeNode from './ConnectionsTree/ConnectionTreeNode.vue'
 

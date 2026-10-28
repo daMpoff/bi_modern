@@ -19,10 +19,8 @@ class ConnectionSerializer(serializers.ModelSerializer):
         return data
 
     def update(self, instance, validated_data):
-        config = validated_data.get('config', {})
-        if 'password' not in config and 'config' in validated_data:
-            config['password'] = instance.config.get('password')
-        validated_data['config'] = config
+        if 'config' in validated_data:
+            validated_data['config'] = {**instance.config, **validated_data['config']}
         return super().update(instance, validated_data)
 
 

@@ -1,5 +1,5 @@
 ﻿import { apiClient } from '@/js/api/manager'
-import { endpoints } from '@/js/api/endpoints'
+import { biEndpoints as endpoints } from '@/modules/bi_analysis_modern/client/src/js/endpoints.js'
 import { MAX_UPLOAD_SIZE_MB, MAX_UPLOAD_FILES } from '@/modules/bi_analysis_modern/client/src/js/uploadConfig'
 
 export function useFileUploader(tempUploadedFiles, selectedFile, isSheetPickerVisible, currentUploadFile, availableSheets, loadUserFiles, connectionId, uploadedFiles = null, selectFileCallback = null, isFinalizingRef = null) {
@@ -20,7 +20,7 @@ export function useFileUploader(tempUploadedFiles, selectedFile, isSheetPickerVi
     }
 
     try {
-      const res = await apiClient.upload(endpoints.bi.Upload, formData, true)
+      const res = await apiClient.post(endpoints.bi.Upload, formData, true)
 
       if (res.success) {
         const temp = {
@@ -153,7 +153,7 @@ export function useFileUploader(tempUploadedFiles, selectedFile, isSheetPickerVi
         const formData = new FormData()
         formData.append('file', file)
         try {
-          const sheetRes = await apiClient.upload(endpoints.bi.xlsxSheets, formData)
+          const sheetRes = await apiClient.post(endpoints.bi.xlsxSheets, formData)
           return { file, sheetRes }
         } catch (error) {
           logError(`[handleFileUpload] Ошибка проверки листов для ${file.name}:`, error)

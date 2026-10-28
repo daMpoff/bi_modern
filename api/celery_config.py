@@ -12,14 +12,14 @@ class BIAnalysisCeleryConfig(CeleryModuleConfig):
 
     def get_task_routes(self) -> Dict[str, Dict[str, Any]]:
         return {
-            'modules.bi_analysis_modern.api.tasks.*': {'queue': 'bi_analysis'},
+            'modules.bi_analysis_modern.api.tasks.*': {'queue': 'bi_analysis_modern'},
         }
 
     def get_task_queues(self) -> Dict[str, Dict[str, Any]]:
         return {
-            'bi_analysis': {
-                'exchange': 'bi_analysis',
-                'routing_key': 'bi_analysis',
+            'bi_analysis_modern': {
+                'exchange': 'bi_analysis_modern',
+                'routing_key': 'bi_analysis_modern',
             }
         }
 

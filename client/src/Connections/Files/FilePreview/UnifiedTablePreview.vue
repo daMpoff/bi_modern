@@ -219,7 +219,7 @@ import { ChevronLeft, ChevronRight, Type, Hash, Percent } from 'lucide-vue-next'
 import { RecycleScroller } from 'vue-virtual-scroller'
 import 'vue-virtual-scroller/dist/vue-virtual-scroller.css'
 import { apiClient } from '@/js/api/manager'
-import { endpoints } from '@/js/api/endpoints'
+import { biEndpoints as endpoints } from '@/modules/bi_analysis_modern/client/src/js/endpoints.js'
 
 const props = defineProps({ 
   file: Object,

@@ -118,11 +118,11 @@ function onIconLeave() {
 const iconPath = computed(() => {
   const ext = getFileExtension()
   switch (ext) {
-    case 'csv': return new URL('@/modules/bi_analysis_modern/client/src/assets/icons/csv.svg', import.meta.url).href
+    case 'csv': return new URL('../../assets/icons/csv.svg', import.meta.url).href
     case 'xlsx':
-    case 'xls': return new URL('@/modules/bi_analysis_modern/client/src/assets/icons/xlsx.svg', import.meta.url).href
-    case 'txt': return new URL('@/modules/bi_analysis_modern/client/src/assets/icons/txt.svg', import.meta.url).href
-    default: return new URL('@/modules/bi_analysis_modern/client/src/assets/icons/folder_windows_style.svg', import.meta.url).href
+    case 'xls': return new URL('../../assets/icons/xlsx.svg', import.meta.url).href
+    case 'txt': return new URL('../../assets/icons/txt.svg', import.meta.url).href
+    default: return new URL('../../assets/icons/folder_windows_style.svg', import.meta.url).href
   }
 })
 

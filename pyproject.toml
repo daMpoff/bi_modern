@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "bi_analysis_modern"
+version = "0.1.0"
+description = "BI Modern: подключения, конвейеры данных и дашборды"
+
+[tool.poetry.dependencies]
+python = ">=3.12,<3.13"
+clickhouse-connect = ">=0.8.18"
+pymssql = ">=2.3.7"
+openpyxl = ">=3.1.5"
+polars = ">=1.0,<2.0"
+pyarrow = ">=23.0.1"
+
+[build-system]
+requires = ["poetry-core>=2.1.3"]
+build-backend = "poetry.core.masonry.api"

@@ -232,7 +232,7 @@ async function askDelete(dashboard) {
     return
   }
 
-  const endpoint = `/bi_analysis/bi_dashboards/${dashboard.id}/`
+  const endpoint = `/bi_analysis_modern/bi_dashboards/${dashboard.id}/`
 
   try {
     const res = await apiClient.delete(endpoint)

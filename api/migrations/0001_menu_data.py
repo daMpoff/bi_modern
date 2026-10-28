@@ -18,7 +18,7 @@ def populate_menu(apps, schema_editor):
         icon='BarChart2',
     )
     helper.create_routes_batch([
-        ('Дашборды', 'Dashboards', 'LayoutDashboard'),
+        ('Дашборды', 'DashboardsModern', 'LayoutDashboard'),
         ('Пайплайны', 'Pipelines', 'GitBranch'),
         ('Подключения', 'ConnectionsModern', 'Database'),
     ], parent=root)
@@ -32,7 +32,7 @@ def reverse_populate_menu(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('cms_adp', '0007_populate_core_menu'),
+        ('cms_adp', '0001_initial_squashed_0042_drop_graduate_employment_tables'),
     ]
 
     operations = [

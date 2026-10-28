@@ -1,6 +1,6 @@
 import { ref } from 'vue'
 import { apiClient } from '@/js/api/manager'
-import { endpoints } from '@/js/api/endpoints'
+import { biEndpoints as endpoints } from '@/modules/bi_analysis_modern/client/src/js/endpoints.js'
 import { useRoute } from 'vue-router'
 
 export function useFileList(tempUploadedFiles, selectedFile, uploadedFiles, currentUploadFile, availableSheets, sheetBeingEdited, isSheetPickerVisible, connectionIdRef) {
@@ -54,7 +54,7 @@ export function useFileList(tempUploadedFiles, selectedFile, uploadedFiles, curr
     const cleanId = typeof id === 'object' ? id.value || id : id
 
     try {
-      const res = await apiClient.getUploadedFiles(endpoints.bi.connectionFiles(cleanId))
+      const res = await apiClient.get(endpoints.bi.connectionFiles(cleanId))
       if (res.success) {
         uploadedFiles.value = res.data
       } else {

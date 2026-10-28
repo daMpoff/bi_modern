@@ -100,6 +100,13 @@
 </template>
 
 <script setup>
+import postgresIcon from '../../assets/icons/postgres.svg'
+import clickhouseIcon from '../../assets/icons/clickhouse.svg'
+import mssqlIcon from '../../assets/icons/mssql.svg'
+import folderIcon from '../../assets/icons/folder_windows_style.svg'
+import csvIcon from '../../assets/icons/csv.svg'
+import xlsxIcon from '../../assets/icons/xlsx.svg'
+import txtIcon from '../../assets/icons/txt.svg'
 import { ref, computed, watch } from 'vue'
 import { ChevronRight, Database, FileText, Table, File, Folder, Trash2, Plus } from 'lucide-vue-next'
 import { apiClient } from '@/js/api/manager'
@@ -168,13 +175,13 @@ const nodeIconUrl = computed(() => {
     switch (connectorType) {
       case 'postgres':
       case 'postgresql':
-        return '/src/core/bi/assets/icons/postgres.svg'
+        return postgresIcon
       case 'clickhouse':
-        return '/src/core/bi/assets/icons/clickhouse.svg'
+        return clickhouseIcon
       case 'mssql':
-        return '/src/core/bi/assets/icons/mssql.svg'
+        return mssqlIcon
       case 'file':
-        return '/src/core/bi/assets/icons/folder_windows_style.svg'
+        return folderIcon
       default:
         return null
     }
@@ -187,24 +194,24 @@ const nodeIconUrl = computed(() => {
     
     switch (fileExtension) {
       case 'csv':
-        return '/src/core/bi/assets/icons/csv.svg'
+        return csvIcon
       case 'xlsx':
       case 'xls':
-        return '/src/core/bi/assets/icons/xlsx.svg'
+        return xlsxIcon
       case 'txt':
-        return '/src/core/bi/assets/icons/txt.svg'
+        return txtIcon
       default:
         // Если есть file_type в данных узла, используем его
         const fileType = props.node.file_type?.toLowerCase()
         if (fileType === 'csv') {
-          return '/src/core/bi/assets/icons/csv.svg'
+          return csvIcon
         } else if (fileType === 'xlsx' || fileType === 'xls') {
-          return '/src/core/bi/assets/icons/xlsx.svg'
+          return xlsxIcon
         } else if (fileType === 'txt') {
-          return '/src/core/bi/assets/icons/txt.svg'
+          return txtIcon
         }
         // По умолчанию используем иконку папки
-        return '/src/core/bi/assets/icons/folder_windows_style.svg'
+        return folderIcon
     }
   }
   
@@ -445,7 +452,7 @@ async function uploadOne(file, sheet = null) {
     name = `${base} – ${sheet}.xlsx`
     formData.append('sheet', sheet)
   }
-  const res = await apiClient.upload(biEndpoints.bi.Upload, formData, true)
+  const res = await apiClient.post(biEndpoints.bi.Upload, formData, true)
   if (!res.success) throw new Error(res.error || 'Ошибка загрузки')
   return {
     name,
@@ -508,7 +515,7 @@ async function processQueue(connectionId) {
       formData.append('file', file)
       let sheetRes
       try {
-        sheetRes = await apiClient.upload(biEndpoints.bi.xlsxSheets, formData)
+        sheetRes = await apiClient.post(biEndpoints.bi.xlsxSheets, formData)
       } catch (e) {
         pendingFilesQueue.value.shift()
         await processQueue(connectionId)

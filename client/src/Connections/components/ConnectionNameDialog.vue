@@ -24,7 +24,7 @@
 <script setup>
 import { ref, watch } from 'vue'
 import { apiClient } from '@/js/api/manager'
-import { endpoints } from '@/js/api/endpoints'
+import { biEndpoints as endpoints } from '@/modules/bi_analysis_modern/client/src/js/endpoints.js'
 import ModalCenter from '@/components/ModalCenter.vue'
 
 const props = defineProps({
@@ -70,7 +70,7 @@ async function submit() {
 
     const payload = {
       name: localName.value,
-      connector_type: isFileConnection ? 'file' : props.connectorType,
+      connector_type: isFileConnection ? 'file' : (props.connectorType === 'postgresql' ? 'postgres' : props.connectorType),
       config: isFileConnection ? { source: 'local_upload' } : (props.connectionConfig || {})
     }
 
