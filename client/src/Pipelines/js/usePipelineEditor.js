@@ -1,3 +1,4 @@
+import { getJoinInputIds, serializeEdge, normalizeGraphEdges } from './graphConnections.js'
 import { ref, computed, nextTick } from 'vue'
 import { useVueFlow } from '@vue-flow/core'
 import { useToast } from '@/js/utils/toast.js'
@@ -117,18 +118,18 @@ export function usePipelineEditor(context = 'dashboard', options = {}) {
   const joinLeftSource = computed(() => {
     if (!showJoinModal.value || !selectedNodeId.value) return null
     const map = edgesMap.value
-    const sources = map[selectedNodeId.value] || []
+    const sources = getJoinInputIds(edges.value, selectedNodeId.value)
     if (sources.length < 2) return null
-    const [leftId] = sources.slice().sort()
+    const [leftId] = sources
     return findDataSourceConfig(leftId, map)
   })
 
   const joinRightSource = computed(() => {
     if (!showJoinModal.value || !selectedNodeId.value) return null
     const map = edgesMap.value
-    const sources = map[selectedNodeId.value] || []
+    const sources = getJoinInputIds(edges.value, selectedNodeId.value)
     if (sources.length < 2) return null
-    const [, rightId] = sources.slice().sort()
+    const [, rightId] = sources
     return findDataSourceConfig(rightId, map)
   })
 
@@ -213,6 +214,8 @@ export function usePipelineEditor(context = 'dashboard', options = {}) {
       id: `edge-${params.source}-${params.target}`,
       source: params.source,
       target: params.target,
+      sourceHandle: params.sourceHandle ?? null,
+      targetHandle: params.targetHandle ?? null,
       type: 'smoothstep',
       animated: true
     })
@@ -428,7 +431,7 @@ export function usePipelineEditor(context = 'dashboard', options = {}) {
         onDelete: (id) => openDeleteConfirm(id)
       }
     }))
-    edges.value = pipelineEdges || []
+    edges.value = normalizeGraphEdges(pipelineNodes, pipelineEdges)
   }
 
   function getCleanGraphData() {
@@ -439,13 +442,7 @@ export function usePipelineEditor(context = 'dashboard', options = {}) {
       data: { label: n.data?.label, nodeType: n.data?.nodeType, config: n.data?.config || {} },
       draggable: n.draggable ?? true
     }))
-    const cleanEdges = edges.value.map(e => ({
-      id: e.id,
-      source: e.source,
-      target: e.target,
-      type: e.type || 'smoothstep',
-      animated: e.animated ?? true
-    }))
+    const cleanEdges = edges.value.map(serializeEdge)
     return { nodes: cleanNodes, edges: cleanEdges }
   }
 

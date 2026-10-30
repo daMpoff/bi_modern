@@ -677,12 +677,13 @@ def execute_pipeline_async(self, pipeline_id: int, user_id: int, params: Optiona
     """
     Асинхронное выполнение пайплайна. Результат сохраняется в Django cache.
     """
-    from django.core.cache import cache
+    from .execution.result_cache import execution_cache, task_key, ASYNC_RESULT_TTL
     from django.contrib.auth import get_user_model
     from .bi_pipelines.models import Pipeline
     from .graph_execute import execute_graph
     from .pipeline_types import row_count, to_rows_slice
-    from .config import EXECUTE_PREVIEW_ROWS
+    from .config import EXECUTE_PREVIEW_ROWS, EXECUTE_CHUNK_SIZE
+    preview_limit = EXECUTE_PREVIEW_ROWS if EXECUTE_PREVIEW_ROWS is not None else EXECUTE_CHUNK_SIZE
 
     User = get_user_model()
     try:
@@ -709,7 +710,7 @@ def execute_pipeline_async(self, pipeline_id: int, user_id: int, params: Optiona
 
     if raw_df is not None:
         rc = total_rows if total_rows is not None else row_count(raw_df)
-        chart_data_slice = to_rows_slice(raw_df, EXECUTE_PREVIEW_ROWS)
+        chart_data_slice = to_rows_slice(raw_df, preview_limit)
         cache_result = {
             'chartData': chart_data_slice,
             'error': result.get('error'),
@@ -719,11 +720,10 @@ def execute_pipeline_async(self, pipeline_id: int, user_id: int, params: Optiona
         chart_data = result.get('chartData', [])
         rc = len(chart_data)
         cache_result = {
-            'chartData': chart_data[:EXECUTE_PREVIEW_ROWS] if rc > EXECUTE_PREVIEW_ROWS else chart_data,
+            'chartData': chart_data[:preview_limit],
             'error': result.get('error'),
             'rows_count': rc,
         }
 
-    cache_key = f'pipeline_exec_{self.request.id}'
-    cache.set(cache_key, cache_result, timeout=3600)
+    execution_cache().set(task_key(self.request.id), cache_result, timeout=ASYNC_RESULT_TTL)
     return {'status': 'ok', 'rows_count': rc, 'task_id': str(self.request.id)}

@@ -5,11 +5,13 @@
 """
 import logging
 import os
-from collections import deque
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Any, Dict, List, Optional
 
 from .config import PREVIEW_ROW_LIMIT, SOURCE_LIMIT, USE_SQL_PUSHDOWN
+from .execution.graph_plan import compile_graph, GraphValidationError
+from .execution.formulas import normalize_formulas, parse_formula
+from .execution.sql_pushdown import can_push_filter, can_push_aggregation
 from .execution.node_handlers import (
     get_source_data,
     apply_filter,
@@ -60,40 +62,28 @@ def execute_graph(
     include_node_row_counts: bool = False,
     preview: bool = False,
 ) -> Dict[str, Any]:
+    """Выполнить проверенный граф, возвращая ошибки без маскировки под пустые данные."""
+    try:
+        return _execute_graph(nodes, edges, user, params, include_node_row_counts, preview)
+    except Exception as exc:
+        logger.exception('Ошибка исполнения конвейера')
+        return {'chartData': [], 'error': f'Ошибка выполнения конвейера: {exc}'}
+
+
+def _execute_graph(nodes, edges, user, params=None, include_node_row_counts=False, preview=False):
     """
     Выполняет граф и возвращает данные для узлов типа chart/output.
     Данные хранятся в Polars DataFrame на протяжении всего пайплайна,
     конвертация в List[Dict] происходит только на финальном этапе.
     """
     params = params or {}
-    if not nodes:
-        return {'chartData': [], 'error': 'Нет узлов'}
-
-    nodes_by_id = {n.get('id'): n for n in nodes if n.get('id')}
-    if not nodes_by_id:
-        return {'chartData': [], 'error': 'Нет узлов с id'}
-
-    chart_nodes = [n for n in nodes if n.get('type') == NODE_TYPE_CHART]
-    output_nodes = [n for n in nodes if n.get('type') == NODE_TYPE_OUTPUT]
-
-    if len(chart_nodes) > 1:
-        return {'chartData': [], 'error': 'В пайплайне допускается только один блок «График».'}
-
-    edges_map = _build_edges_map(edges)
-
-    terminal_node = None
-    if output_nodes:
-        terminal_node = output_nodes[0]
-    elif chart_nodes:
-        terminal_node = chart_nodes[0]
-
-    if not terminal_node:
-        return {'chartData': [], 'error': 'Нет терминального узла (chart или output)'}
-
-    reachable = _find_reachable(terminal_node.get('id'), edges_map)
-    order = _topological_sort(reachable, edges_map)
-    if order is None:
-        return {'chartData': [], 'error': 'Цикл или недостижимые узлы в графе'}
+    try:
+        plan = compile_graph(nodes, edges)
+    except GraphValidationError as exc:
+        return {'chartData': [], 'error': str(exc)}
+    nodes_by_id = plan.nodes_by_id
+    edges_map = plan.edges_map
+    order = plan.order
 
     source_limit: Optional[int] = PREVIEW_ROW_LIMIT if preview else SOURCE_LIMIT
     use_polars = is_polars_available()
@@ -104,7 +94,7 @@ def execute_graph(
             preview, source_limit, use_polars, order,
         )
 
-    children_map = _build_children_map(edges)
+    children_map = plan.children_map
     cache: Dict[str, Any] = {}
     pushdown_skip: set = set()
 
@@ -113,25 +103,27 @@ def execute_graph(
         if (nodes_by_id.get(nid) or {}).get('type') == NODE_TYPE_DATA_SOURCE
     ]
 
-    required_columns = _collect_required_columns(order, nodes_by_id, edges_map) if use_polars else {}
+    try:
+        required_columns = _collect_required_columns(order, nodes_by_id, edges_map) if use_polars else {}
+    except ValueError as exc:
+        return {'chartData': [], 'error': str(exc)}
 
     if len(source_nodes_in_order) > 1:
-        cache, pushdown_skip = _fetch_sources_parallel(
-            source_nodes_in_order, nodes_by_id, children_map, edges_map,
-            user, source_limit, use_polars, params,
+        source_result = _fetch_sources_parallel(
+            source_nodes_in_order, nodes_by_id, children_map,
+            user, source_limit, use_polars, params, not include_node_row_counts,
         )
-        if '__error__' in cache:
-            return cache.pop('__error__')
-    elif len(source_nodes_in_order) == 1:
-        nid = source_nodes_in_order[0]
-        result = _fetch_single_source(
-            nid, nodes_by_id, children_map,
-            user, source_limit, use_polars, params,
+    elif source_nodes_in_order:
+        source_result = _fetch_single_source(
+            source_nodes_in_order[0], nodes_by_id, children_map,
+            user, source_limit, use_polars, params, not include_node_row_counts,
         )
-        if 'error' in result:
-            return result
-        cache.update(result.get('cache', {}))
-        pushdown_skip = result.get('pushdown_skip', set())
+    else:
+        source_result = {'cache': {}, 'pushdown_skip': set()}
+    if 'error' in source_result:
+        return source_result
+    cache.update(source_result.get('cache', {}))
+    pushdown_skip = source_result.get('pushdown_skip', set())
 
     if use_polars and required_columns:
         for src_nid, cols in required_columns.items():
@@ -203,7 +195,7 @@ def execute_graph(
             sources = edges_map.get(nid, [])
             if len(sources) != 2:
                 return {'chartData': [], 'error': 'Соединение должно иметь два входа'}
-            left_id, right_id = sorted(sources)
+            left_id, right_id = sources
             left_inp = cache.get(left_id)
             right_inp = cache.get(right_id)
             if use_polars:
@@ -335,6 +327,7 @@ def _fetch_single_source(
     source_limit: Optional[int],
     use_polars: bool,
     params: Dict[str, Any],
+    allow_sql_pushdown: bool = True,
 ) -> Dict[str, Any]:
     """Загрузка одного источника данных. Возвращает LazyFrame при use_polars=True."""
     node = nodes_by_id.get(nid)
@@ -342,8 +335,8 @@ def _fetch_single_source(
     main_table = config.get('main_table') or {}
 
     pushdown_filter, pushdown_agg, local_skip = (
-        _get_pushdown_config(nodes_by_id, children_map, nid, config)
-        if USE_SQL_PUSHDOWN and not main_table.get('file_id')
+        _get_pushdown_config(nodes_by_id, children_map, nid, params)
+        if allow_sql_pushdown and USE_SQL_PUSHDOWN and not main_table.get('file_id')
         else (None, None, set())
     )
 
@@ -381,112 +374,44 @@ def _fetch_sources_parallel(
     source_nids: List[str],
     nodes_by_id: Dict[str, Dict],
     children_map: Dict[str, List[str]],
-    edges_map: Dict[str, List[str]],
     user,
     source_limit: Optional[int],
     use_polars: bool,
     params: Dict[str, Any],
-) -> tuple:
-    """Параллельная загрузка нескольких источников данных."""
+    allow_sql_pushdown: bool = True,
+) -> Dict[str, Any]:
+    """Параллельная загрузка с тем же форматом результата, что у одного источника."""
     combined_cache: Dict[str, Any] = {}
     combined_skip: set = set()
     max_workers = min(len(source_nids), 4)
 
+    def fetch(nid):
+        from django.db import close_old_connections, connections
+        close_old_connections()
+        try:
+            return _fetch_single_source(nid, nodes_by_id, children_map,
+                                        user, source_limit, use_polars, params, allow_sql_pushdown)
+        finally:
+            # У соединений Django в потоках нет request_finished.
+            connections.close_all()
+
     with ThreadPoolExecutor(max_workers=max_workers) as pool:
-        futures = {
-            pool.submit(
-                _fetch_single_source, nid, nodes_by_id, children_map,
-                user, source_limit, use_polars, params,
-            ): nid
-            for nid in source_nids
-        }
+        futures = {pool.submit(fetch, nid): nid for nid in source_nids}
         for future in as_completed(futures):
             nid = futures[future]
             try:
                 result = future.result()
             except Exception as e:
                 logger.exception('Parallel source fetch error for node %s', nid)
-                combined_cache['__error__'] = {
-                    'chartData': [], 'error': f'Ошибка источника данных: {e}'
-                }
-                return combined_cache, combined_skip
+                return {'chartData': [], 'error': f'Ошибка источника данных: {e}'}
 
             if 'error' in result:
-                combined_cache['__error__'] = result
-                return combined_cache, combined_skip
+                return result
 
             combined_cache.update(result.get('cache', {}))
             combined_skip |= result.get('pushdown_skip', set())
 
-    return combined_cache, combined_skip
-
-
-def _find_reachable(terminal_id: str, edges_map: Dict[str, List[str]]) -> set:
-    """BFS от терминального узла для поиска достижимых."""
-    reachable = set()
-    stack = [terminal_id]
-    while stack:
-        nid = stack.pop()
-        if nid in reachable:
-            continue
-        reachable.add(nid)
-        for sid in edges_map.get(nid, []):
-            stack.append(sid)
-    return reachable
-
-
-def _topological_sort(
-    reachable: set, edges_map: Dict[str, List[str]]
-) -> Optional[List[str]]:
-    """Алгоритм Кана O(V+E) для топологической сортировки."""
-    in_degree: Dict[str, int] = {nid: 0 for nid in reachable}
-    for nid in reachable:
-        for dep in edges_map.get(nid, []):
-            if dep in reachable:
-                in_degree[nid] = in_degree.get(nid, 0) + 1
-
-    reverse_edges: Dict[str, List[str]] = {}
-    for nid in reachable:
-        for dep in edges_map.get(nid, []):
-            if dep in reachable:
-                reverse_edges.setdefault(dep, []).append(nid)
-
-    queue = deque(nid for nid, deg in in_degree.items() if deg == 0)
-    order: List[str] = []
-
-    while queue:
-        nid = queue.popleft()
-        order.append(nid)
-        for child in reverse_edges.get(nid, []):
-            in_degree[child] -= 1
-            if in_degree[child] == 0:
-                queue.append(child)
-
-    if len(order) != len(reachable):
-        return None
-    return order
-
-
-def _build_edges_map(edges: List[Dict]) -> Dict[str, List[str]]:
-    """target -> [source1, source2, ...]"""
-    result: Dict[str, List[str]] = {}
-    for e in (edges or []):
-        target = e.get('target')
-        source = e.get('source')
-        if target and source:
-            result.setdefault(target, []).append(source)
-    return result
-
-
-def _build_children_map(edges: List[Dict]) -> Dict[str, List[str]]:
-    """source -> [target1, target2, ...]"""
-    result: Dict[str, List[str]] = {}
-    for e in (edges or []):
-        target = e.get('target')
-        source = e.get('source')
-        if target and source:
-            result.setdefault(source, []).append(target)
-    return result
+    return {'cache': combined_cache, 'pushdown_skip': combined_skip}
 
 
 def _collect_required_columns(
@@ -527,7 +452,7 @@ def _collect_required_columns(
                     my_cols.add(field)
             needed[nid] = my_cols
         elif ntype == NODE_TYPE_FORMULA:
-            formulas = config.get('formulas') or []
+            formulas = normalize_formulas(config)
             my_cols = set()
             for f in formulas:
                 expression = (f.get('expression') or '').strip()
@@ -583,7 +508,7 @@ def _extract_column_names_from_expr(expression: str) -> set:
     if not expression:
         return names
     try:
-        tree = _ast.parse(expression.strip(), mode='eval')
+        tree = parse_formula(expression)
     except SyntaxError:
         return names
 
@@ -602,7 +527,7 @@ def _get_pushdown_config(
     nodes_by_id: Dict[str, Dict],
     children_map: Dict[str, List[str]],
     source_nid: str,
-    source_config: Dict,
+    params: Optional[Dict] = None,
 ) -> tuple:
     next_ids = children_map.get(source_nid, [])
     if len(next_ids) != 1:
@@ -614,6 +539,8 @@ def _get_pushdown_config(
     next_config = (next_node.get('data') or {}).get('config') or {}
 
     if next_type == NODE_TYPE_FILTER:
+        if not can_push_filter(next_config, params):
+            return (None, None, set())
         filter_config = next_config
         agg_ids = children_map.get(next_ids[0], [])
         skip_ids = {next_ids[0]}
@@ -623,10 +550,14 @@ def _get_pushdown_config(
         if not agg_node or agg_node.get('type') != NODE_TYPE_AGGREGATION:
             return (filter_config, None, skip_ids)
         agg_config = (agg_node.get('data') or {}).get('config') or {}
+        if not can_push_aggregation(agg_config):
+            return (filter_config, None, skip_ids)
         skip_ids.add(agg_ids[0])
         return (filter_config, agg_config, skip_ids)
 
     if next_type == NODE_TYPE_AGGREGATION:
+        if not can_push_aggregation(next_config):
+            return (None, None, set())
         return (None, next_config, {next_ids[0]})
 
     return (None, None, set())

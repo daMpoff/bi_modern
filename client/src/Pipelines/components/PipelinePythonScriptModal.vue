@@ -37,11 +37,11 @@
           ref="codeRef"
           v-model="code"
           class="pm-input code-textarea"
-          placeholder="# df - входной DataFrame (pandas)&#10;# Верните обработанный DataFrame&#10;&#10;result = df"
+          placeholder="# df — входной Polars DataFrame&#10;# rows — строки данных&#10;&#10;result = df"
           rows="10"
         ></textarea>
         <p class="code-hint">
-          Переменная <code>df</code> содержит входные данные (pandas DataFrame).
+          Переменная <code>df</code> содержит входные данные (Polars DataFrame).
           Результат запишите в переменную <code>result</code>.
         </p>
       </div>

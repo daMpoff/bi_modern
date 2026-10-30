@@ -1,159 +1,66 @@
-# -*- coding: utf-8 -*-
-"""
-Общая логика соединения (join) для пайплайна BI.
-Один источник правды для типов join и преобразования в Polars/Python.
-"""
-import logging
-from typing import Any, Dict, List
-
-logger = logging.getLogger(__name__)
+"""Соединение таблиц с одинаковыми именами полей в Python и Polars."""
 
 
-def apply_join(
-    left_data: List[Dict[str, Any]],
-    right_data: List[Dict[str, Any]],
-    config: Dict[str, Any],
-) -> List[Dict[str, Any]]:
-    """
-    Соединить два набора данных по ключам.
-    config.joinType: INNER JOIN | LEFT JOIN | RIGHT JOIN | FULL JOIN
-    config.leftKey: поле из левой таблицы
-    config.rightKey: поле из правой таблицы
-    """
+def _join_options(config):
     left_key = (config.get('leftKey') or '').strip()
     right_key = (config.get('rightKey') or '').strip()
     if not left_key or not right_key:
-        return left_data if left_data else right_data
-
-    join_type = (config.get('joinType') or 'LEFT JOIN').upper()
-    try:
-        import polars as pl
-    except ImportError:
-        return _apply_join_python(left_data, right_data, left_key, right_key, join_type)
-
-    left_df = pl.DataFrame(left_data)
-    right_df = pl.DataFrame(right_data)
-    if left_df.is_empty() and right_df.is_empty():
-        return []
-    if left_df.is_empty():
-        return right_data if 'RIGHT' in join_type or 'FULL' in join_type else []
-    if right_df.is_empty():
-        return left_data if 'LEFT' in join_type or 'FULL' in join_type else []
-
-    how = 'inner' if 'INNER' in join_type else 'outer' if 'FULL' in join_type else 'left'
-    if 'RIGHT' in join_type:
-        left_df, right_df = right_df, left_df
-        left_key, right_key = right_key, left_key
-        how = 'left'
-
-    try:
-        result = left_df.join(
-            right_df,
-            left_on=left_key,
-            right_on=right_key,
-            how=how,
-            suffix='_right',
-        )
-        return result.to_dicts()
-    except Exception as e:
-        logger.warning('Polars join failed, fallback to python: %s', e)
-        return _apply_join_python(left_data, right_data, left_key, right_key, join_type)
+        raise ValueError('Для соединения нужны левый и правый ключи')
+    kind = (config.get('joinType') or 'LEFT JOIN').upper().replace(' OUTER', '')
+    kinds = {'INNER JOIN': 'inner', 'LEFT JOIN': 'left', 'RIGHT JOIN': 'right', 'FULL JOIN': 'full'}
+    if kind not in kinds:
+        raise ValueError(f'Неизвестный тип соединения: {kind}')
+    return left_key, right_key, kinds[kind]
 
 
-def apply_join_polars(
-    left_df: Any,
-    right_df: Any,
-    config: Dict[str, Any],
-) -> Any:
-    """
-    Join для Polars DataFrame/LazyFrame. Принимает и возвращает DataFrame или LazyFrame.
-    LazyFrame: join добавляется в план (оптимизация при collect).
-    """
-    try:
-        import polars as pl
-    except ImportError:
-        return left_df
-
-    left_key = (config.get('leftKey') or '').strip()
-    right_key = (config.get('rightKey') or '').strip()
-
-    left_is_lazy = isinstance(left_df, pl.LazyFrame)
-    right_is_lazy = isinstance(right_df, pl.LazyFrame)
-    if left_is_lazy and not right_is_lazy:
-        if isinstance(right_df, pl.DataFrame):
-            right_df = right_df.lazy()
-            right_is_lazy = True
-    elif right_is_lazy and not left_is_lazy:
-        if isinstance(left_df, pl.DataFrame):
-            left_df = left_df.lazy()
-            left_is_lazy = True
-
-    if not left_key or not right_key:
-        return left_df
-
-    if not left_is_lazy:
-        if left_df.is_empty() and right_df.is_empty():
-            return pl.DataFrame()
-        if left_df.is_empty():
-            join_type = (config.get('joinType') or 'LEFT JOIN').upper()
-            return right_df if 'RIGHT' in join_type or 'FULL' in join_type else pl.DataFrame()
-        if right_df.is_empty():
-            join_type = (config.get('joinType') or 'LEFT JOIN').upper()
-            return left_df if 'LEFT' in join_type or 'FULL' in join_type else pl.DataFrame()
-
-    join_type = (config.get('joinType') or 'LEFT JOIN').upper()
-    how = 'inner' if 'INNER' in join_type else 'outer' if 'FULL' in join_type else 'left'
-    if 'RIGHT' in join_type:
-        left_df, right_df = right_df, left_df
-        left_key, right_key = right_key, left_key
-        how = 'left'
-
-    return left_df.join(
-        right_df,
-        left_on=left_key,
-        right_on=right_key,
-        how=how,
-        suffix='_right',
-    )
+def apply_join(left_data, right_data, config):
+    left_key, right_key, how = _join_options(config)
+    return _apply_join_python(left_data, right_data, left_key, right_key, how.upper() + ' JOIN')
 
 
-def _apply_join_python(
-    left_data: List[Dict],
-    right_data: List[Dict],
-    left_key: str,
-    right_key: str,
-    join_type: str,
-) -> List[Dict]:
-    """Join без Polars (fallback)."""
+def apply_join_polars(left_df, right_df, config):
+    import polars as pl
+    left_key, right_key, how = _join_options(config)
+    lazy = isinstance(left_df, pl.LazyFrame) or isinstance(right_df, pl.LazyFrame)
+    left_schema = left_df.collect_schema() if isinstance(left_df, pl.LazyFrame) else left_df.schema
+    right_schema = right_df.collect_schema() if isinstance(right_df, pl.LazyFrame) else right_df.schema
+    # У пустого источника SQL может не быть схемы: создаём только известный ключ.
+    if not left_schema:
+        left_df = pl.DataFrame({left_key: pl.Series([], dtype=right_schema.get(right_key, pl.Null))})
+    if not right_schema:
+        right_df = pl.DataFrame({right_key: pl.Series([], dtype=left_schema.get(left_key, pl.Null))})
+    if lazy:
+        left_df = left_df.lazy() if isinstance(left_df, pl.DataFrame) else left_df
+        right_df = right_df.lazy() if isinstance(right_df, pl.DataFrame) else right_df
+    return left_df.join(right_df, left_on=left_key, right_on=right_key, how=how,
+                        suffix='_right', coalesce=False, maintain_order='left_right')
+
+
+def _apply_join_python(left_data, right_data, left_key, right_key, join_type):
+    how = _join_options({'leftKey': left_key, 'rightKey': right_key, 'joinType': join_type})[2]
+    left_fields = list(dict.fromkeys(key for row in left_data for key in row)) or [left_key]
+    right_fields = list(dict.fromkeys(key for row in right_data for key in row)) or [right_key]
+    right_names = {key: key + '_right' if key in left_fields else key for key in right_fields}
+    names = left_fields + list(right_names.values())
+    if len(set(names)) != len(names):
+        raise ValueError('Имена колонок соединения пересекаются с суффиксом _right')
     right_by_key = {}
-    for row in right_data:
-        k = row.get(right_key)
-        if k not in right_by_key:
-            right_by_key[k] = []
-        right_by_key[k].append(row)
-
-    result = []
-    matched_right_keys = set()
-    for lrow in left_data:
-        lk = lrow.get(left_key)
-        rrows = right_by_key.get(lk, [])
-        matched_right_keys.add(lk)
-        if rrows:
-            for rrow in rrows:
-                merged = {**lrow}
-                for k, v in rrow.items():
-                    if k != right_key and k not in merged:
-                        merged[k] = v
-                    elif k in merged and k != right_key:
-                        merged[f'{k}_right'] = v
-                result.append(merged)
-        elif 'LEFT' in join_type or 'FULL' in join_type:
-            result.append(dict(lrow))
-
-    if 'RIGHT' in join_type or 'FULL' in join_type:
-        for rrow in right_data:
-            rk = rrow.get(right_key)
-            if rk not in matched_right_keys:
-                result.append(dict(rrow))
-
+    for index, row in enumerate(right_data):
+        key = row.get(right_key)
+        if key is not None:
+            right_by_key.setdefault(key, []).append((index, row))
+    def merge(left, right):
+        return {**{key: left.get(key) for key in left_fields},
+                **{name: right.get(key) for key, name in right_names.items()}}
+    result, matched = [], set()
+    for left in left_data:
+        key = left.get(left_key)
+        matches = right_by_key.get(key, []) if key is not None else []
+        for index, right in matches:
+            result.append(merge(left, right))
+            matched.add(index)
+        if not matches and how in ('left', 'full'):
+            result.append(merge(left, {}))
+    if how in ('right', 'full'):
+        result.extend(merge({}, right) for index, right in enumerate(right_data) if index not in matched)
     return result

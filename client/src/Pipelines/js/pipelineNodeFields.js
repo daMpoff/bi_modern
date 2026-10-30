@@ -1,3 +1,4 @@
+import { getJoinInputIds } from './graphConnections.js'
 ﻿import { apiClient } from '@/js/api/manager'
 import { biEndpoints } from '@/modules/bi_analysis_modern/client/src/js/endpoints'
 
@@ -23,7 +24,7 @@ const FIELD_TYPE_BOOLEAN = 'boolean'
 
 function normalizeFieldType(raw) {
   const t = (raw || '').toLowerCase().trim()
-  if (t === 'integer' || t === 'float') return FIELD_TYPE_NUMBER
+  if (t === 'integer' || t === 'float' || t === 'number') return FIELD_TYPE_NUMBER
   if (t === 'date' || t === 'date&time' || t === 'datetime') return FIELD_TYPE_DATE
   if (t === 'bool' || t === 'boolean') return FIELD_TYPE_BOOLEAN
   return FIELD_TYPE_STRING
@@ -157,7 +158,7 @@ export async function getOutputFieldsWithTypesForNode(nodes, edges, nodeId) {
     }
 
     case 'join': {
-      const sources = (edgesMap[nodeId] || []).slice().sort()
+      const sources = getJoinInputIds(edges, nodeId)
       if (sources.length !== 2) return []
       const [leftId, rightId] = sources
       const [leftFields, rightFields] = await Promise.all([
@@ -213,7 +214,7 @@ export async function getOutputFieldsForNode(nodes, edges, nodeId) {
       return getAggregationOutputFields(config)
 
     case 'join': {
-      const sources = (edgesMap[nodeId] || []).slice().sort()
+      const sources = getJoinInputIds(edges, nodeId)
       if (sources.length !== 2) return []
       const [leftId, rightId] = sources
       const [leftFields, rightFields] = await Promise.all([

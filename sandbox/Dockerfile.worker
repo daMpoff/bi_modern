@@ -1,0 +1,7 @@
+FROM python:3.12-slim-bookworm
+RUN pip install --no-cache-dir polars==1.44.2
+WORKDIR /worker
+COPY __init__.py protocol.py worker.py supervisor.py ./sandbox/
+ENV POLARS_MAX_THREADS=2 PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
+USER 65534:65534
+ENTRYPOINT ["python", "-m", "sandbox.supervisor"]

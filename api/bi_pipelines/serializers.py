@@ -22,6 +22,12 @@ class PipelineChartSerializer(serializers.ModelSerializer):
     pipeline_name = serializers.SerializerMethodField()
     pipeline_is_dashboard_only = serializers.SerializerMethodField()
 
+    def validate_pipeline(self, pipeline):
+        request = self.context.get('request')
+        if request is None or pipeline.owner_id != request.user.pk:
+            raise serializers.ValidationError('Конвейер не найден')
+        return pipeline
+
     class Meta:
         model = PipelineChart
         fields = [

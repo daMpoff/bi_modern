@@ -1,0 +1,27 @@
+name: bi-modern-python
+services:
+  worker-image:
+    profiles: [build]
+    image: bi-modern-python-worker:local
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
+  broker:
+    image: bi-modern-python-broker:local
+    build:
+      context: .
+      dockerfile: Dockerfile.broker
+    environment:
+      BI_PYTHON_EXECUTOR_TOKEN: ${BI_PYTHON_EXECUTOR_TOKEN:?Set executor token}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - "127.0.0.1:8766:8766"
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    mem_limit: 512m
+    pids_limit: 64
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,nodev,size=16m
+    restart: unless-stopped

@@ -1,3 +1,4 @@
+import { getJoinInputIds } from './graphConnections.js'
 /**
  * Валидация пайплайн-графа: обнаружение циклов, проверка связей, проверка конфигурации.
  */
@@ -186,7 +187,7 @@ function checkConfiguration(nodes, edges) {
           message: 'Соединение не полностью настроено'
         })
       }
-      const sources = (edgesMap[node.id] || []).slice().sort()
+      const sources = getJoinInputIds(edges, node.id)
       if (sources.length === 2) {
         const leftConfig = findDataSourceConfigForNode(sources[0], nodes, edgesMap)
         const rightConfig = findDataSourceConfigForNode(sources[1], nodes, edgesMap)
@@ -238,6 +239,7 @@ export function validateConnection(nodes, edges, newEdge) {
 
   const duplicate = edges.some(
     e => e.source === newEdge.source && e.target === newEdge.target
+      && (e.targetHandle ?? null) === (newEdge.targetHandle ?? null)
   )
   if (duplicate) {
     return { valid: false, message: 'Такая связь уже существует' }
@@ -245,6 +247,15 @@ export function validateConnection(nodes, edges, newEdge) {
 
   const sourceNode = nodes.find(n => n.id === newEdge.source)
   const targetNode = nodes.find(n => n.id === newEdge.target)
+  if (!sourceNode || !targetNode) return { valid: false, message: 'Узел связи не найден' }
+  const incoming = edges.filter(edge => edge.target === newEdge.target)
+  if (targetNode.type === 'dataSource') return { valid: false, message: 'Источник не принимает входящие связи' }
+  const limit = targetNode.type === 'join' ? 2 : 1
+  if (incoming.length >= limit) return { valid: false, message: `Допустимо входящих связей: ${limit}` }
+  if (targetNode.type === 'join' && newEdge.targetHandle
+      && incoming.some(edge => edge.targetHandle === newEdge.targetHandle)) {
+    return { valid: false, message: 'Этот вход соединения уже занят' }
+  }
   if (sourceNode?.type === 'dataSource' && targetNode?.type === 'dataSource') {
     return { valid: false, message: 'Нельзя соединять источник с источником' }
   }

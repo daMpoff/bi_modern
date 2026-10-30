@@ -1,5 +1,6 @@
 ﻿import { apiClient } from '@/js/api/manager.js'
 import { biEndpoints } from '@/modules/bi_analysis_modern/client/src/js/endpoints.js'
+import { requestPipelinePayload } from './pipelineRequests.js'
 
 export async function fetchPipelines(options = {}) {
   const params = {}
@@ -36,8 +37,7 @@ function normalizeParamKeys(obj) {
 
 export async function executePipeline(id, params = {}) {
   const normalized = normalizeParamKeys(params)
-  const resp = await apiClient.post(biEndpoints.bi.pipelineExecute(id), { params: normalized })
-  return resp
+  return requestPipelinePayload(apiClient, 'post', biEndpoints.bi.pipelineExecute(id), { params: normalized })
 }
 
 export async function getExecuteChunk(pipelineId, resultSetId, offset, limit = 5000) {
@@ -49,8 +49,7 @@ export async function getExecuteChunk(pipelineId, resultSetId, offset, limit = 5
 
 export async function previewPipeline(id, params = {}) {
   const normalized = normalizeParamKeys(params)
-  const { data } = await apiClient.post(biEndpoints.bi.pipelinePreview(id), { params: normalized })
-  return data
+  return requestPipelinePayload(apiClient, 'post', biEndpoints.bi.pipelinePreview(id), { params: normalized })
 }
 
 export async function fetchPipelineCharts(pipelineId) {
@@ -100,7 +99,7 @@ export async function deletePipelineChart(id) {
 
 export async function fetchPipelineChartData(id, params = {}) {
   const normalized = normalizeParamKeys(params)
-  const { data } = await apiClient.get(biEndpoints.bi.pipelineChartData(id), normalized)
+  const data = await requestPipelinePayload(apiClient, 'get', biEndpoints.bi.pipelineChartData(id), normalized)
   return {
     data: data?.rows || data?.data || (Array.isArray(data) ? data : []),
     chart_config: data?.chart_config || {},

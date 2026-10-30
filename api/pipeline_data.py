@@ -13,6 +13,7 @@ import ast
 import logging
 import math
 import operator
+from .execution.formulas import normalize_formulas, parse_formula
 from typing import Any, Dict, List
 
 try:
@@ -25,15 +26,6 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 PipelineRows = List[Dict[str, Any]]
-
-_FORBIDDEN_KEYWORDS = [
-    'import ', '__import__', 'exec(', 'eval(', 'compile(',
-    'open(', '__builtins__', 'globals(', 'locals(',
-    'getattr(', 'setattr(', 'delattr(', '__class__',
-    '__subclasses__', '__bases__', '__mro__',
-    'os.', 'sys.', 'subprocess', 'shutil',
-]
-
 
 def normalize_to_rows(data: Any) -> PipelineRows:
     """
@@ -145,6 +137,12 @@ def _ast_to_polars_expr(node: ast.AST, params: Dict[str, Any]) -> Any:
     if isinstance(node, ast.Call):
         func_node = node.func
         if isinstance(func_node, ast.Name):
+            if func_node.id == 'round':
+                if not 1 <= len(node.args) <= 2:
+                    raise ValueError('round требует один или два аргумента')
+                value = _ast_to_polars_expr(node.args[0], params)
+                decimals = _FormulaEvaluator({}, params).visit(node.args[1]) if len(node.args) == 2 else 0
+                return value.round(int(decimals))
             funcs = _get_polars_safe_functions()
             fn = funcs.get(func_node.id)
             if fn is None:
@@ -152,18 +150,21 @@ def _ast_to_polars_expr(node: ast.AST, params: Dict[str, Any]) -> Any:
             args = [_ast_to_polars_expr(a, params) for a in node.args]
             if not args:
                 raise ValueError(f'Функция {func_node.id} требует аргумент')
-            return fn(args[0])
+            return fn(*args)
         raise ValueError('Вызов недопустимой функции')
 
     if isinstance(node, ast.Compare):
         left = _ast_to_polars_expr(node.left, params)
+        result = None
         for op_node, comparator in zip(node.ops, node.comparators):
             right = _ast_to_polars_expr(comparator, params)
             op_fn = _POLARS_CMP_OPS.get(type(op_node))
             if op_fn is None:
                 raise ValueError(f'Недопустимый оператор сравнения: {type(op_node).__name__}')
-            left = op_fn(left, right)
-        return left
+            comparison = op_fn(left, right)
+            result = comparison if result is None else result & comparison
+            left = right
+        return result
 
     if isinstance(node, ast.IfExp):
         test = _ast_to_polars_expr(node.test, params)
@@ -176,7 +177,7 @@ def _ast_to_polars_expr(node: ast.AST, params: Dict[str, Any]) -> Any:
 
 def _build_polars_expr(expression: str, params: Dict[str, Any]) -> Any:
     """Парсит арифметическое выражение в Polars Expr."""
-    tree = ast.parse(expression.strip(), mode='eval')
+    tree = parse_formula(expression)
     return _ast_to_polars_expr(tree, params)
 
 
@@ -187,7 +188,7 @@ def apply_formulas_polars(df: Any, config: Dict[str, Any], params: Dict[str, Any
     Работает и с DataFrame, и с LazyFrame (with_columns поддерживается обоими).
     """
     params = params or {}
-    formulas = config.get('formulas') or []
+    formulas = normalize_formulas(config)
     if not formulas:
         return df
     if not isinstance(df, pl.LazyFrame) and hasattr(df, 'is_empty') and df.is_empty():
@@ -363,7 +364,7 @@ def evaluate_formula(
     if not expression or not expression.strip():
         return None
     try:
-        tree = ast.parse(expression.strip(), mode='eval')
+        tree = parse_formula(expression)
         return _FormulaEvaluator(row, params).visit(tree)
     except Exception as e:
         logger.debug('Formula eval error for %r: %s', expression, e)
@@ -380,7 +381,7 @@ def apply_formulas(
     config.formulas: [{ name: str, expression: str }, ...]
     """
     params = params or {}
-    formulas = config.get('formulas') or []
+    formulas = normalize_formulas(config)
     if not formulas or not data:
         return data
 
@@ -397,125 +398,24 @@ def apply_formulas(
     return result
 
 
-def _validate_script(code: str) -> None:
-    code_lower = code.lower()
-    for kw in _FORBIDDEN_KEYWORDS:
-        if kw.lower() in code_lower:
-            raise ValueError(f'Запрещённая конструкция в скрипте: {kw.strip()}')
-
-
-_SAFE_BUILTINS = {
-    'len': len, 'range': range, 'enumerate': enumerate,
-    'zip': zip, 'map': map, 'filter': filter,
-    'sorted': sorted, 'reversed': reversed,
-    'min': min, 'max': max, 'sum': sum,
-    'abs': abs, 'round': round,
-    'int': int, 'float': float, 'str': str, 'bool': bool,
-    'list': list, 'dict': dict, 'tuple': tuple, 'set': set,
-    'True': True, 'False': False, 'None': None,
-    'isinstance': isinstance, 'type': type,
-    'print': lambda *a, **kw: None,
-}
-
-
 def execute_python_script(data: PipelineRows, config: Dict[str, Any]) -> PipelineRows:
-    """Выполняет пользовательский Python-скрипт над данными (List[Dict]) в песочнице."""
+    """Передаёт Python-код отдельному изолированному исполнителю."""
     code = (config.get('code') or '').strip()
     if not code or not data:
         return data
-
-    _validate_script(code)
-
-    sandbox_globals = {'__builtins__': _SAFE_BUILTINS}
-    sandbox_locals = {'rows': [dict(r) for r in data]}
-
-    try:
-        exec(compile(code, '<pipeline_script>', 'exec'), sandbox_globals, sandbox_locals)
-    except Exception as e:
-        raise ValueError(f'Ошибка выполнения скрипта: {e}')
-
-    result = sandbox_locals.get('rows')
-    if not isinstance(result, list):
-        raise ValueError('Скрипт должен оставить результат в переменной rows (список словарей)')
-    if result and not isinstance(result[0], dict):
-        raise ValueError('Каждый элемент rows должен быть словарём')
-    return result
+    from .execution.python_executor import execute_isolated
+    return execute_isolated(pl.DataFrame(data), code, 'rows').to_dicts()
 
 
 def execute_python_script_polars(df: Any, config: Dict[str, Any]) -> Any:
-    """
-    Выполняет Python-скрипт над Polars DataFrame.
-    Скрипт получает переменные: df (DataFrame) и rows (ленивый список).
-    Результат берётся из df или rows.
-    """
+    """Материализует вход; код исполняется только в одноразовом контейнере."""
     code = (config.get('code') or '').strip()
     if not code:
         return df
-    if _POLARS_AVAILABLE and isinstance(df, pl.LazyFrame):
+    if isinstance(df, pl.LazyFrame):
         from .pipeline_types import collect_result
         df = collect_result(df)
-    if hasattr(df, 'is_empty') and df.is_empty():
+    if df.is_empty():
         return df
-
-    _validate_script(code)
-
-    class _LazyRows:
-        """Ленивый адаптер: to_dicts() вызывается только при обращении к rows."""
-        def __init__(self, dataframe):
-            self._df = dataframe
-            self._rows = None
-
-        def _materialize(self):
-            if self._rows is None:
-                self._rows = self._df.to_dicts()
-            return self._rows
-
-        def __iter__(self):
-            return iter(self._materialize())
-
-        def __len__(self):
-            return self._df.height if self._rows is None else len(self._rows)
-
-        def __getitem__(self, idx):
-            return self._materialize()[idx]
-
-        def __setitem__(self, idx, val):
-            self._materialize()[idx] = val
-
-        def append(self, val):
-            self._materialize().append(val)
-
-        def extend(self, vals):
-            self._materialize().extend(vals)
-
-    lazy_rows = _LazyRows(df)
-    sandbox_globals = {'__builtins__': _SAFE_BUILTINS}
-    sandbox_locals = {'rows': lazy_rows, 'df': df}
-
-    try:
-        exec(compile(code, '<pipeline_script>', 'exec'), sandbox_globals, sandbox_locals)
-    except Exception as e:
-        raise ValueError(f'Ошибка выполнения скрипта: {e}')
-
-    result_df = sandbox_locals.get('df')
-    if _POLARS_AVAILABLE and isinstance(result_df, pl.DataFrame):
-        if result_df is not df:
-            return result_df
-
-    result_rows = sandbox_locals.get('rows')
-    if result_rows is lazy_rows and lazy_rows._rows is None:
-        return df
-
-    if isinstance(result_rows, _LazyRows):
-        if result_rows._rows is not None:
-            return pl.DataFrame(result_rows._rows)
-        return df
-
-    if isinstance(result_rows, list):
-        if not result_rows:
-            return pl.DataFrame()
-        if isinstance(result_rows[0], dict):
-            return pl.DataFrame(result_rows)
-        raise ValueError('Каждый элемент rows должен быть словарём')
-
-    raise ValueError('Скрипт должен оставить результат в переменной rows или df')
+    from .execution.python_executor import execute_isolated
+    return execute_isolated(df, code, 'polars')

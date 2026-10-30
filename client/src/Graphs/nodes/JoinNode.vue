@@ -1,6 +1,6 @@
 <template>
   <div class="join-node" :class="{ selected: selected }">
-    <Handle type="target" :position="Position.Top" />
+    <Handle type="target" :position="Position.Top" id="right-target" />
     <Handle type="target" :position="Position.Left" id="left-target" />
     <Handle type="source" :position="Position.Bottom" />
     <div class="node-content">

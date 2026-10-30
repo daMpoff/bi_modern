@@ -40,7 +40,7 @@ def apply_aggregation(data: List[Dict[str, Any]], config: Dict[str, Any]) -> Lis
         for agg in aggregations:
             field = agg.get('field')
             agg_func = (agg.get('agg') or 'count').lower()
-            output_name = agg.get('outputName') or f'{field}_{agg_func}'
+            output_name = agg.get('outputName') or f'{field or "count"}_{agg_func}'
 
             values = [r.get(field) for r in rows if r.get(field) is not None]
             numeric_values = []
@@ -106,7 +106,7 @@ def apply_aggregation_polars(df: Any, config: Dict[str, Any]) -> Any:
         elif agg_func == 'max':
             agg_exprs.append(col.max().alias(output_name))
         elif agg_func == 'ucount':
-            agg_exprs.append(col.n_unique().alias(output_name))
+            agg_exprs.append(col.drop_nulls().n_unique().alias(output_name))
         else:
             agg_exprs.append(pl.len().alias(output_name))
 

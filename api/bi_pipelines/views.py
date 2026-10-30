@@ -1,8 +1,6 @@
 import json
 import logging
 import re
-import threading
-import time
 import uuid
 
 from django.http import HttpResponse as DjangoHttpResponse
@@ -25,38 +23,11 @@ logger = logging.getLogger(__name__)
 
 _PARAMS_KEY_RE = re.compile(r'^params\[(.+)\]$')
 
-_EXECUTE_RESULTS_CACHE = {}
-_EXECUTE_CACHE_LOCK = threading.Lock()
-_EXECUTE_CACHE_TTL = 600
-
-
-def _execute_cache_put(result_set_id: str, raw_df, columns: list, total_rows: int, user_id: int, pipeline_id: int):
-    with _EXECUTE_CACHE_LOCK:
-        for rid, entry in list(_EXECUTE_RESULTS_CACHE.items()):
-            if entry.get('user_id') == user_id and entry.get('pipeline_id') == pipeline_id and rid != result_set_id:
-                del _EXECUTE_RESULTS_CACHE[rid]
-                break
-        _EXECUTE_RESULTS_CACHE[result_set_id] = {
-            'raw_df': raw_df,
-            'columns': columns,
-            'total_rows': total_rows,
-            'user_id': user_id,
-            'pipeline_id': pipeline_id,
-            'created_at': time.time(),
-        }
-
-
-def _execute_cache_get(result_set_id: str, user_id: int, pipeline_id: int):
-    with _EXECUTE_CACHE_LOCK:
-        entry = _EXECUTE_RESULTS_CACHE.get(result_set_id)
-        if not entry:
-            return None
-        if entry['user_id'] != user_id or entry['pipeline_id'] != pipeline_id:
-            return None
-        if time.time() - entry['created_at'] > _EXECUTE_CACHE_TTL:
-            del _EXECUTE_RESULTS_CACHE[result_set_id]
-            return None
-        return entry
+from ..execution.result_cache import (
+    put_result as _execute_cache_put,
+    get_result as _execute_cache_get,
+    execution_cache, task_key, task_owner_key, ASYNC_RESULT_TTL,
+)
 
 
 def _normalize_query_params(query_params, exclude_keys=None):
@@ -129,8 +100,16 @@ class PipelineExecuteAsyncView(APIView):
 
         params = (request.data if isinstance(request.data, dict) else {}).get('params') or {}
         from ..tasks import execute_pipeline_async
-        task = execute_pipeline_async.delay(pk, request.user.id, params)
-        return Response({'task_id': str(task.id)})
+        task_id = str(uuid.uuid4())
+        result_cache = execution_cache()
+        result_cache.set(task_owner_key(task_id), {'user_id': request.user.id, 'pipeline_id': pk}, ASYNC_RESULT_TTL)
+        try:
+            execute_pipeline_async.apply_async(args=(pk, request.user.id, params), task_id=task_id)
+        except Exception:
+            result_cache.delete(task_owner_key(task_id))
+            logger.exception('Не удалось отправить задачу исполнения конвейера')
+            return Response({'error': 'Очередь выполнения недоступна'}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+        return Response({'task_id': task_id})
 
 
 class PipelineTaskStatusView(APIView):
@@ -139,8 +118,11 @@ class PipelineTaskStatusView(APIView):
 
     def get(self, request, task_id):
         from celery.result import AsyncResult
-        from django.core.cache import cache
-
+        result_cache = execution_cache()
+        owner = result_cache.get(task_owner_key(task_id))
+        if (not owner or owner.get('user_id') != request.user.id
+                or not Pipeline.objects.filter(pk=owner['pipeline_id'], owner=request.user).exists()):
+            return Response({'error': 'Задача не найдена'}, status=status.HTTP_404_NOT_FOUND)
         task = AsyncResult(task_id)
         if task.failed():
             return Response({
@@ -148,14 +130,13 @@ class PipelineTaskStatusView(APIView):
                 'error': str(task.result) if task.result else 'Ошибка выполнения',
             })
         if task.successful():
-            cache_key = f'pipeline_exec_{task_id}'
-            result = cache.get(cache_key)
+            result = result_cache.get(task_key(task_id))
             if result:
                 return Response({
                     'status': 'SUCCESS',
                     'data': result.get('chartData', []),
                     'error': result.get('error'),
-                    'rows_count': len(result.get('chartData', [])),
+                    'rows_count': result.get('rows_count', len(result.get('chartData', []))),
                 })
             return Response({
                 'status': 'SUCCESS',

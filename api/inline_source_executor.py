@@ -206,6 +206,11 @@ def _execute_file_source(
     if not main_file_id:
         raise ValueError("file_id не указан для главной таблицы")
 
+    try:
+        FileUpload.objects.get(pk=main_file_id, connection=conn, owner=user)
+    except FileUpload.DoesNotExist as exc:
+        raise ValueError('Файл не найден в выбранном подключении') from exc
+
     result_lf = _read_file_direct_polars(main_file_id)
 
     if result_lf is None:
@@ -296,8 +301,8 @@ def _execute_db_source(
         rows = execute_sql(conn, query, bind_params or {})
         return rows
     except Exception as e:
-        logger.error("Ошибка выполнения %s запроса: %s", dialect, e)
-        return []
+        logger.exception("Ошибка выполнения %s запроса", dialect)
+        raise ValueError('Не удалось выполнить запрос к источнику данных') from e
 
 
 def _resolve_param(value: Any, params: Dict[str, Any]) -> Any:
@@ -337,12 +342,14 @@ def _build_sql_query(
     bind_params: Dict[str, Any] = {}
 
     def quote_id(name: str) -> str:
+        if not isinstance(name, str) or not name:
+            raise ValueError('Не задано имя таблицы или поля')
         if dialect == 'mssql':
-            return f'[{name}]'
+            return '[' + name.replace(']', ']]') + ']'
         elif dialect == 'clickhouse':
-            return f'`{name}`'
+            return '`' + name.replace('`', '``') + '`'
         else:
-            return f'"{name}"'
+            return '"' + name.replace('"', '""') + '"'
 
     main_name = main_table.get('name') or main_table.get('table')
     main_schema = main_table.get('schema')
@@ -457,7 +464,7 @@ def _build_sql_query(
         for agg in aggs:
             field = agg.get('field')
             fn = (agg.get('agg') or 'count').lower()
-            out = (agg.get('outputName') or f'{field}_{fn}').strip()
+            out = (agg.get('outputName') or f'{field or "count"}_{fn}').strip()
             col = f'{main_alias}.{quote_id(field)}' if field else '1'
             if fn == 'count':
                 agg_select.append(f'COUNT(*) AS {quote_id(out)}')
@@ -479,13 +486,14 @@ def _build_sql_query(
         query += ' ' + ' '.join(join_clauses)
     if where_clauses:
         query += ' WHERE ' + ' AND '.join(where_clauses)
-    if group_by_cols and agg_select:
+    if agg_select:
         query = f'SELECT {", ".join(group_by_cols + agg_select)} {from_clause}'
         if join_clauses:
             query += ' ' + ' '.join(join_clauses)
         if where_clauses:
             query += ' WHERE ' + ' AND '.join(where_clauses)
-        query += ' GROUP BY ' + ', '.join(group_by_cols)
+        if group_by_cols:
+            query += ' GROUP BY ' + ', '.join(group_by_cols)
     if limit:
         if dialect == 'mssql':
             query = query.replace('SELECT ', f'SELECT TOP {limit} ', 1)

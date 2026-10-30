@@ -187,8 +187,10 @@ async function handleSave() {
     })
     toast.success('Пайплайн сохранен')
     loadLineage()
+    return true
   } catch (err) {
     toast.error('Ошибка сохранения: ' + (err.message || err))
+    return false
   } finally {
     saveLoading.value = false
   }
@@ -219,7 +221,7 @@ async function handleExecute() {
   resultSetId.value = null
   previewChunks.value = {}
   try {
-    await handleSave()
+    if (!await handleSave()) return
     const t0 = performance.now()
     const result = await executePipeline(pipelineId.value, paramValues.value)
     lastRequestTimeMs.value = Math.round(performance.now() - t0)
