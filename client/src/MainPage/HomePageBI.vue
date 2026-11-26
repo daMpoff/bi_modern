@@ -1,5 +1,5 @@
 <script setup>
-import { ArrowRight, Moon, Pause, Play, Sun } from 'lucide-vue-next'
+import { ArrowRight, Pause, Play } from 'lucide-vue-next'
 import { RouterLink } from 'vue-router'
 import { version } from '../../package.json'
 import BILogo from './components/BILogo.vue'
@@ -9,11 +9,7 @@ import { useHomeMotion } from './js/useHomeMotion.js'
 import { useOceanTheme } from './js/useOceanTheme.js'
 
 const { paused } = useHomeMotion()
-const { theme, selectTheme } = useOceanTheme()
-const themes = [
-  { value: 'light', label: 'Светлая', icon: Sun },
-  { value: 'dark', label: 'Тёмная', icon: Moon }
-]
+const theme = useOceanTheme()
 </script>
 
 <template>
@@ -21,18 +17,10 @@ const themes = [
     <div class="ocean-scene" aria-hidden="true"><OceanAquarium :paused="paused" :theme="theme" /></div>
     <header class="ocean-top">
       <BILogo class="ocean-logo" :paused="paused" role="img" aria-label="ERGO MS BI" />
-      <div class="ocean-tools">
-        <div class="ocean-themes" role="group" aria-label="Цветовая тема">
-          <button v-for="option in themes" :key="option.value" type="button"
-                  :aria-pressed="theme === option.value" @click="selectTheme(option.value)">
-            <component :is="option.icon" :size="15" aria-hidden="true" /> {{ option.label }}
-          </button>
-        </div>
-        <button class="ocean-motion" type="button" :aria-label="paused ? 'Включить анимацию' : 'Приостановить анимацию'"
-                :title="paused ? 'Включить анимацию' : 'Приостановить анимацию'" @click="paused = !paused">
-          <component :is="paused ? Play : Pause" :size="16" />
-        </button>
-      </div>
+      <button class="ocean-motion" type="button" :aria-label="paused ? 'Включить анимацию' : 'Приостановить анимацию'"
+              :title="paused ? 'Включить анимацию' : 'Приостановить анимацию'" @click="paused = !paused">
+        <component :is="paused ? Play : Pause" :size="16" aria-hidden="true" />
+      </button>
     </header>
     <div class="ocean-heading">
       <h1 id="bi-ocean-title" class="ocean-title">Океан данных</h1>

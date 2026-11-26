@@ -6,8 +6,6 @@
   --panel-edge: #38525c;
   --panel-shadow: 0 8px 20px #00101540;
   --control: #132830;
-  --control-active: #d5f2ed;
-  --control-active-ink: #12352f;
   --focus: #a6f5e1;
   --veil: #05191f9c;
   --title-halo: #061419;
@@ -36,8 +34,6 @@
   --panel-edge: #c2d3d1;
   --panel-shadow: 0 5px 16px #204e4a12;
   --control: #fcfefc;
-  --control-active: #1d5555;
-  --control-active-ink: #fff;
   --focus: #08695e;
   --veil: #e6f1eb99;
   --title-halo: #f2f7f4;
@@ -58,47 +54,20 @@
     background: linear-gradient(180deg, var(--veil), transparent 40%, transparent 75%, var(--veil));
   }
 }
-.ocean-top, .ocean-tools, .ocean-themes { display: flex; align-items: center; }
-.ocean-top { justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+.ocean-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .ocean-logo { display: block; width: clamp(112px, 13vw, 174px); height: auto; color: var(--ink); }
-.ocean-tools {
-  flex-wrap: wrap;
-  gap: 8px;
-  button {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    min-height: 40px;
-    box-sizing: border-box;
-    padding: 7px 12px;
-    border: 1px solid var(--panel-edge);
-    border-radius: 10px;
-    background: var(--control);
-    color: var(--ink);
-    font-family: inherit;
-    font-size: 13px;
-    font-weight: 500;
-    line-height: 1.2;
-    cursor: pointer;
-    &:hover { border-color: var(--focus); }
-  }
-  .ocean-motion { width: 40px; padding: 0; }
-}
-.ocean-themes {
-  padding: 3px;
+.ocean-motion {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
   border: 1px solid var(--panel-edge);
-  border-radius: 12px;
+  border-radius: 10px;
   background: var(--control);
-  button {
-    min-height: 32px;
-    border: 0;
-    padding-inline: 10px;
-    border-radius: 8px;
-    background: transparent;
-    color: var(--secondary-ink);
-    &[aria-pressed="true"] { background: var(--control-active); color: var(--control-active-ink); }
-  }
+  color: var(--ink);
+  cursor: pointer;
+  &:hover { border-color: var(--focus); }
 }
 .ocean-heading {
   display: flex;
@@ -186,10 +155,7 @@
 }
 .ocean-page :is(button, a):focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
 @container (max-width: 580px) {
-  .ocean-top { gap: 10px; }
-  .ocean-tools { gap: 6px; }
-  .ocean-motion { min-height: 44px; }
-  .ocean-themes button { min-height: 38px; padding-inline: 8px; }
+  .ocean-motion { width: 44px; height: 44px; }
   .ocean-sections { grid-template-columns: 1fr; gap: 8px; padding-top: 90px; }
   .ocean-card { grid-template: "symbol label arrow" auto / auto minmax(0, 1fr) auto; align-items: center; padding: 13px 15px; border-radius: 14px; }
   .section-icon { width: 37px; height: 37px; }

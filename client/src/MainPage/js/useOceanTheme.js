@@ -1,45 +1,30 @@
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
-
-const storageKey = 'bi-modern.ocean.theme'
-const preferred = ref(null)
-const validTheme = value => value === 'dark' || value === 'light'
+import { onBeforeUnmount, onMounted, ref } from 'vue'
 
 export function useOceanTheme() {
   const system = window.matchMedia('(prefers-color-scheme: dark)')
-  const inherited = ref('dark')
+  const root = document.documentElement
 
   function readHostTheme() {
-    const value = document.documentElement.getAttribute('data-bs-theme')
-    inherited.value = validTheme(value) ? value : system.matches ? 'dark' : 'light'
+    const mode = root.getAttribute('data-bs-theme')
+    if (mode === 'light' || mode === 'dark') return mode
+    return system.matches ? 'dark' : 'light'
   }
 
-  function selectTheme(value) {
-    if (!validTheme(value)) return
-    preferred.value = value
-    try {
-      window.localStorage.setItem(storageKey, value)
-    } catch {
-      // The embedded preview can restrict storage; keep the choice for this session.
-    }
+  const theme = ref(readHostTheme())
+  function syncTheme() {
+    theme.value = readHostTheme()
   }
 
-  readHostTheme()
-  try {
-    const saved = window.localStorage.getItem(storageKey)
-    if (validTheme(saved)) preferred.value = saved
-  } catch {
-    // Keep the current session preference.
-  }
-
-  const observer = new MutationObserver(readHostTheme)
+  const observer = new MutationObserver(syncTheme)
   onMounted(() => {
-    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-bs-theme'] })
-    system.addEventListener('change', readHostTheme)
+    observer.observe(root, { attributes: true, attributeFilter: ['data-bs-theme'] })
+    system.addEventListener('change', syncTheme)
+    syncTheme()
   })
   onBeforeUnmount(() => {
     observer.disconnect()
-    system.removeEventListener('change', readHostTheme)
+    system.removeEventListener('change', syncTheme)
   })
 
-  return { theme: computed(() => preferred.value ?? inherited.value), selectTheme }
+  return theme
 }
