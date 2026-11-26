@@ -15,7 +15,7 @@ from rest_framework.exceptions import ValidationError
 
 from .bi_datasets.models import FileUpload
 from .config import CHUNK_SIZE, MAX_WORKERS
-from .services.services import introspect_columns
+from .services.services import introspect_columns, read_file_to_dataframe, read_temp_preview
 
 logger = logging.getLogger(__name__)
 
@@ -30,8 +30,7 @@ def _read_file_with_polars(file_upload_id: int, sheet_name: Optional[str] = None
         import polars as pl
     except ImportError:
         logger.warning("Polars не установлен, используется fallback метод")
-        from .services.services import read_file_to_dataframe
-        table = read_file_to_dataframe(file_upload_id, sheet_name, row_limit)
+        table = read_file_to_dataframe(file_upload_id, sheet_name, row_limit, use_polars=False)
         return table.columns, table.rows
 
     try:
@@ -65,26 +64,12 @@ def _read_file_with_polars(file_upload_id: int, sheet_name: Optional[str] = None
 
     try:
         if upload.file_type == 'xlsx':
-            if sheet_name:
-                df = pl.read_excel(path, sheet_name=sheet_name)
-            else:
-                df = pl.read_excel(path, sheet_index=0)
-
-            if progress_callback:
-                progress_callback(0.5)
-
-            if row_limit is not None and row_limit > 0:
-                df = df.head(row_limit)
-
-            columns = df.columns
-            rows_list = df.to_numpy().tolist()
-
+            table = read_file_to_dataframe(file_upload_id, sheet_name, row_limit, use_polars=False)
             if progress_callback:
                 progress_callback(1.0)
+            return table.columns, table.rows
 
-            return list(columns), rows_list
-
-        elif upload.file_type in ('csv', 'txt'):
+        if upload.file_type in ('csv', 'txt'):
             file_size = os.path.getsize(path) if os.path.exists(path) else 0
             use_streaming = file_size > 10 * 1024 * 1024 and row_limit is None
             if use_streaming:
@@ -114,8 +99,7 @@ def _read_file_with_polars(file_upload_id: int, sheet_name: Optional[str] = None
 
     except Exception as e:
         logger.error(f"Ошибка чтения файла {file_upload_id} с polars: {str(e)}")
-        from .services.services import read_file_to_dataframe
-        table = read_file_to_dataframe(file_upload_id, sheet_name, row_limit)
+        table = read_file_to_dataframe(file_upload_id, sheet_name, row_limit, use_polars=False)
         return table.columns, table.rows
 
 
@@ -142,29 +126,9 @@ def _read_file_chunked(file_upload_id: int, sheet_name: Optional[str] = None,
 
     try:
         if upload.file_type == 'xlsx':
-            if sheet_name:
-                df = pl.read_excel(path, sheet_name=sheet_name)
-            else:
-                df = pl.read_excel(path, sheet_index=0)
+            return _read_file_with_polars(file_upload_id, sheet_name, row_limit, progress_callback)
 
-            if progress_callback:
-                progress_callback(0.3)
-
-            if row_limit and row_limit > 0:
-                df = df.head(row_limit)
-
-            if progress_callback:
-                progress_callback(0.7)
-
-            columns = df.columns
-            rows_list = df.to_numpy().tolist()
-
-            if progress_callback:
-                progress_callback(1.0)
-
-            return list(columns), rows_list
-
-        elif upload.file_type in ('csv', 'txt'):
+        if upload.file_type in ('csv', 'txt'):
             columns = None
             all_rows = []
             rows_read = 0
@@ -566,110 +530,10 @@ def _process_draft_preview_sql(self, main_table, joined_tables, limit):
 @shared_task(bind=True, name='modules.bi_analysis_modern.api.tasks.process_file_preview')
 def process_file_preview(self, temp_path: str, sheet_name: Optional[str] = None,
                         row_limit: int = 1000000, has_header: bool = True):
-    """
-    Асинхронная задача для обработки предпросмотра временного файла.
-    Использует polars с векторизацией и чанкингом для максимальной производительности.
-    """
-    try:
-        import polars as pl
-
-        self.update_state(state='PROGRESS', meta={'progress': 0.1, 'message': 'Определение типа файла'})
-
-        file_ext = os.path.splitext(temp_path)[1].lower()
-
-        if file_ext in ('.xlsx', '.xls'):
-            self.update_state(state='PROGRESS', meta={'progress': 0.3, 'message': 'Чтение Excel файла'})
-
-            if sheet_name:
-                df = pl.read_excel(temp_path, sheet_name=sheet_name)
-            else:
-                df = pl.read_excel(temp_path, sheet_index=0)
-
-            self.update_state(state='PROGRESS', meta={'progress': 0.6, 'message': 'Обработка данных'})
-
-            if row_limit is not None and row_limit > 0:
-                df = df.head(row_limit)
-
-            columns = df.columns
-            rows_list = df.to_numpy().tolist()
-
-            self.update_state(state='PROGRESS', meta={'progress': 0.9, 'message': 'Формирование результата'})
-
-            if has_header and rows_list:
-                parsed = [list(columns), *rows_list]
-            else:
-                parsed = rows_list
-
-            self.update_state(state='PROGRESS', meta={'progress': 1.0, 'message': 'Завершено'})
-
-            return {'parsed': parsed}
-
-        elif file_ext in ('.csv', '.txt'):
-            self.update_state(state='PROGRESS', meta={'progress': 0.3, 'message': 'Чтение CSV файла'})
-
-            try:
-                df = pl.read_csv(temp_path, encoding='utf8', try_parse_dates=True)
-            except:
-                df = pl.read_csv(temp_path, encoding='cp1251', try_parse_dates=True)
-
-            self.update_state(state='PROGRESS', meta={'progress': 0.6, 'message': 'Обработка данных'})
-
-            if row_limit is not None and row_limit > 0:
-                df = df.head(row_limit)
-
-            columns = df.columns
-            rows_list = df.to_numpy().tolist()
-
-            self.update_state(state='PROGRESS', meta={'progress': 0.9, 'message': 'Формирование результата'})
-
-            if has_header and rows_list:
-                parsed = [list(columns), *rows_list]
-            else:
-                parsed = rows_list
-
-            self.update_state(state='PROGRESS', meta={'progress': 1.0, 'message': 'Завершено'})
-
-            return {'parsed': parsed}
-        else:
-            raise ValidationError(f"Неподдерживаемый тип файла: {file_ext}")
-
-    except ImportError:
-        logger.warning("Polars не установлен, используется fallback метод")
-        from openpyxl import load_workbook
-
-        self.update_state(state='PROGRESS', meta={'progress': 0.3, 'message': 'Чтение файла (fallback)'})
-
-        wb = load_workbook(filename=temp_path, read_only=True, data_only=True)
-        try:
-            ws = wb.active
-        except IndexError:
-            wb.close()
-            return {'parsed': []}
-
-        rows = []
-        for row in ws.iter_rows(values_only=True):
-            normalized = [("" if cell is None else str(cell)) for cell in row]
-            rows.append(normalized)
-            if len(rows) >= row_limit:
-                break
-        wb.close()
-
-        if not rows:
-            return {'parsed': []}
-
-        if has_header:
-            header, *body = rows
-            parsed = [list(header), *body]
-        else:
-            parsed = rows
-
-        self.update_state(state='PROGRESS', meta={'progress': 1.0, 'message': 'Завершено'})
-
-        return {'parsed': parsed}
-
-    except Exception as e:
-        logger.error(f"Ошибка обработки предпросмотра файла {temp_path}: {str(e)}")
-        raise
+    """Подготовить в фоне те же строки, которые возвращает синхронный предпросмотр."""
+    self.update_state(state='PROGRESS', meta={'progress': 0.1, 'message': 'Чтение файла'})
+    parsed = read_temp_preview(temp_path, sheet_name, row_limit, has_header)
+    return {'parsed': parsed}
 
 
 @shared_task(bind=True, name='modules.bi_analysis_modern.api.tasks.execute_pipeline_async')

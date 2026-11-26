@@ -1,3 +1,4 @@
+import { logError } from '@/js/utils/logError.js'
 import { onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { apiClient } from '@/js/api/manager'

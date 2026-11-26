@@ -42,10 +42,7 @@ def convert_to_binary(source_path: str, output_path: str, sheet_name: Optional[s
         df = None
         if file_type == 'xlsx':
             try:
-                if sheet_name:
-                    df = pl.read_excel(source_path, sheet_name=sheet_name)
-                else:
-                    df = pl.read_excel(source_path)
+                df = pl.read_excel(source_path, sheet_name=sheet_name, engine='openpyxl')
                 logger.info(f"Excel файл прочитан, строк: {len(df)}, колонок: {len(df.columns)}")
             except Exception as e:
                 logger.error(f"Ошибка при чтении Excel файла через Polars: {str(e)}", exc_info=True)

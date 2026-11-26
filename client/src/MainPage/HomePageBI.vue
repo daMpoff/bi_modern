@@ -1,6 +1,7 @@
 <script setup>
 import { ArrowRight, Moon, Pause, Play, Sun } from 'lucide-vue-next'
 import { RouterLink } from 'vue-router'
+import { version } from '../../package.json'
 import BILogo from './components/BILogo.vue'
 import OceanAquarium from './aquarium/OceanAquarium.vue'
 import { sections } from './js/homeSections.js'
@@ -35,7 +36,7 @@ const themes = [
     </header>
     <div class="ocean-heading">
       <h1 id="bi-ocean-title" class="ocean-title">Океан данных</h1>
-      <span class="ocean-release" lang="en">release 0.3.0</span>
+      <span class="ocean-release" lang="en">release {{ version }}</span>
     </div>
     <nav class="ocean-sections" aria-label="Разделы BI">
       <RouterLink v-for="section in sections" :key="section.to" class="ocean-card" :to="section.to">

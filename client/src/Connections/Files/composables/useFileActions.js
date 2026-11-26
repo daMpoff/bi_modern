@@ -1,4 +1,5 @@
-﻿import { apiClient } from '@/js/api/manager'
+﻿import { logError, logWarn } from '@/js/utils/logError.js'
+import { apiClient } from '@/js/api/manager'
 import { biEndpoints as endpoints } from '@/modules/bi_analysis_modern/client/src/js/endpoints.js'
 import { MAX_UPLOAD_SIZE_MB } from '@/modules/bi_analysis_modern/client/src/Connections/Files/uploadConfig'
 import { confirmDelete } from '@/js/utils/confirm.js'

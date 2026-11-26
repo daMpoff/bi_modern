@@ -11,6 +11,8 @@
  * that never need client-side OLAP pay no startup cost.
  */
 
+import { logError } from '@/js/utils/logError.js'
+
 let db = null
 let conn = null
 let initPromise = null

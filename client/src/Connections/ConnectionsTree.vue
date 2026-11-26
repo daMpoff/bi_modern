@@ -50,6 +50,7 @@
 </template>
 
 <script setup>
+import { logError } from '@/js/utils/logError.js'
 import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import { Plus, Search } from 'lucide-vue-next'
 import { apiClient } from '@/js/api/manager'

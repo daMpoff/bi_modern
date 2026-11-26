@@ -1,6 +1,6 @@
 {
   "name": "@ergo-ms/bi-analysis-modern-client",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "private": true,
   "type": "module",
   "description": "BI Analysis Modern - клиентская часть",

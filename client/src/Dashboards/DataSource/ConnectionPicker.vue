@@ -56,6 +56,7 @@
 </template>
 
 <script setup>
+import { logError, logWarn } from '@/js/utils/logError.js'
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { Database, Check, AlertTriangle, ArrowRight } from 'lucide-vue-next'

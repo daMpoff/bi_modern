@@ -1,4 +1,6 @@
 import csv
+from contextlib import contextmanager
+from pathlib import Path
 from uuid import uuid4
 from math import isnan, isinf
 import math
@@ -97,36 +99,23 @@ def _sanitize_rows(rows: List[List[object]]) -> List[List[object]]:
     return sanitized
 
 
-def _read_excel_table(path, sheet_name=None, row_limit=None):
-    wb = load_workbook(filename=path, read_only=True, data_only=True)
+@contextmanager
+def _excel_rows(path, sheet_name=None):
+    workbook = load_workbook(filename=path, read_only=True, data_only=True)
     try:
-        if sheet_name:
-            if sheet_name not in wb.sheetnames:
-                wb.close()
-                raise ValidationError(f"Лист '{sheet_name}' не найден в файле")
-            ws = wb[sheet_name]
-        else:
-            ws = wb[wb.sheetnames[0]]
-    except IndexError:
-        wb.close()
-        return TableData([], [])
+        sheets = workbook.sheetnames
+        if sheet_name and sheet_name not in sheets:
+            raise ValidationError(f"Лист '{sheet_name}' не найден в файле")
+        sheet = workbook[sheet_name or sheets[0]] if sheets else None
+        yield (sheet.iter_rows(values_only=True) if sheet is not None else iter(())), sheets
+    finally:
+        workbook.close()
 
-    rows_iter = ws.iter_rows(values_only=True)
-    header = next(rows_iter, None)
-    columns = _normalize_header(header)
 
-    if row_limit == 0:
-        wb.close()
-        return TableData(columns, [])
-
-    rows = []
-    for row in rows_iter:
-        rows.append(_ensure_row(row, len(columns)))
-        if row_limit and row_limit > 0 and len(rows) >= row_limit:
-            break
-
-    wb.close()
-    return TableData(columns, rows)
+def _read_excel_table(path, sheet_name=None, row_limit=None):
+    with _excel_rows(path, sheet_name) as (rows, _):
+        columns = _normalize_header(next(rows, None))
+        return TableData(columns, [_ensure_row(row, len(columns)) for row in islice(rows, row_limit)])
 
 
 def _read_csv_table(path, row_limit=None, encoding='cp1251'):
@@ -169,16 +158,15 @@ def count_file_rows(file_upload_id, sheet_name=None):
             logger.error(f"Ошибка чтения бинарного файла для подсчёта: {str(e)}")
             raise ValidationError(f"Ошибка чтения бинарного файла: {str(e)}")
 
+    if upload.file_type == 'xlsx':
+        sheet = sheet_name or getattr(upload, 'sheet_name', None)
+        with _excel_rows(path, sheet) as (rows, _):
+            next(rows, None)
+            return sum(1 for _ in rows)
+
     try:
         import polars as pl
-        sheet = sheet_name or getattr(upload, 'sheet_name', None)
-
-        if upload.file_type == 'xlsx':
-            if sheet:
-                df = pl.read_excel(path, sheet_name=sheet)
-            else:
-                df = pl.read_excel(path)
-        elif upload.file_type in ('csv', 'txt'):
+        if upload.file_type in ('csv', 'txt'):
             try:
                 lazy_csv = pl.scan_csv(path)
             except Exception:
@@ -188,7 +176,6 @@ def count_file_rows(file_upload_id, sheet_name=None):
         else:
             raise ValidationError(f"Неподдерживаемый тип файла: {upload.file_type}")
 
-        return len(df)
     except ImportError:
         logger.warning("Polars недоступен для подсчёта строк, используется fallback метод")
         table_data = read_file_to_dataframe(file_upload_id, sheet_name, row_limit=1000000)
@@ -219,6 +206,10 @@ def read_file_to_dataframe(file_upload_id, sheet_name=None, row_limit=None, use_
             logger.error(f"Ошибка чтения бинарного файла: {str(e)}")
             raise ValidationError(f"Ошибка чтения бинарного файла: {str(e)}")
 
+    if upload.file_type == 'xlsx':
+        sheet = sheet_name or getattr(upload, 'sheet_name', None)
+        return _read_excel_table(path, sheet, row_limit=row_limit)
+
     if use_polars:
         try:
             from ..tasks import _read_file_with_polars
@@ -227,11 +218,7 @@ def read_file_to_dataframe(file_upload_id, sheet_name=None, row_limit=None, use_
         except Exception as e:
             logger.warning(f"Не удалось использовать polars, используется fallback метод: {str(e)}")
 
-    sheet = sheet_name or getattr(upload, 'sheet_name', None)
-
-    if upload.file_type == 'xlsx':
-        return _read_excel_table(path, sheet, row_limit=row_limit)
-    elif upload.file_type in ('csv', 'txt'):
+    if upload.file_type in ('csv', 'txt'):
         return _read_csv_table(path, row_limit=row_limit)
     else:
         raise ValidationError(f"Неподдерживаемый тип файла: {upload.file_type}")
@@ -265,33 +252,32 @@ def _fallback_csv_slice(
     return header, rows
 
 
-def _fallback_excel_slice(
-    path: str,
-    offset: int,
-    limit: Optional[int],
-    sheet_name: Optional[str],
-) -> Tuple[List[str], List[List[object]], List[str]]:
-    wb = load_workbook(filename=path, read_only=True, data_only=True)
-    try:
-        if sheet_name:
-            if sheet_name not in wb.sheetnames:
-                raise ValidationError(f"Лист '{sheet_name}' не найден в файле")
-            ws = wb[sheet_name]
-        else:
-            ws = wb[wb.sheetnames[0]]
-        sheetnames = list(wb.sheetnames)
-        rows_iter = ws.iter_rows(values_only=True)
-        header = next(rows_iter, [])
-        if offset > 0:
-            for _ in range(offset):
-                next(rows_iter, None)
-        if limit is None:
-            rows = [list(row or []) for row in rows_iter]
-        else:
-            rows = [list(row or []) for row in islice(rows_iter, limit)]
-        return list(header or []), rows, sheetnames
-    finally:
-        wb.close()
+def read_temp_preview(path, sheet_name, row_limit, has_header):
+    """Прочитать заголовок (если есть) и до row_limit строк данных временного файла."""
+    extension = Path(path).suffix.lower()
+    if extension == '.xlsx':
+        with _excel_rows(path, sheet_name) as (rows, _):
+            header = next(rows, None) if has_header else None
+            parsed = [list(header)] if header is not None else []
+            parsed.extend(list(row) for row in islice(rows, row_limit))
+            return parsed
+
+    import polars as pl
+    if extension in ('.csv', '.txt'):
+        try:
+            frame = pl.read_csv(path, has_header=has_header, n_rows=row_limit, encoding='utf8', try_parse_dates=True)
+        except pl.exceptions.ComputeError:
+            frame = pl.read_csv(path, has_header=has_header, n_rows=row_limit, encoding='cp1251', try_parse_dates=True)
+    elif extension == '.xls':
+        frame = pl.read_excel(path, sheet_name=sheet_name, has_header=has_header)
+        if row_limit is not None:
+            frame = frame.head(row_limit)
+    else:
+        raise ValidationError(f"Неподдерживаемый тип файла: {extension}")
+
+    parsed = [frame.columns] if has_header and frame.columns else []
+    parsed.extend(list(row) for row in frame.iter_rows())
+    return parsed
 
 
 def read_file_preview_slice(
@@ -354,32 +340,10 @@ def read_file_preview_slice(
         return header, rows, None
 
     if upload.file_type == 'xlsx':
-        sheets = []
-        if pl:
-            try:
-                if sheet_name:
-                    df = pl.read_excel(path, sheet_name=sheet_name)
-                else:
-                    df = pl.read_excel(path, sheet_index=0)
-                if offset or limit is not None:
-                    if limit is None:
-                        df = df.slice(offset)
-                    else:
-                        df = df.slice(offset, limit)
-                columns = list(df.columns)
-                rows = _sanitize_rows(df.to_numpy().tolist())
-                try:
-                    wb = load_workbook(filename=path, read_only=True)
-                    sheets = list(wb.sheetnames)
-                    wb.close()
-                except Exception:
-                    sheets = []
-                return columns, rows, sheets
-            except Exception:
-                pass
-        columns, rows, sheets = _fallback_excel_slice(path, offset, limit, sheet_name)
-        rows = _sanitize_rows(rows)
-        return columns, rows, sheets
+        with _excel_rows(path, sheet_name) as (rows, sheets):
+            columns = list(next(rows, ()))
+            page = islice(rows, offset, None if limit is None else offset + limit)
+            return columns, _sanitize_rows(page), sheets
 
     raise ValidationError(f"Неподдерживаемый тип файла: {upload.file_type}")
 

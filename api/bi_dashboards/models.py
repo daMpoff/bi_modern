@@ -43,13 +43,16 @@ class Dashboard(models.Model):
         chart_ids = set()
         for page in self.pages.all():
             for item in page.items.all():
-                if item.type == 'Чарт' and item.config:
-                    charts_list = item.config.get('chartsList', [])
-                    for chart_data in charts_list:
-                        if isinstance(chart_data, dict) and 'id' in chart_data:
-                            chart_ids.add(chart_data['id'])
-                        elif isinstance(chart_data, int):
-                            chart_ids.add(chart_data)
+                if item.type not in ('График', 'Чарт') or not isinstance(item.config, dict):
+                    continue
+                references = [item.config.get('pipelineChartId')]
+                legacy_charts = item.config.get('chartsList')
+                if isinstance(legacy_charts, list):
+                    references.extend(legacy_charts)
+                for reference in references:
+                    chart_id = reference.get('id') if isinstance(reference, dict) else reference
+                    if isinstance(chart_id, (int, str)) and chart_id:
+                        chart_ids.add(str(chart_id))
         return len(chart_ids)
 
 

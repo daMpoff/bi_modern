@@ -1,3 +1,4 @@
+import { logError } from '@/js/utils/logError.js'
 import { ref } from 'vue'
 import { apiClient } from '@/js/api/manager'
 import { biEndpoints as endpoints } from '@/modules/bi_analysis_modern/client/src/js/endpoints.js'

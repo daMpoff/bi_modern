@@ -27,6 +27,10 @@ class FileUploadSerializer(serializers.ModelSerializer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._file_exists_cache = {}
+        user = getattr(self.context.get('request'), 'user', None)
+        connection = self.fields['connection']
+        connection.queryset = (connection.queryset.filter(owner=user)
+                               if user and user.is_authenticated else connection.queryset.none())
 
     def get_file_url(self, obj):
         try:

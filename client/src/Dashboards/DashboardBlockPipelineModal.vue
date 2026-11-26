@@ -140,6 +140,7 @@
 </template>
 
 <script setup>
+import { logError } from '@/js/utils/logError.js'
 import { ref, computed, watch, onBeforeUnmount } from 'vue'
 import { useToast } from '@/js/utils/toast.js'
 import { apiClient } from '@/js/api/manager.js'

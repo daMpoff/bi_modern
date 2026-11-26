@@ -241,6 +241,7 @@
 </template>
 
 <script setup>
+import { logError } from '@/js/utils/logError.js'
 import { ref, computed, onMounted, onUnmounted, watch, nextTick, provide } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { LayoutGrid, Move, Undo2, Redo2, Settings, Download, ChevronDown, Image, FileText } from 'lucide-vue-next'

@@ -13,6 +13,8 @@
  *   - Integration with Pinia BI Store
  */
 
+import { logError } from '@/js/utils/logError.js'
+
 const WS_RECONNECT_BASE = 1000   // 1 second
 const WS_RECONNECT_MAX = 30000   // 30 seconds
 const WS_HEARTBEAT_MS = 25000    // 25 seconds

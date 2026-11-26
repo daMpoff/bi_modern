@@ -61,7 +61,7 @@ def _read_file_direct_polars(file_upload_id: int) -> Any:
     Polars сам применит predicate/projection pushdown при collect().
     Для .bin (Arrow IPC) — scan_ipc (lazy).
     Для CSV/TXT — scan_csv (lazy).
-    Для XLSX — read_excel (eager) -> .lazy().
+    Для XLSX — чтение листа через openpyxl и преобразование в LazyFrame.
     """
     from ..bi_datasets.binary_storage import is_binary_file
 
@@ -79,8 +79,7 @@ def _read_file_direct_polars(file_upload_id: int) -> Any:
         return _read_ipc_native_lazy(path)
 
     if upload.file_type == 'xlsx':
-        df = pl.read_excel(path, sheet_index=0)
-        return df.lazy()
+        return pl.read_excel(path, engine='openpyxl').lazy()
 
     if upload.file_type in ('csv', 'txt'):
         try:

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "bi_analysis_modern"
-version = "0.1.0"
+version = "0.3.0"
 description = "BI Modern: подключения, конвейеры данных и дашборды"
 
 [tool.poetry.dependencies]

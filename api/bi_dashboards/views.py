@@ -1,13 +1,13 @@
 import re
 
-from rest_framework import generics, permissions
+from rest_framework import generics, permissions, serializers
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from django.shortcuts import get_object_or_404
+from rest_framework.generics import get_object_or_404
 
 from src.core.utils.mixins import SwaggerSafeMixin
 
-from .models import Dashboard, DashboardItem
+from .models import Dashboard, DashboardItem, DashboardPage
 from ..bi_pipelines.models import PipelineChart
 from .serializers import (
     DashboardSerializer,
@@ -43,7 +43,7 @@ class DashboardListCreateView(SwaggerSafeMixin, generics.ListCreateAPIView):
     def get_queryset(self):
         if getattr(self, 'swagger_fake_view', False):
             return Dashboard.objects.none()
-        return Dashboard.objects.filter(owner=self.request.user).select_related('owner')
+        return Dashboard.objects.filter(owner=self.request.user).select_related('owner').prefetch_related('pages__items')
 
     def get_serializer_class(self):
         if self.request and self.request.method == 'GET':
@@ -80,21 +80,17 @@ class DashboardItemListCreateView(SwaggerSafeMixin, generics.ListCreateAPIView):
         if getattr(self, 'swagger_fake_view', False):
             return DashboardItem.objects.none()
         page_id = self.request.query_params.get('page')
-        if page_id:
-            return DashboardItem.objects.filter(page_id=page_id).select_related('page__dashboard')
-        return DashboardItem.objects.none()
+        if not page_id:
+            return DashboardItem.objects.none()
+        page_id = serializers.IntegerField(min_value=1).run_validation(page_id)
+        return DashboardItem.objects.filter(page_id=page_id, page__dashboard__owner=self.request.user)
 
     def perform_create(self, serializer):
         page_id = self.request.data.get('page')
-        if page_id:
-            from .models import DashboardPage
-            try:
-                page = DashboardPage.objects.select_related('dashboard').get(id=page_id)
-                if page.dashboard.owner != self.request.user:
-                    raise permissions.PermissionDenied("У вас нет доступа к этой странице дашборда")
-                serializer.save(page=page)
-            except DashboardPage.DoesNotExist:
-                raise permissions.PermissionDenied("Страница дашборда не найдена")
+        if page_id is None:
+            raise serializers.ValidationError({'page': 'Укажите страницу дашборда.'})
+        page = get_object_or_404(DashboardPage, pk=page_id, dashboard__owner=self.request.user)
+        serializer.save(page=page)
 
 
 class DashboardItemDetailView(SwaggerSafeMixin, generics.RetrieveUpdateDestroyAPIView):

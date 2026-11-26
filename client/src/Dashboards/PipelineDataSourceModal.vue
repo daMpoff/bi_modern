@@ -75,6 +75,7 @@
 </template>
 
 <script setup>
+import { logWarn } from '@/js/utils/logError.js'
 import { ref, computed, watch } from 'vue'
 import { Database, ChevronDown } from 'lucide-vue-next'
 import { apiClient } from '@/js/api/manager'

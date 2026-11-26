@@ -72,6 +72,7 @@
 </template>
 
 <script setup>
+import { logError } from '@/js/utils/logError.js'
 import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
 import { Trash2 } from 'lucide-vue-next'
 import { confirmDelete } from '@/js/utils/confirm.js'

@@ -1,4 +1,5 @@
 <script setup>
+import { logError } from '@/js/utils/logError.js'
 import { ref, watch, computed, onMounted } from 'vue'
 import { apiClient } from '@/js/api/manager.js'
 import { useRouter } from 'vue-router'

@@ -100,6 +100,7 @@
 </template>
 
 <script setup>
+import { logError } from '@/js/utils/logError.js'
 import postgresIcon from '../../assets/icons/postgres.svg'
 import clickhouseIcon from '../../assets/icons/clickhouse.svg'
 import mssqlIcon from '../../assets/icons/mssql.svg'

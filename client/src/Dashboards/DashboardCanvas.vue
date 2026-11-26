@@ -141,6 +141,7 @@
 </template>
 
 <script setup>
+import { logError } from '@/js/utils/logError.js'
 import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import DashboardBlock from './DashboardBlock.vue'
 import DashboardBlockAbsolute from './DashboardBlockAbsolute.vue'

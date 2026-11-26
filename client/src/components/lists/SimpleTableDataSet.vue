@@ -132,6 +132,7 @@
 </template>
 
 <script setup>
+import { logWarn } from '@/js/utils/logError.js'
 import { ref, watch, onMounted, computed } from 'vue'
 import { Star, MoreHorizontal, Trash2, CaseSensitive, Link, TriangleAlert, Table, LayoutDashboard } from 'lucide-vue-next'
 import { useRouter } from 'vue-router'

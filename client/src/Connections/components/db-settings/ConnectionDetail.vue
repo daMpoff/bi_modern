@@ -73,6 +73,7 @@
 </template>
 
 <script setup>
+import { logError } from '@/js/utils/logError.js'
 import clickhouseIcon from '../../../assets/icons/clickhouse.svg'
 import mssqlIcon from '../../../assets/icons/mssql.svg'
 import postgresIcon from '../../../assets/icons/postgres.svg'

@@ -214,6 +214,7 @@
 </template>
 
 <script setup>
+import { logError, logWarn } from '@/js/utils/logError.js'
 import { ref, computed, watch, onMounted, onUnmounted, nextTick, watchEffect } from 'vue'
 import { ChevronLeft, ChevronRight, Type, Hash, Percent } from 'lucide-vue-next'
 import { RecycleScroller } from 'vue-virtual-scroller'

@@ -1,6 +1,11 @@
-from uuid import uuid4
+from contextlib import closing, contextmanager
+from uuid import UUID, uuid4
+from xml.etree.ElementTree import ParseError
+from zipfile import BadZipFile
 from django.core.files import File
+from django.db import router, transaction
 from django.http import Http404
+from django.shortcuts import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import generics, permissions, status
 from rest_framework.exceptions import ValidationError
@@ -9,6 +14,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from openpyxl import load_workbook
+from openpyxl.utils.exceptions import InvalidFileException
 import openpyxl
 import tempfile
 import os
@@ -20,8 +26,10 @@ from src.core.utils.mixins import SwaggerSafeMixin
 from ..bi_connections.models import Connection
 from .models import FileUpload
 from .serializers import FileUploadSerializer
-from .binary_storage import is_binary_file, read_from_binary
-from ..services.services import count_file_rows, read_file_preview_slice
+from .temp_uploads import resolve_upload, save_upload
+from .binary_storage import convert_to_binary, is_binary_file, read_from_binary
+from ..execution.result_cache import ASYNC_RESULT_TTL, execution_cache
+from ..services.services import count_file_rows, read_file_preview_slice, read_temp_preview
 
 logger = logging.getLogger(__name__)
 
@@ -35,12 +43,8 @@ class TempUploadView(APIView):
         if not file:
             return Response({'error': 'Файл не передан'}, status=400)
         suffix = os.path.splitext(file.name)[-1]
-        with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
-            for chunk in file.chunks():
-                tmp.write(chunk)
-            temp_path = tmp.name
         return Response({
-            'temp_path': temp_path,
+            'temp_path': save_upload(file, request.user),
             'original_filename': file.name,
             'file_type': suffix.lstrip('.').lower()
         }, status=201)
@@ -52,6 +56,28 @@ class TempUploadView(APIView):
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
+
+
+@contextmanager
+def _replacement_content(upload, sheet):
+    if not sheet or not upload.name.lower().endswith('.xlsx'):
+        yield upload
+        return
+    with tempfile.TemporaryFile() as copy:
+        try:
+            with closing(load_workbook(upload)) as workbook:
+                if sheet not in workbook.sheetnames:
+                    raise ValidationError({'sheet': 'Лист не найден в книге.'})
+                for page in list(workbook):
+                    if page.title != sheet:
+                        workbook.remove(page)
+                workbook.save(copy)
+        except ValidationError:
+            raise
+        except (ValueError, KeyError, OSError, BadZipFile, InvalidFileException, ParseError) as exc:
+            raise ValidationError({'file': 'Не удалось прочитать книгу XLSX.'}) from exc
+        copy.seek(0)
+        yield File(copy)
 
 
 class FileUploadDetailView(SwaggerSafeMixin, generics.RetrieveUpdateDestroyAPIView):
@@ -146,92 +172,36 @@ class FileUploadDetailView(SwaggerSafeMixin, generics.RetrieveUpdateDestroyAPIVi
             return Response({'error': str(exc)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def perform_update(self, serializer):
-        instance = serializer.instance
+        upload = self.request.FILES.get('file')
+        replacement_name = None
+        storage = serializer.instance.file.storage
+        try:
+            if upload:
+                suffix = os.path.splitext(upload.name)[1].lower()
+                with _replacement_content(upload, self.request.data.get('sheet')) as content:
+                    target = serializer.instance.file.field.generate_filename(serializer.instance, f'{uuid4()}{suffix}')
+                    replacement_name = storage.save(target, content)
 
-        if not instance.file_uuid:
-            instance.file_uuid = uuid4()
-            instance.save(update_fields=['file_uuid'])
+            database = router.db_for_write(FileUpload, instance=serializer.instance)
+            with transaction.atomic(using=database):
+                instance = get_object_or_404(self.get_queryset().using(database).select_for_update(),
+                                             pk=serializer.instance.pk)
+                serializer.instance = instance
+                if not upload:
+                    serializer.save(original_filename=instance.original_filename, file_type=instance.file_type)
+                    return
 
-        file = self.request.FILES.get('file')
-        request_data = getattr(self.request, 'data', {})
-        name = request_data.get('name') if isinstance(request_data, dict) else None
-        sheet = request_data.get('sheet') if isinstance(request_data, dict) else None
-        file_type = (file.name.split('.')[-1].lower()
-                     if file else
-                     (name.split('.')[-1].lower() if name and '.' in name else None))
-
-        if file and file_type == 'xlsx' and sheet:
-            suffix = os.path.splitext(file.name)[-1]
-            with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
-                for chunk in file.chunks():
-                    tmp.write(chunk)
-                temp_path = tmp.name
-
-            try:
-                wb = load_workbook(temp_path, read_only=False)
-                sheets_to_remove = [ws_name for ws_name in wb.sheetnames if ws_name != sheet]
-                for ws_name in sheets_to_remove:
-                    ws = wb[ws_name]
-                    wb.remove(ws)
-
-                single_sheet_path = temp_path + "_single.xlsx"
-                wb.save(single_sheet_path)
-                wb.close()
-
-                instance = serializer.save(
-                    name=name or serializer.instance.name,
-                    original_filename=file.name,
-                    file_type=file_type
-                )
-
-                if instance.file and hasattr(instance.file, 'path') and os.path.exists(instance.file.path):
-                    try:
-                        instance.file.delete(save=False)
-                    except Exception as e:
-                        logger.warning(f"Ошибка при удалении старого файла: {e}")
-
-                uuid_filename = f"{instance.file_uuid}.bin" if file_type == 'bin' else f"{instance.file_uuid}{os.path.splitext(file.name)[1]}"
-                with open(single_sheet_path, 'rb') as f:
-                    instance.file.save(uuid_filename, File(f), save=True)
-
-                try:
-                    os.remove(single_sheet_path)
-                    os.remove(temp_path)
-                except Exception as e:
-                    logger.warning(f"Ошибка при удалении временных файлов: {e}")
-
-            except Exception as e:
-                logger.error(f"Ошибка при обработке листов: {e}")
-                try:
-                    os.remove(temp_path)
-                except Exception:
-                    pass
-                if file:
-                    file_ext = os.path.splitext(file.name)[1] or ('.bin' if file_type == 'bin' else '.xlsx')
-                    uuid_filename = f"{instance.file_uuid}{file_ext}"
-                    with open(temp_path, 'rb') as f:
-                        instance.file.save(uuid_filename, File(f), save=True)
-
-                instance = serializer.save(
-                    name=name or serializer.instance.name,
-                    original_filename=(file.name if file else serializer.instance.original_filename),
-                    file_type=file_type
-                )
-        else:
-            if file:
-                file_ext = os.path.splitext(file.name)[1] or ('.bin' if file_type == 'bin' else '.xlsx')
-                uuid_filename = f"{instance.file_uuid}{file_ext}"
-                instance.file.save(uuid_filename, file, save=False)
-
-            instance = serializer.save(
-                name=name or serializer.instance.name,
-                original_filename=(file.name if file else serializer.instance.original_filename),
-                file_type=file_type
-            )
-
-        columns_info = extract_columns_info(instance)
-        instance.columns_info = columns_info
-        instance.save(update_fields=['columns_info'])
+                old_name = instance.file.name
+                instance = serializer.save(file=replacement_name, original_filename=upload.name,
+                                           file_type=suffix.lstrip('.'))
+                instance.columns_info = extract_columns_info(instance)
+                instance.save(update_fields=['columns_info'])
+                if old_name:
+                    transaction.on_commit(lambda: storage.delete(old_name), using=database, robust=True)
+        except Exception:
+            if replacement_name:
+                storage.delete(replacement_name)
+            raise
 
     def perform_destroy(self, instance):
         if instance.file and os.path.isfile(instance.file.path):
@@ -393,14 +363,15 @@ class FinalizeUploadView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        if not os.path.exists(temp_path):
+        temp_path = resolve_upload(temp_path, request.user)
+        if temp_path is None:
             return Response({"error": "Временный файл не найден"}, status=status.HTTP_404_NOT_FOUND)
 
         connection_obj = None
         if connection_id:
             try:
-                connection_obj = Connection.objects.get(pk=connection_id)
-            except Connection.DoesNotExist:
+                connection_obj = Connection.objects.get(pk=connection_id, owner=request.user)
+            except (Connection.DoesNotExist, ValueError, TypeError):
                 return Response({"error": "Connection not found"}, status=404)
 
         upload = FileUpload(
@@ -410,96 +381,36 @@ class FinalizeUploadView(APIView):
             file_type=file_type,
             connection=connection_obj
         )
-        upload.save()
-
-        if not upload.file_uuid:
-            upload.file_uuid = uuid4()
-            upload.save(update_fields=['file_uuid'])
-
-        logger.info(f"Создан FileUpload с UUID: {upload.file_uuid}, ID: {upload.id}")
-
-        binary_converted = False
-        binary_path = None
-        polars_available = False
-
-        try:
-            from .binary_storage import convert_to_binary
+        # Only one finalization can consume this reference. Restore it on failure so the owner can retry.
+        with tempfile.TemporaryDirectory(dir=os.path.dirname(temp_path)) as workdir:
+            source = os.path.join(workdir, os.path.basename(temp_path))
+            try:
+                os.replace(temp_path, source)
+            except FileNotFoundError:
+                return Response({"error": "Временный файл не найден"}, status=404)
 
             try:
-                import polars as pl
-                polars_available = True
-                logger.info("Polars установлен, конвертация в .bin возможна")
-            except ImportError:
-                logger.error("Polars не установлен! Файлы не будут конвертироваться в .bin формат")
+                binary = os.path.join(workdir, 'converted.bin')
+                if convert_to_binary(source, binary, sheet_name=sheet, file_type=file_type):
+                    try:
+                        with open(binary, 'rb') as stream:
+                            upload.file.save(f'{upload.file_uuid}.bin', File(stream), save=False)
+                        upload.file_type = 'bin'
+                    except OSError:
+                        logger.warning('Не удалось сохранить бинарную копию, сохраняем исходный формат.', exc_info=True)
+                if not upload.file:
+                    suffix = os.path.splitext(source)[1]
+                    with open(source, 'rb') as stream, _replacement_content(File(stream), sheet) as content:
+                        upload.file.save(f'{upload.file_uuid}{suffix}', content, save=False)
 
-            if polars_available and temp_path and file_type and os.path.exists(temp_path):
-                temp_binary_path = temp_path + ".bin"
-                logger.info(f"[CONVERT] Начинаем конвертацию файла {temp_path} в бинарный формат {temp_binary_path}, тип: {file_type}, лист: {sheet}")
-
-                conversion_result = convert_to_binary(temp_path, temp_binary_path, sheet_name=sheet, file_type=file_type)
-                logger.info(f"[CONVERT] Результат конвертации: {conversion_result}")
-
-                if conversion_result and os.path.exists(temp_binary_path):
-                    binary_path = temp_binary_path
-                    binary_converted = True
-                    file_size = os.path.getsize(binary_path)
-                    logger.info(f"[CONVERT] Файл успешно конвертирован в бинарный формат: {binary_path}, размер: {file_size} байт")
-                else:
-                    logger.warning(f"[CONVERT] Не удалось конвертировать файл {temp_path} в бинарный формат")
-        except Exception as e:
-            logger.error(f"[CONVERT] Ошибка при конвертации в бинарный формат: {str(e)}", exc_info=True)
-
-        if not upload.file_uuid:
-            upload.file_uuid = uuid4()
-            upload.save(update_fields=['file_uuid'])
-
-        logger.info(f"[SAVE] binary_converted={binary_converted}, binary_path={binary_path}")
-
-        if binary_converted and binary_path and os.path.exists(binary_path):
-            binary_filename = f"{upload.file_uuid}.bin"
-            logger.info(f"[SAVE] Сохраняем бинарный файл: {binary_filename}")
-            try:
-                with open(binary_path, 'rb') as f:
-                    upload.file.save(binary_filename, File(f), save=True)
-                upload.file_type = 'bin'
-                upload.save(update_fields=['file', 'file_type'])
-                logger.info("[SAVE] Бинарный файл успешно сохранен")
-            except Exception as e:
-                logger.error(f"[SAVE] Ошибка при сохранении бинарного файла: {str(e)}", exc_info=True)
-                binary_converted = False
-
-            try:
-                if binary_path and os.path.exists(binary_path):
-                    os.remove(binary_path)
-            except Exception as e:
-                logger.warning(f"Не удалось удалить временный бинарный файл: {e}")
-        else:
-            logger.warning(f"[SAVE] Используется оригинальный файл вместо бинарного. polars_available={polars_available}")
-
-            if original_filename:
-                file_ext = os.path.splitext(original_filename)[1] or '.bin'
-            else:
-                file_ext = '.bin' if file_type == 'bin' else ('.xlsx' if file_type == 'xlsx' else '.csv')
-
-            uuid_filename = f"{upload.file_uuid}{file_ext}"
-
-            if temp_path and os.path.exists(temp_path):
-                with open(temp_path, 'rb') as f:
-                    upload.file.save(uuid_filename, File(f), save=True)
-
-        upload.columns_info = extract_columns_info(upload)
-        upload.save(update_fields=['columns_info'])
-
-        try:
-            if temp_path and os.path.exists(temp_path):
-                os.remove(temp_path)
-        except OSError:
-            pass
-
-        serializer = FileUploadSerializer(upload)
-        response_data = serializer.data
-        logger.info(f"[FINALIZE] Файл успешно создан: ID={upload.id}, UUID={upload.file_uuid}, name={upload.name}, owner={upload.owner.id}")
-        return Response(response_data, status=status.HTTP_201_CREATED)
+                upload.columns_info = extract_columns_info(upload)
+                upload.save(force_insert=True)
+            except Exception:
+                os.replace(source, temp_path)
+                if upload.file:
+                    upload.file.delete(save=False)
+                raise
+        return Response(FileUploadSerializer(upload).data, status=status.HTTP_201_CREATED)
 
 
 class XlsxSheetListView(APIView):
@@ -528,16 +439,20 @@ class XlsxTempPreviewView(APIView):
         if not isinstance(request_data, dict):
             request_data = {}
         temp_path = request_data.get('temp_path')
-        has_header = (request_data.get('has_header', 'true').lower() == 'true'
-                      if isinstance(request_data.get('has_header'), str) else True)
+        has_header = str(request_data.get('has_header', True)).lower() == 'true'
         sheet_name = request_data.get('sheet_name')
         row_limit = request_data.get('row_limit')
         if row_limit is not None:
-            row_limit = int(row_limit)
-        use_async = (request_data.get('async', 'false').lower() == 'true'
-                     if isinstance(request_data.get('async'), str) else False)
+            try:
+                row_limit = int(row_limit)
+                if row_limit < 0:
+                    raise ValueError
+            except (TypeError, ValueError):
+                raise ValidationError({'row_limit': 'Ожидается целое неотрицательное число.'})
+        use_async = str(request_data.get('async', False)).lower() == 'true'
 
-        if not temp_path or not os.path.exists(temp_path):
+        temp_path = resolve_upload(temp_path, request.user)
+        if temp_path is None:
             return Response({"error": "Временный файл не найден"}, status=status.HTTP_404_NOT_FOUND)
 
         file_size = os.path.getsize(temp_path)
@@ -546,86 +461,32 @@ class XlsxTempPreviewView(APIView):
 
         if should_use_async:
             from ..tasks import process_file_preview
-            task = process_file_preview.delay(temp_path, sheet_name, row_limit, has_header)
+            task_id = str(uuid4())
+            cache = execution_cache()
+            owner_key = _preview_owner_key(task_id)
+            cache.set(owner_key, request.user.pk, ASYNC_RESULT_TTL)
+            try:
+                process_file_preview.apply_async(args=(temp_path, sheet_name, row_limit, has_header), task_id=task_id)
+            except Exception:
+                cache.delete(owner_key)
+                raise
             return Response({
-                "task_id": task.id,
+                "task_id": task_id,
                 "status": "processing",
                 "message": "Предпросмотр обрабатывается асинхронно"
             }, status=202)
 
         try:
-            try:
-                import polars as pl
-
-                file_ext = os.path.splitext(temp_path)[1].lower()
-
-                if file_ext in ('.xlsx', '.xls'):
-                    if sheet_name:
-                        df = pl.read_excel(temp_path, sheet_name=sheet_name)
-                    else:
-                        df = pl.read_excel(temp_path, sheet_index=0)
-
-                    if row_limit and row_limit > 0:
-                        df = df.head(row_limit)
-
-                    columns = df.columns
-                    rows_list = df.to_numpy().tolist()
-
-                    if has_header and rows_list:
-                        parsed = [list(columns), *rows_list]
-                    else:
-                        parsed = rows_list
-
-                    return Response({"parsed": parsed})
-
-                elif file_ext in ('.csv', '.txt'):
-                    try:
-                        df = pl.read_csv(temp_path, encoding='utf8', try_parse_dates=True)
-                    except Exception:
-                        df = pl.read_csv(temp_path, encoding='cp1251', try_parse_dates=True)
-
-                    if row_limit and row_limit > 0:
-                        df = df.head(row_limit)
-
-                    columns = df.columns
-                    rows_list = df.to_numpy().tolist()
-
-                    if has_header and rows_list:
-                        parsed = [list(columns), *rows_list]
-                    else:
-                        parsed = rows_list
-
-                    return Response({"parsed": parsed})
-            except ImportError:
-                pass
-
-            wb = load_workbook(filename=temp_path, read_only=True, data_only=True)
-            try:
-                ws = wb.active
-            except IndexError:
-                wb.close()
-                return Response({"parsed": []})
-
-            rows = []
-            for row in ws.iter_rows(values_only=True):
-                normalized = [("" if cell is None else str(cell)) for cell in row]
-                rows.append(normalized)
-                if row_limit and len(rows) >= row_limit:
-                    break
-            wb.close()
-
-            if not rows:
-                return Response({"parsed": []})
-
-            if has_header:
-                header, *body = rows
-                parsed = [list(header), *body]
-            else:
-                parsed = rows
-
-            return Response({"parsed": parsed})
+            parsed = read_temp_preview(temp_path, sheet_name, row_limit, has_header)
+            return Response({'parsed': parsed})
+        except ValidationError:
+            raise
         except Exception as exc:
             return Response({"error": f"Ошибка при чтении файла: {exc}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+def _preview_owner_key(task_id):
+    return f'bi_modern:file-preview-owner:{task_id}'
 
 
 class FilePreviewTaskStatusView(APIView):
@@ -635,6 +496,12 @@ class FilePreviewTaskStatusView(APIView):
         task_id = request.query_params.get('task_id')
         if not task_id:
             return Response({"detail": "Не указан task_id"}, status=400)
+        try:
+            task_id = str(UUID(task_id))
+        except ValueError:
+            return Response({"detail": "Задача не найдена"}, status=404)
+        if execution_cache().get(_preview_owner_key(task_id)) != request.user.pk:
+            return Response({"detail": "Задача не найдена"}, status=404)
 
         try:
             from celery.result import AsyncResult

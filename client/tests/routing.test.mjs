@@ -62,7 +62,7 @@ test('route components exist and every API endpoint belongs to modern', () => {
   check(biEndpoints)
 })
 
-test('modern components use existing API methods and never address the regular BI', () => {
+test('modern client uses explicit core imports, supported API methods and its own endpoints', () => {
   function check(directory) {
     for (const item of readdirSync(directory, { withFileTypes: true })) {
       const filename = path.join(directory, item.name)
@@ -72,6 +72,13 @@ test('modern components use existing API methods and never address the regular B
       }
       if (!/\.(js|vue|scss)$/.test(filename)) continue
       const source = readFileSync(filename, 'utf8')
+      if (/\.(?:js|vue)$/.test(filename)) {
+        // The federated build does not install the host's logger auto-import plugin.
+        const loggerImport = source.match(/import\s*\{([^}]*)\}\s*from\s*['"]@\/js\/utils\/logError\.js['"]/)
+        for (const [, name] of source.matchAll(/(?<![\w.])(logError|logWarn|sanitizeError)\s*\(/g)) {
+          assert.ok(loggerImport?.[1].split(',').some(entry => entry.trim() === name), `${filename}: missing import for ${name}`)
+        }
+      }
       assert.doesNotMatch(source, /(?:["'`])\/?bi_analysis\//, filename)
       assert.doesNotMatch(source, /\/src\/core\/bi\//, filename)
       assert.doesNotMatch(source, /apiClient\.(?:upload|getUploadedFiles)\(/, filename)

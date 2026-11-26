@@ -142,6 +142,7 @@
 </template>
 
 <script setup>
+import { logError } from '@/js/utils/logError.js'
 import { watch, ref, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { ArrowLeft, Upload, Waypoints, TriangleAlert } from 'lucide-vue-next'

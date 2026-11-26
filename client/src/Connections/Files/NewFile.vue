@@ -69,6 +69,7 @@
 </template>
 
 <script setup>
+import { logError } from '@/js/utils/logError.js'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ArrowLeft, Upload } from 'lucide-vue-next'
