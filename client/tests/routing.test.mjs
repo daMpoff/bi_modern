@@ -16,6 +16,7 @@ const routerPath = require.resolve('vue-router', {
 const { createRouter, createMemoryHistory } = require(routerPath)
 
 const modernPaths = [
+  ['/bi-modern', 'BIModern'],
   ['/bi-modern/dashboard/', 'DashboardsModern'],
   ['/bi-modern/dashboard/new', 'NewDashboardModern'],
   ['/bi-modern/dashboard/42', 'DashboardPageModern'],

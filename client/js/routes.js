@@ -3,6 +3,7 @@ export default {
     "path": "/bi-modern",
     "component": "@/modules/bi_analysis_modern/client/src/MainPage/HomePageBI.vue",
     "meta": {
+      "title": "Океан данных",
       "requiresAuth": true
     }
   },

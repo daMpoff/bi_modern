@@ -1,381 +1,200 @@
-@import '@/scss/_variables.scss';
-@import '@/scss/_theme.scss';
-@import '../../scss/_bi-theme.scss';
-
-// === Entrance animations ===
-@keyframes fadeInLeft {
-  from {
-    opacity: 0;
-    transform: translateX(-40px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-@keyframes fadeInRight {
-  from {
-    opacity: 0;
-    transform: translateX(40px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-@keyframes borderRotate {
-  0% { --border-angle: 0deg; }
-  100% { --border-angle: 360deg; }
-}
-
-// === Root container ===
-.homepage-bi {
-  @include bi-burgundy-tokens;
-  min-height: calc(100vh - 120px);
-  padding: 60px 40px;
+.ocean-page {
+  --water: #061419;
+  --ink: #edf8fa;
+  --secondary-ink: #b3c8ce;
+  --panel: #10232b;
+  --panel-edge: #38525c;
+  --panel-shadow: 0 8px 20px #00101540;
+  --control: #132830;
+  --control-active: #d5f2ed;
+  --control-active-ink: #12352f;
+  --focus: #a6f5e1;
+  --veil: #05191f9c;
+  --title-halo: #061419;
+  --lagoon: #83ddc7;
+  --tide: #9dc8fc;
+  --coral: #f7bd8f;
+  color-scheme: dark;
   position: relative;
-  overflow: hidden;
+  isolation: isolate;
+  container-type: inline-size;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  background: var(--color-background);
-}
-
-// === WebGL background ===
-.background-shader {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
+  box-sizing: border-box;
+  min-height: clamp(490px, calc(100svh - 118px), 880px);
+  padding: clamp(18px, 4vw, 58px);
   overflow: hidden;
-  opacity: 0.65;
+  color: var(--ink);
+  background: var(--water);
+  font-family: Inter, "Segoe UI", system-ui, sans-serif;
 }
-
-// === Content layout ===
-.content-wrapper {
-  display: flex;
-  align-items: center;
-  gap: 80px;
-  width: 100%;
-  max-width: 1400px;
-  z-index: 2;
-  position: relative;
+.ocean-page[data-theme="light"] {
+  --water: #f2f7f4;
+  --ink: #102f39;
+  --secondary-ink: #425f67;
+  --panel: #fff;
+  --panel-edge: #c2d3d1;
+  --panel-shadow: 0 5px 16px #204e4a12;
+  --control: #fcfefc;
+  --control-active: #1d5555;
+  --control-active-ink: #fff;
+  --focus: #08695e;
+  --veil: #e6f1eb99;
+  --title-halo: #f2f7f4;
+  --lagoon: #147761;
+  --tide: #365eaa;
+  --coral: #a14d27;
+  color-scheme: light;
 }
-
-// === Left column: Logo ===
-.left-column {
+.ocean-scene {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  pointer-events: none;
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, var(--veil), transparent 40%, transparent 75%, var(--veil));
+  }
+}
+.ocean-top, .ocean-tools, .ocean-themes { display: flex; align-items: center; }
+.ocean-top { justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+.ocean-logo { display: block; width: clamp(112px, 13vw, 174px); height: auto; color: var(--ink); }
+.ocean-tools {
+  flex-wrap: wrap;
+  gap: 8px;
+  button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 40px;
+    box-sizing: border-box;
+    padding: 7px 12px;
+    border: 1px solid var(--panel-edge);
+    border-radius: 10px;
+    background: var(--control);
+    color: var(--ink);
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.2;
+    cursor: pointer;
+    &:hover { border-color: var(--focus); }
+  }
+  .ocean-motion { width: 40px; padding: 0; }
+}
+.ocean-themes {
+  padding: 3px;
+  border: 1px solid var(--panel-edge);
+  border-radius: 12px;
+  background: var(--control);
+  button {
+    min-height: 32px;
+    border: 0;
+    padding-inline: 10px;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--secondary-ink);
+    &[aria-pressed="true"] { background: var(--control-active); color: var(--control-active-ink); }
+  }
+}
+.ocean-heading {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  flex-shrink: 0;
-  animation: fadeInLeft 0.8s ease-out both;
-
-  .bi-logo {
-    height: 140px;
-    filter: drop-shadow(0 4px 20px rgba(0, 0, 0, 0.08));
-    transition: filter $transition;
-  }
+  gap: 8px;
+  margin-top: clamp(24px, 4.5vh, 60px);
 }
-
-// === Right column: Cards ===
-.right-column {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  flex: 1;
-  max-width: 560px;
+.ocean-title {
+  margin: 0;
+  color: var(--ink);
+  font: 580 clamp(38px, 6vw, 88px)/1.02 Inter, "Segoe UI", system-ui, sans-serif;
+  letter-spacing: -.055em;
+  text-shadow: 0 1px 12px var(--title-halo);
 }
-
-// === Individual card ===
-.tab-item {
+.ocean-release {
+  padding: 5px 10px;
+  border: 1px solid color-mix(in srgb, var(--lagoon) 42%, var(--panel));
+  border-radius: 999px;
+  background: var(--panel);
+  color: var(--lagoon);
+  font: 600 12px/1.25 ui-monospace, Consolas, monospace;
+  white-space: nowrap;
+}
+.ocean-sections {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(10px, 1.45vw, 22px);
+  margin-top: auto;
+  padding-top: clamp(105px, 20vh, 205px);
+}
+.ocean-card {
+  --accent: var(--lagoon);
   position: relative;
-  cursor: pointer;
-  will-change: transform;
-  animation: fadeInRight 0.7s ease-out both;
-
-  &:nth-child(1) { animation-delay: 0.15s; }
-  &:nth-child(2) { animation-delay: 0.30s; }
-  &:nth-child(3) { animation-delay: 0.45s; }
-
-  .tab-content {
-    position: relative;
-    display: flex;
-    align-items: center;
-    gap: 24px;
-    padding: 28px 32px;
-    background: var(--color-primary-background);
-    border-radius: $radius-usual;
-    border: 1px solid var(--color-border);
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
-    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-    z-index: 1;
-    overflow: hidden;
-  }
-
-  .tab-icon-wrapper {
-    flex-shrink: 0;
-    width: 52px;
-    height: 52px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: $radius-small;
-    background: var(--color-secondary-background);
-    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  .tab-icon {
-    color: var(--color-primary-text);
-    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-    width: 26px;
-    height: 26px;
-  }
-
-  .tab-text-content {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    flex: 1;
-    min-width: 0;
-  }
-
-  .tab-title {
-    font-size: clamp(1.1rem, 1.8vw, $font-size-h2);
-    font-weight: $font-weight-bold;
-    color: var(--color-primary-text);
-    margin: 0;
-    transition: all $transition;
-    letter-spacing: -0.01em;
-    line-height: 1.3;
-  }
-
-  .tab-description {
-    font-size: clamp(0.8rem, 1.1vw, $font-size-small);
-    color: var(--color-secondary-text);
-    margin: 0;
-    line-height: 1.5;
-    transition: all $transition;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .tab-arrow {
-    flex-shrink: 0;
-    color: var(--color-secondary-text);
-    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-    width: 28px;
-    height: 28px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    background: var(--color-secondary-background);
-    opacity: 0.6;
-  }
-
-  // Animated gradient border overlay (hidden by default)
-  .tab-gradient-border {
+  isolation: isolate;
+  display: grid;
+  grid-template: "symbol arrow" auto "label label" auto / minmax(0, 1fr) auto;
+  align-content: start;
+  gap: 18px 12px;
+  min-width: 0;
+  overflow: hidden;
+  padding: clamp(16px, 1.7vw, 26px);
+  border: 1px solid var(--panel-edge);
+  border-radius: 18px;
+  background: linear-gradient(115deg, var(--panel) 34%, color-mix(in srgb, var(--panel) 89%, var(--accent)));
+  box-shadow: var(--panel-shadow);
+  text-decoration: none;
+  color: var(--ink);
+  transition: transform .18s ease, border-color .18s ease;
+  &:nth-child(2) { --accent: var(--tide); }
+  &:nth-child(3) { --accent: var(--coral); }
+  &::before {
+    content: '';
     position: absolute;
-    inset: -2px;
-    border-radius: calc($radius-usual * 1.4 + 2px);
-    opacity: 0;
-    transition: opacity 0.4s ease;
-    z-index: 0;
+    z-index: -1;
+    inset: 0;
     pointer-events: none;
+    background: repeating-radial-gradient(ellipse 68% 130% at 112% -28%,
+      transparent 0 12px, color-mix(in srgb, var(--accent) 19%, transparent) 13px, transparent 14px 24px);
+    mask-image: linear-gradient(135deg, transparent 46%, #000 96%);
   }
-
-  // === Единый бордо-акцент для всех плиток ===
-  .tab-gradient-border {
-    background: conic-gradient(
-      from var(--border-angle, 0deg),
-      transparent 40%,
-      rgba(var(--bi-accent-rgb), 0.6) 50%,
-      transparent 60%
-    );
-  }
-
-  &:hover, &.active {
-    .tab-content {
-      border-color: rgba(var(--bi-accent-rgb), 0.35);
-      box-shadow: 0 6px 20px rgba(var(--bi-accent-rgb), 0.12);
-    }
-
-    .tab-icon-wrapper {
-      background: var(--bi-accent);
-      box-shadow: 0 4px 14px rgba(var(--bi-accent-rgb), 0.3);
-    }
-
-    .tab-icon { color: #fff; }
-
-    .tab-arrow {
-      color: var(--bi-accent);
-      background: rgba(var(--bi-accent-rgb), 0.1);
-      opacity: 1;
-      transform: translateX(4px);
-    }
-
-    .tab-gradient-border { opacity: 0.6; }
+  &:hover, &:focus-visible {
+    color: var(--ink);
+    text-decoration: none;
+    border-color: var(--accent);
+    .section-arrow { transform: translateX(3px); }
   }
 }
-
-// === Dark theme adjustments ===
-// Поверхности .tab-content теперь на токенах (--color-primary-background /
-// --color-border), поэтому тёмная тема подхватывается автоматически.
-[data-bs-theme='dark'] {
-  .background-shader {
-    opacity: 0.5;
-  }
+.section-icon {
+  grid-area: symbol;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 13px;
+  background: color-mix(in srgb, var(--panel) 85%, var(--accent));
+  color: var(--accent);
 }
-
-// === Responsive: Tablet landscape ===
-@media (max-width: 1200px) {
-  .content-wrapper {
-    flex-direction: column;
-    gap: 48px;
-    align-items: center;
-  }
-
-  .left-column {
-    align-items: center;
-    animation-name: fadeInLeft;
-
-    .bi-logo {
-      height: 120px;
-    }
-  }
-
-  .right-column {
-    flex-direction: row;
-    max-width: 100%;
-    gap: 20px;
-  }
-
-  .tab-item {
-    flex: 1;
-
-    .tab-content {
-      flex-direction: column;
-      align-items: flex-start;
-      padding: 24px;
-      min-height: 180px;
-    }
-
-    .tab-text-content {
-      gap: 8px;
-    }
-
-    .tab-arrow {
-      align-self: flex-end;
-      margin-top: auto;
-    }
-  }
+.section-arrow { grid-area: arrow; align-self: center; color: var(--accent); transition: transform .18s ease; }
+.section-label {
+  grid-area: label;
+  min-width: 0;
+  strong { display: block; color: var(--ink); font-size: clamp(17px, 1.6vw, 24px); font-weight: 620; letter-spacing: -.025em; line-height: 1.2; }
+  small { display: block; margin-top: 5px; color: var(--secondary-ink); font-size: 13px; line-height: 1.4; }
 }
-
-// === Responsive: Tablet portrait ===
-@media (max-width: 768px) {
-  .homepage-bi {
-    padding: 40px 20px;
-  }
-
-  .content-wrapper {
-    gap: 36px;
-  }
-
-  .left-column .bi-logo {
-    height: 100px;
-  }
-
-  .right-column {
-    flex-direction: column;
-    max-width: 480px;
-    width: 100%;
-    gap: 16px;
-  }
-
-  .tab-item {
-    .tab-content {
-      flex-direction: row;
-      align-items: center;
-      padding: 24px 20px;
-      min-height: auto;
-    }
-
-    .tab-icon-wrapper {
-      width: 48px;
-      height: 48px;
-    }
-
-    .tab-icon {
-      width: 24px;
-      height: 24px;
-    }
-
-    .tab-title {
-      font-size: clamp(1rem, 2vw, 1.2rem);
-    }
-
-    .tab-description {
-      font-size: clamp(0.75rem, 1.2vw, 0.85rem);
-      -webkit-line-clamp: 2;
-      line-clamp: 2;
-    }
-
-    .tab-arrow {
-      width: 24px;
-      height: 24px;
-    }
-  }
+.ocean-page :is(button, a):focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+@container (max-width: 580px) {
+  .ocean-top { gap: 10px; }
+  .ocean-tools { gap: 6px; }
+  .ocean-motion { min-height: 44px; }
+  .ocean-themes button { min-height: 38px; padding-inline: 8px; }
+  .ocean-sections { grid-template-columns: 1fr; gap: 8px; padding-top: 90px; }
+  .ocean-card { grid-template: "symbol label arrow" auto / auto minmax(0, 1fr) auto; align-items: center; padding: 13px 15px; border-radius: 14px; }
+  .section-icon { width: 37px; height: 37px; }
+  .section-label small { margin-top: 2px; }
 }
-
-// === Responsive: Mobile ===
-@media (max-width: 480px) {
-  .homepage-bi {
-    padding: 24px 12px;
-  }
-
-  .content-wrapper {
-    gap: 28px;
-  }
-
-  .left-column .bi-logo {
-    height: 80px;
-  }
-
-  .right-column {
-    gap: 12px;
-  }
-
-  .tab-item {
-    .tab-content {
-      padding: 20px 16px;
-      gap: 16px;
-    }
-
-    .tab-icon-wrapper {
-      width: 44px;
-      height: 44px;
-    }
-
-    .tab-icon {
-      width: 22px;
-      height: 22px;
-    }
-
-    .tab-title {
-      font-size: 1rem;
-    }
-
-    .tab-description {
-      font-size: 0.78rem;
-      -webkit-line-clamp: 1;
-      line-clamp: 1;
-    }
-  }
+@media (prefers-reduced-motion: reduce) {
+  .ocean-card, .section-arrow { transition: none; }
 }
