@@ -92,6 +92,19 @@ jobs:
           python -m pip check
           echo "$VIRTUAL_ENV/bin" >> "$GITHUB_PATH"
       - name: Test the API on SQLite
-        run: python -m django test modules.bi_analysis_modern.api.tests
+        run: |
+          python - <<'PY'
+          import django
+          from django.conf import settings
+          from django.core.management import call_command
+
+          # File tests set MEDIA_ROOT to a new temporary directory for each case.
+          settings.STORAGES = {
+              **settings.STORAGES,
+              "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+          }
+          django.setup()
+          call_command("test", "modules.bi_analysis_modern.api.tests", interactive=False)
+          PY
       - name: Test the executor protocol and broker
         run: python -m unittest modules.bi_analysis_modern.sandbox.test_executor.ProtocolTests modules.bi_analysis_modern.sandbox.test_executor.BrokerTests
