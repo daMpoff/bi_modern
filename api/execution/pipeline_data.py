@@ -13,7 +13,7 @@ import ast
 import logging
 import math
 import operator
-from .execution.formulas import normalize_formulas, parse_formula
+from .formulas import normalize_formulas, parse_formula
 from typing import Any, Dict, List
 
 try:
@@ -403,7 +403,7 @@ def execute_python_script(data: PipelineRows, config: Dict[str, Any]) -> Pipelin
     code = (config.get('code') or '').strip()
     if not code or not data:
         return data
-    from .execution.python_executor import execute_isolated
+    from .python_executor import execute_isolated
     return execute_isolated(pl.DataFrame(data), code, 'rows').to_dicts()
 
 
@@ -417,5 +417,5 @@ def execute_python_script_polars(df: Any, config: Dict[str, Any]) -> Any:
         df = collect_result(df)
     if df.is_empty():
         return df
-    from .execution.python_executor import execute_isolated
+    from .python_executor import execute_isolated
     return execute_isolated(df, code, 'polars')

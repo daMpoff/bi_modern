@@ -7,7 +7,7 @@
  * ## Usage
  *
  * ```js
- * import { fetchArrowOrJson } from '@/modules/bi_analysis_modern/client/src/js/arrowParser.js'
+ * import { fetchArrowOrJson } from '@/modules/bi_analysis_modern/client/src/data/arrowParser.js'
  *
  * const { rows, columns, format } = await fetchArrowOrJson(url, params)
  * ```

@@ -16,31 +16,12 @@ const props = defineProps({
   }
 })
 
-// ---------------------------------------------------------------------------
-// Smart engine selection (Phase 5)
-// When data length exceeds UPLOT_THRESHOLD and the chart type is time-series
-// compatible (line / area), we swap to the lightweight uPlot renderer which
-// can handle millions of points at 60 fps.
-// ---------------------------------------------------------------------------
 const UPLOT_THRESHOLD = 50_000
+const UPlotChart = defineAsyncComponent(() => import('./UPlotChart.vue'))
+const SimpleChart = defineAsyncComponent(() => import('./SimpleChart.vue'))
 
-const useUPlot = computed(() => {
-  const type = props.block?.config?.chartType
-  const dataLen = props.chartData?.length ?? 0
-  const isTimeSeries = type === 'line' || type === 'area'
-  return isTimeSeries && dataLen > UPLOT_THRESHOLD
-})
-
-// Маппинг типов графиков на компоненты (ECharts-based)
-const chartComponents = {
-  line: defineAsyncComponent(() => import('./LineChart.vue')),
-  bar: defineAsyncComponent(() => import('./BarChart.vue')),
-  pie: defineAsyncComponent(() => import('./PieChart.vue')),
-  doughnut: defineAsyncComponent(() => import('./DoughnutChart.vue')),
-  scatter: defineAsyncComponent(() => import('./ScatterChart.vue')),
+const specializedCharts = {
   radar: defineAsyncComponent(() => import('./RadarChart.vue')),
-  heatmap: defineAsyncComponent(() => import('./HeatmapChart.vue')),
-  area: defineAsyncComponent(() => import('./AreaChart.vue')),
   candlestick: defineAsyncComponent(() => import('./CandlestickChart.vue')),
   gauge: defineAsyncComponent(() => import('./GaugeChart.vue')),
   funnel: defineAsyncComponent(() => import('./FunnelChart.vue')),
@@ -59,14 +40,11 @@ const chartComponents = {
   calendar: defineAsyncComponent(() => import('./CalendarChart.vue'))
 }
 
-// uPlot component — lazy loaded only when needed
-const UPlotChartComponent = defineAsyncComponent(() => import('./UPlotChart.vue'))
-
-// Выбор компонента на основе chartType + smart engine selection
 const chartComponent = computed(() => {
-  if (useUPlot.value) return UPlotChartComponent
-
-  const chartType = props.block?.config?.chartType || 'bar'
-  return chartComponents[chartType] || chartComponents.bar
+  const type = props.block?.config?.chartType
+  if ((type === 'line' || type === 'area') && props.chartData?.length > UPLOT_THRESHOLD) {
+    return UPlotChart
+  }
+  return Object.hasOwn(specializedCharts, type) ? specializedCharts[type] : SimpleChart
 })
 </script>

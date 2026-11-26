@@ -1,6 +1,6 @@
 ﻿<script setup>
-import { ref, computed, inject, watch } from 'vue'
-import '@/modules/bi_analysis_modern/client/src/js/echartsSimpleCharts.js'
+import { ref } from 'vue'
+import '@/modules/bi_analysis_modern/client/src/charts/echartsSimpleCharts.js'
 import VChart from 'vue-echarts'
 
 const props = defineProps({
@@ -13,7 +13,6 @@ const props = defineProps({
 })
 
 const chartRef = ref(null)
-const dashboardExportCapturing = inject('dashboardExportCapturing', ref(false))
 
 // Use the normal device pixel ratio (do NOT change on export — html2canvas
 // already handles scale via its own `scale` parameter).  Previously the
@@ -29,9 +28,7 @@ const DEFAULT_EXPORT_OPTS = {
 }
 
 function getDataURL(opts = {}) {
-  const v = chartRef.value
-  if (!v) return null
-  const ec = typeof v.getEchartsInstance === 'function' ? v.getEchartsInstance() : (v.echartsInstance ?? v)
+  const ec = getEchartsInstance()
   if (ec && typeof ec.getDataURL === 'function') {
     return ec.getDataURL({ ...DEFAULT_EXPORT_OPTS, ...opts })
   }

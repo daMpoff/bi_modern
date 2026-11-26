@@ -8,9 +8,9 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 
 
-from .data_source_provider import get_columns_meta
-from .graph_execute import execute_graph
-from .suggest_join_keys import suggest_join_keys
+from .services.data_source_provider import get_columns_meta
+from .execution.graph_execute import execute_graph
+from .services.suggest_join_keys import suggest_join_keys
 
 
 class GraphExecuteView(APIView):
@@ -23,8 +23,8 @@ class GraphExecuteView(APIView):
 
     def post(self, request):
         from .config import CHART_MAX_POINTS
-        from .downsampling import uniform_sample
-        from .pipeline_types import row_count as _row_count
+        from .execution.downsampling import uniform_sample
+        from .execution.pipeline_types import row_count as _row_count
 
         nodes = (request.data or {}).get('nodes') or []
         edges = (request.data or {}).get('edges') or []

@@ -5,7 +5,7 @@ Data Lineage: цепочка узлов от источников данных �
 """
 from typing import Any, Dict, List
 
-from .execution.graph_plan import compile_graph, GraphValidationError
+from .graph_plan import compile_graph, GraphValidationError
 
 NODE_TYPE_DATA_SOURCE = 'dataSource'
 NODE_TYPE_FILTER = 'filter'

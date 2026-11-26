@@ -5,16 +5,16 @@ from unittest.mock import patch
 import polars as pl
 from django.test import SimpleTestCase, override_settings
 
-from .graph_execute import execute_graph, _get_pushdown_config
-from .inline_source_executor import _build_sql_query, _execute_db_source, _execute_file_source
-from .pipeline_data import (apply_formulas, apply_formulas_polars, evaluate_formula,
+from ..execution.graph_execute import execute_graph, _get_pushdown_config
+from ..execution.inline_source_executor import _build_sql_query, _execute_db_source, _execute_file_source
+from ..execution.pipeline_data import (apply_formulas, apply_formulas_polars, evaluate_formula,
                             execute_python_script, execute_python_script_polars)
-from .pipeline_join import apply_join, apply_join_polars
-from .lineage import compute_lineage
-from .pipeline_types import collect_result
-from .bi_datasets.models import FileUpload
-from .bi_pipelines.views import _execute_cache_get, _execute_cache_put
-from ..sandbox.worker import execute as execute_worker
+from ..execution.pipeline_join import apply_join, apply_join_polars
+from ..execution.lineage import compute_lineage
+from ..execution.pipeline_types import collect_result
+from ..bi_datasets.models import FileUpload
+from ..bi_pipelines.views import _execute_cache_get, _execute_cache_put
+from ...sandbox.worker import execute as execute_worker
 
 
 def node(identifier, kind, config=None):
@@ -48,15 +48,15 @@ class PipelineRegressionTests(SimpleTestCase):
         ]
         def source(config, *args, **kwargs):
             return pl.DataFrame({'id': [1, 2]}) if config['source'] == 'left' else pl.DataFrame({'id': [1]})
-        with patch('modules.bi_analysis_modern.api.graph_execute.get_source_data', side_effect=source), \
-                patch('modules.bi_analysis_modern.api.graph_execute.USE_SQL_PUSHDOWN', False):
+        with patch('modules.bi_analysis_modern.api.execution.graph_execute.get_source_data', side_effect=source), \
+                patch('modules.bi_analysis_modern.api.execution.graph_execute.USE_SQL_PUSHDOWN', False):
             result = execute_graph(nodes, edges, SimpleNamespace(pk=1))
         self.assertNotIn('error', result)
         self.assertEqual(result['_raw_df']['id'].to_list(), [1, 2])
 
     def test_duplicate_node_ids_are_rejected_before_loading_sources(self):
         nodes = [node('source', 'dataSource'), node('source', 'dataSource'), node('out', 'output')]
-        with patch('modules.bi_analysis_modern.api.graph_execute.get_source_data', return_value=pl.DataFrame({'x': [1]})) as source:
+        with patch('modules.bi_analysis_modern.api.execution.graph_execute.get_source_data', return_value=pl.DataFrame({'x': [1]})) as source:
             result = execute_graph(nodes, [{'source': 'source', 'target': 'out'}], None)
         self.assertIn('error', result)
         source.assert_not_called()
@@ -68,8 +68,8 @@ class PipelineRegressionTests(SimpleTestCase):
         edges = [{'source': '__error__', 'target': 'join', 'targetHandle': 'left-target'},
                  {'source': 'other', 'target': 'join', 'targetHandle': 'right-target'},
                  {'source': 'join', 'target': 'out'}]
-        with patch('modules.bi_analysis_modern.api.graph_execute.get_source_data', return_value=pl.DataFrame({'id': [1]})), \
-                patch('modules.bi_analysis_modern.api.graph_execute.USE_SQL_PUSHDOWN', False):
+        with patch('modules.bi_analysis_modern.api.execution.graph_execute.get_source_data', return_value=pl.DataFrame({'id': [1]})), \
+                patch('modules.bi_analysis_modern.api.execution.graph_execute.USE_SQL_PUSHDOWN', False):
             result = execute_graph(nodes, edges, None)
         self.assertIsInstance(result, dict)
         self.assertNotIn('error', result)
@@ -107,13 +107,13 @@ class PipelineRegressionTests(SimpleTestCase):
             self.assertEqual(database.execute(sql, params).fetchall(), [])
 
     def test_source_query_failure_is_not_a_successful_empty_table(self):
-        with patch('modules.bi_analysis_modern.api.inline_source_executor.execute_sql', side_effect=RuntimeError('offline')):
-            with self.assertLogs('modules.bi_analysis_modern.api.inline_source_executor', level='ERROR'), self.assertRaises(ValueError):
+        with patch('modules.bi_analysis_modern.api.execution.inline_source_executor.execute_sql', side_effect=RuntimeError('offline')):
+            with self.assertLogs('modules.bi_analysis_modern.api.execution.inline_source_executor', level='ERROR'), self.assertRaises(ValueError):
                 _execute_db_source(SimpleNamespace(), {'name': 'sales'}, [], None)
 
     def test_file_must_belong_to_the_selected_connection_and_user(self):
         with patch.object(FileUpload.objects, 'get', side_effect=FileUpload.DoesNotExist), \
-                patch('modules.bi_analysis_modern.api.inline_source_executor._read_file_direct_polars',
+                patch('modules.bi_analysis_modern.api.execution.inline_source_executor._read_file_direct_polars',
                       return_value=pl.DataFrame({'private': [1]}).lazy()):
             with self.assertRaises(ValueError):
                 _execute_file_source(SimpleNamespace(pk=1), {'file_id': 99}, [], SimpleNamespace(pk=2), None, True)
@@ -174,7 +174,7 @@ class PipelineRegressionTests(SimpleTestCase):
             'outputField': 'total', 'expression': 'price * $rate',
         }), node('agg', 'aggregation', {'aggregations': [{'field': 'total', 'agg': 'sum'}]}), node('out', 'output')]
         edges = [{'source': left, 'target': right} for left, right in [('src', 'formula'), ('formula', 'agg'), ('agg', 'out')]]
-        with patch('modules.bi_analysis_modern.api.graph_execute.get_source_data',
+        with patch('modules.bi_analysis_modern.api.execution.graph_execute.get_source_data',
                    return_value=pl.DataFrame({'price': [2, 3], 'unused': [1, 1]}).lazy()):
             result = execute_graph(nodes, edges, None, params={'rate': 4})
         self.assertNotIn('error', result)
@@ -185,7 +185,7 @@ class PipelineRegressionTests(SimpleTestCase):
             'conditions': [{'field': 'value', 'operator': '>', 'value': 0}],
         }), node('out', 'output')]
         edges = [{'source': 'src', 'target': 'filter'}, {'source': 'filter', 'target': 'out'}]
-        with patch('modules.bi_analysis_modern.api.graph_execute.get_source_data',
+        with patch('modules.bi_analysis_modern.api.execution.graph_execute.get_source_data',
                    return_value=pl.DataFrame({'value': [0, 1, 2]}).lazy()) as source:
             result = execute_graph(nodes, edges, None, include_node_row_counts=True)
         self.assertIsNone(source.call_args.kwargs['pushdown_filter'])
@@ -194,7 +194,7 @@ class PipelineRegressionTests(SimpleTestCase):
     @override_settings(CACHES={'default': {'BACKEND': 'django.core.cache.backends.locmem.LocMemCache'}})
     def test_cached_polars_result_remains_readable_from_another_cache_instance(self):
         from django.core.cache.backends.filebased import FileBasedCache
-        from .execution.result_cache import _local_cache, _key
+        from ..execution.result_cache import _local_cache, _key
         _execute_cache_put('frame', pl.DataFrame({'x': [1, 2]}), ['x'], 2, 901, 902)
         other = FileBasedCache(_local_cache()._dir, {})
         self.assertEqual(other.get(_key('frame', 901, 902))['raw_df'].to_dicts(), [{'x': 1}, {'x': 2}])

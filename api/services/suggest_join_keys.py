@@ -5,9 +5,9 @@
 import logging
 from typing import Any, Dict, List, Optional, Tuple
 
-from .bi_connections.connection_runner import get_columns
-from .bi_connections.models import Connection
-from .bi_datasets.models import FileUpload
+from ..bi_connections.connection_runner import get_columns
+from ..bi_connections.models import Connection
+from ..bi_datasets.models import FileUpload
 
 logger = logging.getLogger(__name__)
 

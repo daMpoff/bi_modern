@@ -16,7 +16,7 @@
 import { ref, watch, onMounted, onBeforeUnmount, nextTick, computed } from 'vue'
 import uPlot from 'uplot'
 import 'uplot/dist/uPlot.min.css'
-import { resolveBlockChartConfig } from '@/modules/bi_analysis_modern/client/src/js/chartConfigUtils.js'
+import { resolveBlockChartConfig } from '@/modules/bi_analysis_modern/client/src/charts/chartConfigUtils.js'
 
 const props = defineProps({
   block: { type: Object, required: true },

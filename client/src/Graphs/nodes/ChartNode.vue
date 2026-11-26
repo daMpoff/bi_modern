@@ -31,7 +31,7 @@
 import { computed } from 'vue'
 import { Handle, Position } from '@vue-flow/core'
 import { BarChart3, Settings2, Trash2 } from 'lucide-vue-next'
-import { CHART_TYPES } from '@/modules/bi_analysis_modern/client/src/js/chartTypes.js'
+import { CHART_TYPES } from '@/modules/bi_analysis_modern/client/src/charts/chartTypes.js'
 
 const props = defineProps({
   id: String,

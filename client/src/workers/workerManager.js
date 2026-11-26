@@ -25,7 +25,7 @@ function getPool() {
   for (let i = 0; i < size; i++) {
     try {
       const w = new Worker(
-        new URL('../workers/dataProcessor.worker.js', import.meta.url),
+        new URL('./dataProcessor.worker.js', import.meta.url),
         { type: 'module' }
       )
       const pending = new Map()

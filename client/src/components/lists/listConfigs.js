@@ -1,5 +1,4 @@
-import { biEndpoints } from './endpoints.js'
-const endpoints = biEndpoints
+import { biEndpoints as endpoints } from '../../js/endpoints.js'
 
 export class ConnectionDTO {
   constructor({ id, name, connector_type_display, created_at, config, owner }) {
@@ -52,14 +51,7 @@ export const listConfigs = {
     createButtonText: 'Создать дашборд',
     createButtonWidth: '11rem',
     searchPlaceholder: 'Введите для поиска...',
-    mapData: (item) => new DashboardDTO({
-      id: item.id,
-      name: item.name,
-      owner_username: item.owner_username,
-      created_at: item.created_at,
-      description: item.description,
-      charts_count: item.charts_count
-    }),
+    mapData: (item) => new DashboardDTO(item),
     filterFunction: (term) => (item) =>
       item.name?.toLowerCase().includes(term) ||
       item.owner_username?.toLowerCase().includes(term)

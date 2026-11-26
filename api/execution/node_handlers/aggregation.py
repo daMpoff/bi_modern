@@ -116,7 +116,7 @@ def apply_aggregation_polars(df: Any, config: Dict[str, Any]) -> Any:
         return df.select(agg_exprs)
     except Exception as e:
         logger.warning('Polars aggregation failed, fallback to Python: %s', e)
-        from ...pipeline_types import collect_result
+        from ..pipeline_types import collect_result
         eager_df = collect_result(df) if isinstance(df, pl.LazyFrame) else df
         try:
             rows = eager_df.to_dicts()

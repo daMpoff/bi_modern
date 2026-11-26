@@ -1,8 +1,8 @@
 <script setup>
 import { computed, ref } from 'vue'
 import BiEchartsChart from '@/modules/bi_analysis_modern/client/src/components/BiEchartsChart.vue'
-import { buildEchartsOption } from '@/modules/bi_analysis_modern/client/src/js/buildEchartsOption.js'
-import { normalizeChartConfig } from '@/modules/bi_analysis_modern/client/src/js/chartConfigUtils.js'
+import { buildEchartsOption } from '@/modules/bi_analysis_modern/client/src/charts/buildEchartsOption.js'
+import { normalizeChartConfig } from '@/modules/bi_analysis_modern/client/src/charts/chartConfigUtils.js'
 
 const props = defineProps({
   chartData: { type: Array, default: () => [] },

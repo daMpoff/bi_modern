@@ -680,8 +680,8 @@ def execute_pipeline_async(self, pipeline_id: int, user_id: int, params: Optiona
     from .execution.result_cache import execution_cache, task_key, ASYNC_RESULT_TTL
     from django.contrib.auth import get_user_model
     from .bi_pipelines.models import Pipeline
-    from .graph_execute import execute_graph
-    from .pipeline_types import row_count, to_rows_slice
+    from .execution.graph_execute import execute_graph
+    from .execution.pipeline_types import row_count, to_rows_slice
     from .config import EXECUTE_PREVIEW_ROWS, EXECUTE_CHUNK_SIZE
     preview_limit = EXECUTE_PREVIEW_ROWS if EXECUTE_PREVIEW_ROWS is not None else EXECUTE_CHUNK_SIZE
 

@@ -6,10 +6,10 @@ from django.test import SimpleTestCase
 from rest_framework.exceptions import ValidationError
 from rest_framework.test import APIRequestFactory, force_authenticate
 
-from .bi_pipelines.models import Pipeline
-from .bi_pipelines.serializers import PipelineChartSerializer
-from .bi_pipelines.views import PipelineExecuteAsyncView, PipelineTaskStatusView
-from .execution.result_cache import task_key, task_owner_key
+from ..bi_pipelines.models import Pipeline
+from ..bi_pipelines.serializers import PipelineChartSerializer
+from ..bi_pipelines.views import PipelineExecuteAsyncView, PipelineTaskStatusView
+from ..execution.result_cache import task_key, task_owner_key
 
 
 class PipelineAsyncTests(SimpleTestCase):
@@ -57,11 +57,11 @@ class PipelineAsyncTests(SimpleTestCase):
 
     def test_async_execution_handles_unset_preview_limit(self):
         from django.contrib.auth import get_user_model
-        from .tasks import execute_pipeline_async
+        from ..tasks import execute_pipeline_async
         rows = [{'x': 1}, {'x': 2}, {'x': 3}]
         with patch.object(get_user_model().objects, 'get', return_value=self.user), \
                 patch.object(Pipeline.objects, 'get', return_value=self.pipeline), \
-                patch('modules.bi_analysis_modern.api.graph_execute.execute_graph', return_value={'chartData': rows}), \
+                patch('modules.bi_analysis_modern.api.execution.graph_execute.execute_graph', return_value={'chartData': rows}), \
                 patch('modules.bi_analysis_modern.api.config.EXECUTE_PREVIEW_ROWS', None), \
                 patch('modules.bi_analysis_modern.api.config.EXECUTE_CHUNK_SIZE', 2), \
                 patch('modules.bi_analysis_modern.api.execution.result_cache.execution_cache', return_value=self.result_cache):

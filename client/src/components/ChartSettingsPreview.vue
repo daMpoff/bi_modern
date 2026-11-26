@@ -6,8 +6,8 @@
  */
 import { ref, computed, watch } from 'vue'
 import BiEchartsChart from '@/modules/bi_analysis_modern/client/src/components/BiEchartsChart.vue'
-import { buildEchartsOption } from '@/modules/bi_analysis_modern/client/src/js/buildEchartsOption.js'
-import { CHART_TYPES } from '@/modules/bi_analysis_modern/client/src/js/chartTypes.js'
+import { buildEchartsOption } from '@/modules/bi_analysis_modern/client/src/charts/buildEchartsOption.js'
+import { CHART_TYPES } from '@/modules/bi_analysis_modern/client/src/charts/chartTypes.js'
 
 /** Типы графика для выбора (value/label из единого реестра CHART_TYPES). */
 const chartTypes = CHART_TYPES.map((ct) => ({ value: ct.chartType, label: ct.label }))

@@ -4,9 +4,9 @@ from unittest.mock import patch
 import polars as pl
 from django.test import SimpleTestCase, override_settings
 
-from .execution.python_executor import execute_isolated, NoRedirects
-from .pipeline_data import execute_python_script, execute_python_script_polars
-from ..sandbox.protocol import pack
+from ..execution.python_executor import execute_isolated, NoRedirects
+from ..execution.pipeline_data import execute_python_script, execute_python_script_polars
+from ...sandbox.protocol import pack
 
 
 class PythonExecutorClientTests(SimpleTestCase):

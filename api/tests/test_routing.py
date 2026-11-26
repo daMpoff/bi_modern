@@ -6,10 +6,10 @@ from django.test import SimpleTestCase, override_settings
 from django.urls import include, path, resolve
 from rest_framework.test import APIRequestFactory, force_authenticate
 
-from .bi_connections.views import CheckConnectionView
-from .bi_connections.models import Connection
-from .bi_connections.serializers import ConnectionSerializer
-from .views import GraphExecuteView
+from ..bi_connections.views import CheckConnectionView
+from ..bi_connections.models import Connection
+from ..bi_connections.serializers import ConnectionSerializer
+from ..views import GraphExecuteView
 
 
 urlpatterns = [path('api/bi_analysis_modern/', include('modules.bi_analysis_modern.api.urls'))]

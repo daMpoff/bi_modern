@@ -152,11 +152,11 @@ import XlsxSheetPicker from './FilePreview/XlsxSheetPicker.vue'
 import EmptyImage from './components/EmptyImage.vue'
 import FileIcon from '@/modules/bi_analysis_modern/client/src/assets/icons/folder_windows_style.svg'
 
-import { useRedirectIfFileConnection } from '@/modules/bi_analysis_modern/client/src/components/js/useRedirectIfFileConnection'
-import { useFileUploader } from '@/modules/bi_analysis_modern/client/src/components/js/useFileUploader'
-import { useTooltip } from '@/modules/bi_analysis_modern/client/src/components/js/useTooltip'
-import { useFileList } from '@/modules/bi_analysis_modern/client/src/components/js/useFileList'
-import { useFileActions } from '@/modules/bi_analysis_modern/client/src/components/js/useFileActions'
+import { useRedirectIfFileConnection } from '@/modules/bi_analysis_modern/client/src/Connections/Files/composables/useRedirectIfFileConnection'
+import { useFileUploader } from '@/modules/bi_analysis_modern/client/src/Connections/Files/composables/useFileUploader'
+import { useTooltip } from '@/modules/bi_analysis_modern/client/src/Connections/Files/composables/useTooltip'
+import { useFileList } from '@/modules/bi_analysis_modern/client/src/Connections/Files/composables/useFileList'
+import { useFileActions } from '@/modules/bi_analysis_modern/client/src/Connections/Files/composables/useFileActions'
 
 const router = useRouter()
 const route = useRoute()

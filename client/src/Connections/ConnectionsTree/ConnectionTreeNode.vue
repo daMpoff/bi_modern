@@ -114,7 +114,7 @@ import { biEndpoints } from '@/modules/bi_analysis_modern/client/src/js/endpoint
 import { confirmDelete } from '@/js/utils/confirm.js'
 import { useToast } from '@/js/utils/toast.js'
 import XlsxSheetPicker from '../Files/FilePreview/XlsxSheetPicker.vue'
-import { MAX_UPLOAD_SIZE_MB, MAX_UPLOAD_FILES } from '@/modules/bi_analysis_modern/client/src/js/uploadConfig'
+import { MAX_UPLOAD_SIZE_MB, MAX_UPLOAD_FILES } from '@/modules/bi_analysis_modern/client/src/Connections/Files/uploadConfig'
 
 const props = defineProps({
   node: {

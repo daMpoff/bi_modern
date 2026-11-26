@@ -12,4 +12,4 @@ export {
   getBlockTypeByType,
   getBlockLabel,
   getSingletonTypes
-} from '@/modules/bi_analysis_modern/client/src/js/blocksRegistry.js'
+} from '@/modules/bi_analysis_modern/client/src/Graphs/blocksRegistry.js'

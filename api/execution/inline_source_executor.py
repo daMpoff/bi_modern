@@ -10,17 +10,18 @@ import logging
 import os
 from typing import Any, Dict, List, Optional
 
-from .bi_connections.models import Connection
+from ..bi_connections.models import Connection
 
 try:
     import polars as pl
 except ImportError:
     pl = None
-from .bi_connections.connection_runner import (
+from ..bi_connections.connection_runner import (
     execute_sql,
     execute_sql_columnar,
+    get_connection_db_type,
 )
-from .bi_datasets.models import FileUpload
+from ..bi_datasets.models import FileUpload
 
 logger = logging.getLogger(__name__)
 
@@ -37,34 +38,21 @@ def execute_inline_source(
     params: Optional[Dict[str, Any]] = None,
 ) -> Any:
     """Выполняет запрос к inline-источнику данных (одна таблица/файл)."""
-    relations = relations or []
     try:
         conn = Connection.objects.get(pk=connection_id, owner=user)
     except Connection.DoesNotExist:
         raise ValueError(f"Подключение {connection_id} не найдено для пользователя {user}")
 
-    conn_type = (conn.connector_type or '').lower().strip()
+    conn_type = get_connection_db_type(conn)
 
     if conn_type in ('file', 'files', 'файл', 'файлы') or 'file' in conn_type:
         return _execute_file_source(conn, main_table, [], user, limit, return_dataframe)
-    params = params or {}
-    if conn_type in ('postgresql', 'postgres'):
-        return _execute_db_source(
-            conn, main_table, [], limit, return_dataframe,
-            pushdown_filter, pushdown_aggregation, params, 'postgresql',
-        )
-    elif conn_type in ('mssql', 'sql server'):
-        return _execute_db_source(
-            conn, main_table, [], limit, return_dataframe,
-            pushdown_filter, pushdown_aggregation, params, 'mssql',
-        )
-    elif conn_type == 'clickhouse':
-        return _execute_db_source(
-            conn, main_table, [], limit, return_dataframe,
-            pushdown_filter, pushdown_aggregation, params, 'clickhouse',
-        )
-    else:
+    if conn_type not in ('postgresql', 'mssql', 'clickhouse'):
         raise ValueError(f"Неподдерживаемый тип подключения: {conn_type}")
+    return _execute_db_source(
+        conn, main_table, [], limit, return_dataframe,
+        pushdown_filter, pushdown_aggregation, params or {}, conn_type,
+    )
 
 
 def _read_file_direct_polars(file_upload_id: int) -> Any:
@@ -75,8 +63,7 @@ def _read_file_direct_polars(file_upload_id: int) -> Any:
     Для CSV/TXT — scan_csv (lazy).
     Для XLSX — read_excel (eager) -> .lazy().
     """
-    from .bi_datasets.models import FileUpload
-    from .bi_datasets.binary_storage import is_binary_file
+    from ..bi_datasets.binary_storage import is_binary_file
 
     try:
         upload = FileUpload.objects.get(pk=file_upload_id)
@@ -101,7 +88,7 @@ def _read_file_direct_polars(file_upload_id: int) -> Any:
         except Exception:
             return pl.scan_csv(path, encoding='cp1251', try_parse_dates=True)
 
-    from .services.services import read_file_to_dataframe
+    from ..services.services import read_file_to_dataframe
     table_data = read_file_to_dataframe(file_upload_id, row_limit=None)
     df = _table_data_to_dataframe(table_data)
     if df is not None and hasattr(df, 'lazy'):
@@ -174,7 +161,7 @@ def _table_data_to_dataframe(table: Any) -> Any:
     """Конвертирует TableData в polars DataFrame (column-oriented)."""
     if pl is None:
         return None
-    from .services.services import TableData
+    from ..services.services import TableData
     if isinstance(table, TableData):
         if not table.columns or not table.rows:
             return pl.DataFrame()
@@ -226,7 +213,7 @@ def _execute_file_source(
             continue
 
         try:
-            from .services.services import read_file_to_dataframe
+            from ..services.services import read_file_to_dataframe
             right_table_data = read_file_to_dataframe(right_file_id, row_limit=None)
             if right_table_data is None or len(right_table_data) == 0:
                 continue

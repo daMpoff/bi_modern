@@ -82,7 +82,7 @@ import { ref, onMounted, computed } from 'vue'
 import { apiClient } from '@/js/api/manager'
 import { biEndpoints as endpoints } from '@/modules/bi_analysis_modern/client/src/js/endpoints.js'
 import ConnectionNameDialog from '@/modules/bi_analysis_modern/client/src/Connections/components/ConnectionNameDialog.vue'
-import { useRedirectIfFileConnection } from '@/modules/bi_analysis_modern/client/src/components/js/useRedirectIfFileConnection'
+import { useRedirectIfFileConnection } from '@/modules/bi_analysis_modern/client/src/Connections/Files/composables/useRedirectIfFileConnection'
 
 useRedirectIfFileConnection()
 

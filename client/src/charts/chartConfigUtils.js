@@ -19,7 +19,6 @@ export function resolveBlockChartConfig(blockConfig) {
 /**
  * Нормализация конфига графика к формату buildEchartsOption и компонентов:
  * xField — строка, yFields — массив строк, colorField — строка (для heatmap = ось Y).
- * Используется в PipelineChartRenderer и в legacy-компонентах (BarChart и т.д.).
  */
 export function normalizeChartConfig(config) {
   if (!config || typeof config !== 'object') {

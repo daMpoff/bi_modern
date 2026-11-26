@@ -11,11 +11,11 @@ from rest_framework.views import APIView
 
 from ..bi_dashboards.utils import remove_dashboard_blocks_by_chart_id
 from ..config import EXECUTE_PREVIEW_ROWS, EXECUTE_CHUNK_SIZE, CHART_MAX_POINTS
-from ..graph_execute import execute_graph
+from ..execution.graph_execute import execute_graph
 from ..execution.node_handlers import filter_chart_data_by_config
-from ..lineage import compute_lineage
-from ..pipeline_types import row_count, to_rows_slice, to_json_bytes
-from ..downsampling import downsample_for_chart
+from ..execution.lineage import compute_lineage
+from ..execution.pipeline_types import row_count, to_rows_slice, to_json_bytes
+from ..execution.downsampling import downsample_for_chart
 from .models import Pipeline, PipelineChart
 from .serializers import PipelineSerializer, PipelineChartSerializer
 

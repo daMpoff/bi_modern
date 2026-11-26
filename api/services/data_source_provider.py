@@ -6,8 +6,8 @@
 import logging
 from typing import Any, Dict, List
 
-from .bi_connections.models import Connection
-from .bi_datasets.models import FileUpload
+from ..bi_connections.models import Connection
+from ..bi_datasets.models import FileUpload
 
 logger = logging.getLogger(__name__)
 
@@ -61,6 +61,6 @@ def _get_table_columns_meta(
     if not table_name:
         return []
     schema = main_table.get("schema") or "public"
-    from .bi_connections.meta import get_connection_table_columns_meta
+    from ..bi_connections.meta import get_connection_table_columns_meta
     rows = get_connection_table_columns_meta(conn, table_name, schema)
     return [{"name": r["name"], "type": r.get("type") or "string"} for r in rows]

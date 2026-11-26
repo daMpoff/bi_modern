@@ -1,6 +1,6 @@
 ﻿import { apiClient } from '@/js/api/manager'
 import { biEndpoints as endpoints } from '@/modules/bi_analysis_modern/client/src/js/endpoints.js'
-import { MAX_UPLOAD_SIZE_MB } from '@/modules/bi_analysis_modern/client/src/js/uploadConfig'
+import { MAX_UPLOAD_SIZE_MB } from '@/modules/bi_analysis_modern/client/src/Connections/Files/uploadConfig'
 import { confirmDelete } from '@/js/utils/confirm.js'
 
 export function useFileActions(uploadedFiles, selectedFile, fileToReplace, loadUserFiles, connectionId, isSheetPickerVisible, currentUploadFile, availableSheets, isReplacing, fileError = null, selectFileCallback = null) {

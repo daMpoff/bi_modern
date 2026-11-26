@@ -17,7 +17,7 @@ import {
   Code,
   LogOut
 } from 'lucide-vue-next'
-import { CHART_TYPES } from '@/modules/bi_analysis_modern/client/src/js/chartTypes.js'
+import { CHART_TYPES } from '@/modules/bi_analysis_modern/client/src/charts/chartTypes.js'
 import DataSourceNode from '@/modules/bi_analysis_modern/client/src/Graphs/nodes/DataSourceNode.vue'
 import AggregationNode from '@/modules/bi_analysis_modern/client/src/Graphs/nodes/AggregationNode.vue'
 import FilterNode from '@/modules/bi_analysis_modern/client/src/Graphs/nodes/FilterNode.vue'

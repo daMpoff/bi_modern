@@ -124,7 +124,7 @@ import {
   isBetweenOperator,
   getValueInputType as getValueInputTypeFn,
   BOOLEAN_OPTIONS
-} from '@/modules/bi_analysis_modern/client/src/js/filterFieldTypes.js'
+} from '@/modules/bi_analysis_modern/client/src/Pipelines/js/filterFieldTypes.js'
 
 const props = defineProps({
   show: { type: Boolean, default: false },
