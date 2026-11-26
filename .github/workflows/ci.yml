@@ -1,0 +1,97 @@
+name: BI Modern CI
+
+on:
+  pull_request:
+    branches: [dev]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: bi-modern-ci-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+env:
+  ERGO_REV: 964f118900e32be18875794e6e2608a56ebff239
+
+jobs:
+  client:
+    name: Client tests and build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - name: Check out ERGO
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          repository: ergoms/ergo_ms_core
+          ref: ${{ env.ERGO_REV }}
+          persist-credentials: false
+      - name: Check out ERGO client
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          repository: ergoms/ergo_ms_core_client
+          ref: 655673645f3319b6857ec62b174e32a8d606cb6f
+          path: core/client
+          persist-credentials: false
+      - name: Check out BI Modern
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          path: modules/bi_analysis_modern
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: 24.18.0
+          package-manager-cache: false
+      - name: Install ERGO and module dependencies
+        run: npm --prefix virtual_env/npm run install:all
+      - name: Test the client
+        run: node --test modules/bi_analysis_modern/client/tests/*.test.mjs
+      - name: Build the federated module
+        run: node core/client/scripts/build-client-remote.js --module=bi_analysis_modern
+
+  api:
+    name: Django and executor unit tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    env:
+      DJANGO_SETTINGS_MODULE: src.config.patterns.test
+      TEST_TARGET_MODULE: bi_analysis_modern
+      ERGO_DB: sqlite
+      DATABASE_TEST_CONNECTIONS: 'false'
+      API_SECRET_KEY: ci-only-disposable-django-key
+      BI_ANALYSIS_USE_GPU: 'false'
+      PYTHONPATH: ${{ github.workspace }}:${{ github.workspace }}/core/api
+    steps:
+      - name: Check out ERGO
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          repository: ergoms/ergo_ms_core
+          ref: ${{ env.ERGO_REV }}
+          persist-credentials: false
+      - name: Check out ERGO API
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          repository: ergoms/ergo_ms_core_api
+          ref: e69b6a2634ab1d597b2d7ac7d99ced1184e2d02f
+          path: core/api
+          persist-credentials: false
+      - name: Check out BI Modern
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          path: modules/bi_analysis_modern
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.12'
+      - name: Install ERGO and module dependencies
+        run: |
+          python -m venv .venv
+          source .venv/bin/activate
+          pipx run --spec poetry==2.4.1 poetry install --only main --no-root --no-interaction
+          pipx run --spec poetry==2.4.1 poetry -C modules/bi_analysis_modern install --only main --no-root --no-interaction
+          python -m pip check
+          echo "$VIRTUAL_ENV/bin" >> "$GITHUB_PATH"
+      - name: Test the API on SQLite
+        run: python -m django test modules.bi_analysis_modern.api.tests
+      - name: Test the executor protocol and broker
+        run: python -m unittest modules.bi_analysis_modern.sandbox.test_executor.ProtocolTests modules.bi_analysis_modern.sandbox.test_executor.BrokerTests
